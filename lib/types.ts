@@ -44,8 +44,15 @@ export interface ComponentPositionDefinedAs {
   placement_mode?: "none" | "auto" | "props_set"
 }
 
+export interface ComponentAnchorAlignment {
+  line_item_type: "component_anchor_alignment"
+  component_name: string
+  anchor_alignment: NinePointAnchor
+}
+
 export type AnalysisLineItem =
   | AbsoluteComponentPosition
   | RelativeComponentToComponentPosition
   | RelativeComponentToBoardPosition
   | ComponentPositionDefinedAs
+  | ComponentAnchorAlignment
