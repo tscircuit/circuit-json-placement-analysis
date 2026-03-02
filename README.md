@@ -22,7 +22,7 @@ of a component:
 
 ```javascript
 {
-  line_item_type: "absolute_position",
+  line_item_type: "absolute_component_position",
   component_name: "U1",
   anchor_alignment: "center", // nine point anchor from circuit-json
   anchor_position: { x: number, y: number, layer: string },
