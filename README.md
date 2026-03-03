@@ -16,6 +16,17 @@ console.log(analysis.getString())
 console.log(analysis.getLineItems())
 ```
 
+To analyze all components in a circuit at once:
+
+```tsx
+import { analyzeAllPlacements } from "@tscircuit/circuit-json-placement-analysis"
+
+const analysis = analyzeAllPlacements(circuitJson)
+
+console.log(analysis.getString())
+console.log(analysis.getLineItems())
+```
+
 An analysis line item is a single statement regarding the placement. There are
 different types of line items. The most basic line item is the absolute position
 of a component:
