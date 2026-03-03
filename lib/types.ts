@@ -50,9 +50,42 @@ export interface ComponentAnchorAlignment {
   anchor_alignment: NinePointAnchor
 }
 
+export interface ComponentBounds {
+  line_item_type: "component_bounds"
+  component_name: string
+  width: number
+  height: number
+  min_x: number
+  max_x: number
+  min_y: number
+  max_y: number
+}
+
+export interface ComponentSize {
+  line_item_type: "component_size"
+  component_name: string
+  width: number
+  height: number
+}
+
+export interface RelativeComponentEdgeToBoardEdgePosition {
+  line_item_type: "relative_component_edge_to_board_edge_position"
+  component_name: string
+  component_edge:
+    | "pcbLeftEdgeX"
+    | "pcbRightEdgeX"
+    | "pcbTopEdgeY"
+    | "pcbBottomEdgeY"
+  board_edge: "board.minX" | "board.maxX" | "board.minY" | "board.maxY"
+  offset: number
+}
+
 export type AnalysisLineItem =
   | AbsoluteComponentPosition
   | RelativeComponentToComponentPosition
   | RelativeComponentToBoardPosition
   | ComponentPositionDefinedAs
   | ComponentAnchorAlignment
+  | ComponentBounds
+  | ComponentSize
+  | RelativeComponentEdgeToBoardEdgePosition

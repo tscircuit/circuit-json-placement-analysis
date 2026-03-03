@@ -2,7 +2,10 @@ import type {
   AnalysisLineItem,
   CardinalDirection,
   ComponentAnchorAlignment,
+  ComponentBounds,
   ComponentPositionDefinedAs,
+  ComponentSize,
+  RelativeComponentEdgeToBoardEdgePosition,
   RelativeComponentToBoardPosition,
   RelativeComponentToComponentPosition,
 } from "./types"
@@ -31,6 +34,11 @@ const fmtNumber = (value: number): string => {
 }
 
 const fmtMm = (value: number): string => `${fmtNumber(value)}mm`
+
+const withSignedMm = (value: number): string => {
+  const abs = fmtMm(Math.abs(value))
+  return value >= 0 ? `+${abs}` : `-${abs}`
+}
 
 const getComponentToComponentCalcString = (
   componentName: string,
@@ -122,6 +130,12 @@ const lineItemToString = (lineItem: AnalysisLineItem): string => {
     }
     case "component_anchor_alignment":
       return `${lineItem.component_name}.anchor_alignment="${lineItem.anchor_alignment}"`
+    case "component_bounds":
+      return `${lineItem.component_name}.bounds=(minX=${fmtMm(lineItem.min_x)}, maxX=${fmtMm(lineItem.max_x)}, minY=${fmtMm(lineItem.min_y)}, maxY=${fmtMm(lineItem.max_y)}, width=${fmtMm(lineItem.width)}, height=${fmtMm(lineItem.height)})`
+    case "component_size":
+      return `${lineItem.component_name}.size=(width=${fmtMm(lineItem.width)}, height=${fmtMm(lineItem.height)})`
+    case "relative_component_edge_to_board_edge_position":
+      return `${lineItem.component_name}.${lineItem.component_edge}=calc(${lineItem.board_edge}${withSignedMm(lineItem.offset)})`
     default:
       return ""
   }
@@ -178,6 +192,40 @@ export const analyzeComponentPlacement = (
         layer,
       },
     })
+  }
+
+  const componentWidth = toNumber(pcbComponent?.width)
+  const componentHeight = toNumber(pcbComponent?.height)
+
+  let componentBounds: ComponentBounds | null = null
+
+  if (
+    centerX !== null &&
+    centerY !== null &&
+    componentWidth !== null &&
+    componentHeight !== null
+  ) {
+    const halfWidth = componentWidth / 2
+    const halfHeight = componentHeight / 2
+    componentBounds = {
+      line_item_type: "component_bounds",
+      component_name: componentName,
+      width: componentWidth,
+      height: componentHeight,
+      min_x: centerX - halfWidth,
+      max_x: centerX + halfWidth,
+      min_y: centerY - halfHeight,
+      max_y: centerY + halfHeight,
+    }
+    lineItems.push(componentBounds)
+
+    const componentSize: ComponentSize = {
+      line_item_type: "component_size",
+      component_name: componentName,
+      width: componentWidth,
+      height: componentHeight,
+    }
+    lineItems.push(componentSize)
   }
 
   const anchorAlignmentFromSilk =
@@ -238,16 +286,66 @@ export const analyzeComponentPlacement = (
   const boardCenterY = boardCenter ? toNumber(boardCenter.y) : null
 
   if (
-    centerX !== null &&
-    centerY !== null &&
+    componentBounds !== null &&
     boardCenterX !== null &&
-    boardCenterY !== null
+    boardCenterY !== null &&
+    toNumber(pcbBoard?.width) !== null &&
+    toNumber(pcbBoard?.height) !== null
   ) {
+    const boardWidth = toNumber(pcbBoard?.width)!
+    const boardHeight = toNumber(pcbBoard?.height)!
+    const boardMinX = boardCenterX - boardWidth / 2
+    const boardMaxX = boardCenterX + boardWidth / 2
+    const boardMinY = boardCenterY - boardHeight / 2
+    const boardMaxY = boardCenterY + boardHeight / 2
+
+    const leftOffsetFromBoardMinX = componentBounds.min_x - boardMinX
+    const rightOffsetFromBoardMaxX = componentBounds.max_x - boardMaxX
+    const topOffsetFromBoardMinY = componentBounds.min_y - boardMinY
+    const bottomOffsetFromBoardMaxY = componentBounds.max_y - boardMaxY
+
+    const nearestHorizontal: RelativeComponentEdgeToBoardEdgePosition =
+      Math.abs(leftOffsetFromBoardMinX) <= Math.abs(rightOffsetFromBoardMaxX)
+        ? {
+            line_item_type: "relative_component_edge_to_board_edge_position",
+            component_name: componentName,
+            component_edge: "pcbLeftEdgeX",
+            board_edge: "board.minX",
+            offset: leftOffsetFromBoardMinX,
+          }
+        : {
+            line_item_type: "relative_component_edge_to_board_edge_position",
+            component_name: componentName,
+            component_edge: "pcbRightEdgeX",
+            board_edge: "board.maxX",
+            offset: rightOffsetFromBoardMaxX,
+          }
+
+    const nearestVertical: RelativeComponentEdgeToBoardEdgePosition =
+      Math.abs(topOffsetFromBoardMinY) <= Math.abs(bottomOffsetFromBoardMaxY)
+        ? {
+            line_item_type: "relative_component_edge_to_board_edge_position",
+            component_name: componentName,
+            component_edge: "pcbTopEdgeY",
+            board_edge: "board.minY",
+            offset: topOffsetFromBoardMinY,
+          }
+        : {
+            line_item_type: "relative_component_edge_to_board_edge_position",
+            component_name: componentName,
+            component_edge: "pcbBottomEdgeY",
+            board_edge: "board.maxY",
+            offset: bottomOffsetFromBoardMaxY,
+          }
+
+    lineItems.push(nearestHorizontal)
+    lineItems.push(nearestVertical)
+
     const boardRelation = getDirectionAndDistance(
       boardCenterX,
       boardCenterY,
-      centerX,
-      centerY,
+      componentBounds.min_x + componentBounds.width / 2,
+      componentBounds.min_y + componentBounds.height / 2,
     )
     const boardLineItem: RelativeComponentToBoardPosition = {
       line_item_type: "relative_component_to_board_position",
