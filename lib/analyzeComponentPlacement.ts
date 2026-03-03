@@ -3,6 +3,7 @@ import type {
   CardinalDirection,
   ComponentAnchorAlignment,
   ComponentBounds,
+  ComponentOrientation,
   ComponentPositionDefinedAs,
   ComponentSize,
   RelativeComponentEdgeToBoardEdgePosition,
@@ -38,6 +39,16 @@ const fmtMm = (value: number): string => `${fmtNumber(value)}mm`
 const withSignedMm = (value: number): string => {
   const abs = fmtMm(Math.abs(value))
   return value >= 0 ? `+${abs}` : `-${abs}`
+}
+
+const isOffBoardEdgeOffset = (
+  boardEdge: "board.minX" | "board.maxX" | "board.minY" | "board.maxY",
+  offset: number,
+): boolean => {
+  if (boardEdge === "board.minX" || boardEdge === "board.minY") {
+    return offset < 0
+  }
+  return offset > 0
 }
 
 const getComponentToComponentCalcString = (
@@ -131,11 +142,13 @@ const lineItemToString = (lineItem: AnalysisLineItem): string => {
     case "component_anchor_alignment":
       return `${lineItem.component_name}.anchor_alignment="${lineItem.anchor_alignment}"`
     case "component_bounds":
-      return `${lineItem.component_name}.bounds=(minX=${fmtMm(lineItem.min_x)}, maxX=${fmtMm(lineItem.max_x)}, minY=${fmtMm(lineItem.min_y)}, maxY=${fmtMm(lineItem.max_y)}, width=${fmtMm(lineItem.width)}, height=${fmtMm(lineItem.height)})`
+      return `${lineItem.component_name}.bounds=(minX=${fmtMm(lineItem.min_x)}, maxX=${fmtMm(lineItem.max_x)}, minY=${fmtMm(lineItem.min_y)}, maxY=${fmtMm(lineItem.max_y)})`
     case "component_size":
       return `${lineItem.component_name}.size=(width=${fmtMm(lineItem.width)}, height=${fmtMm(lineItem.height)})`
+    case "component_orientation":
+      return `${lineItem.component_name}.orientation=${lineItem.orientation}`
     case "relative_component_edge_to_board_edge_position":
-      return `${lineItem.component_name}.${lineItem.component_edge}=calc(${lineItem.board_edge}${withSignedMm(lineItem.offset)})`
+      return `${lineItem.component_name}.${lineItem.component_edge}=calc(${lineItem.board_edge}${withSignedMm(lineItem.offset)})${isOffBoardEdgeOffset(lineItem.board_edge, lineItem.offset) ? " [offboard]" : ""}`
     default:
       return ""
   }
@@ -226,6 +239,16 @@ export const analyzeComponentPlacement = (
       height: componentHeight,
     }
     lineItems.push(componentSize)
+
+    if (sourceComponent.ftype === "simple_pin_header") {
+      const componentOrientation: ComponentOrientation = {
+        line_item_type: "component_orientation",
+        component_name: componentName,
+        orientation:
+          componentWidth >= componentHeight ? "horizontal" : "vertical",
+      }
+      lineItems.push(componentOrientation)
+    }
   }
 
   const anchorAlignmentFromSilk =

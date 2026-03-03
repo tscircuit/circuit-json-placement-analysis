@@ -68,6 +68,12 @@ export interface ComponentSize {
   height: number
 }
 
+export interface ComponentOrientation {
+  line_item_type: "component_orientation"
+  component_name: string
+  orientation: "horizontal" | "vertical"
+}
+
 export interface RelativeComponentEdgeToBoardEdgePosition {
   line_item_type: "relative_component_edge_to_board_edge_position"
   component_name: string
@@ -88,4 +94,5 @@ export type AnalysisLineItem =
   | ComponentAnchorAlignment
   | ComponentBounds
   | ComponentSize
+  | ComponentOrientation
   | RelativeComponentEdgeToBoardEdgePosition
