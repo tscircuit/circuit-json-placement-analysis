@@ -94,6 +94,14 @@ export interface ComponentPadClearance {
   nearest_pad_name: string
 }
 
+export interface DirectPinToPinDistance {
+  line_item_type: "direct_pin_to_pin_distance"
+  component_name: string
+  from_pin_name: string
+  to_pin_name: string
+  distance: number
+}
+
 export type AnalysisLineItem =
   | AbsoluteComponentPosition
   | RelativeComponentToComponentPosition
@@ -105,3 +113,4 @@ export type AnalysisLineItem =
   | ComponentOrientation
   | RelativeComponentEdgeToBoardEdgePosition
   | ComponentPadClearance
+  | DirectPinToPinDistance
