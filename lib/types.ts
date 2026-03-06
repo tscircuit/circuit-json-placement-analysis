@@ -86,6 +86,14 @@ export interface RelativeComponentEdgeToBoardEdgePosition {
   offset: number
 }
 
+export interface ComponentPadClearance {
+  line_item_type: "component_pad_clearance"
+  component_name: string
+  clearance: number
+  nearest_component_name: string
+  nearest_pad_name: string
+}
+
 export type AnalysisLineItem =
   | AbsoluteComponentPosition
   | RelativeComponentToComponentPosition
@@ -96,3 +104,4 @@ export type AnalysisLineItem =
   | ComponentSize
   | ComponentOrientation
   | RelativeComponentEdgeToBoardEdgePosition
+  | ComponentPadClearance

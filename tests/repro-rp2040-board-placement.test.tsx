@@ -168,6 +168,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     U1.pcbLeftEdgeX=calc(board.minX+25.1mm)
     U1.pcbBottomEdgeY=calc(board.maxY-7.1mm)
     U1.centerY=calc(board.centerY-2mm)
+    U1.padClearance=4.78mm [nearest=C3.pin1]
     U1.pcbTopEdgeY=calc(C3.minY-10mm)
     USB1.center=(-24mm, 0mm) on top
     USB1.bounds=(minX=-25.99mm, maxX=-22.01mm, minY=-2.07mm, maxY=2.07mm)
@@ -177,6 +178,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     USB1.pcbLeftEdgeX=calc(board.minX+4.01mm)
     USB1.pcbTopEdgeY=calc(board.minY+11.93mm)
     USB1.centerX=calc(board.centerX-24mm)
+    USB1.padClearance=12.634mm [nearest=C1.pin1]
     USB1.pcbRightEdgeX=calc(C1.minX-11mm)
     U2.center=(-10mm, -8mm) on top
     U2.bounds=(minX=-11.8mm, maxX=-8.2mm, minY=-9.3mm, maxY=-6.7mm)
@@ -186,6 +188,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     U2.pcbLeftEdgeX=calc(board.minX+18.2mm)
     U2.pcbTopEdgeY=calc(board.minY+4.7mm)
     U2.centerX=calc(board.centerX-10mm)
+    U2.padClearance=0.566mm [nearest=C1.pin2]
     U2.pcbLeftEdgeX=calc(C1.maxX+3mm)
     D1.center=(14mm, -8mm) on top
     D1.bounds=(minX=12.775mm, maxX=15.225mm, minY=-8.475mm, maxY=-7.525mm)
@@ -195,6 +198,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     D1.pcbRightEdgeX=calc(board.maxX-14.775mm)
     D1.pcbTopEdgeY=calc(board.minY+5.525mm)
     D1.centerX=calc(board.centerX+14mm)
+    D1.padClearance=1.995mm [nearest=R1.pin2]
     D1.pcbLeftEdgeX=calc(R1.maxX+4mm)
     R1.center=(10mm, -8mm) on top
     R1.bounds=(minX=9.22mm, maxX=10.78mm, minY=-8.32mm, maxY=-7.68mm)
@@ -204,6 +208,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     R1.pcbRightEdgeX=calc(board.maxX-19.22mm)
     R1.pcbTopEdgeY=calc(board.minY+5.68mm)
     R1.centerX=calc(board.centerX+10mm)
+    R1.padClearance=1.995mm [nearest=D1.pin1]
     R1.pcbRightEdgeX=calc(D1.minX-4mm)
     C1.center=(-13mm, -10mm) on top
     C1.bounds=(minX=-13.78mm, maxX=-12.22mm, minY=-10.32mm, maxY=-9.68mm)
@@ -213,6 +218,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     C1.pcbLeftEdgeX=calc(board.minX+16.22mm)
     C1.pcbTopEdgeY=calc(board.minY+3.68mm)
     C1.centerX=calc(board.centerX-13mm)
+    C1.padClearance=0.566mm [nearest=U2.VOUT]
     C1.pcbRightEdgeX=calc(U2.minX-3mm)
     C2.center=(-7mm, -10mm) on top
     C2.bounds=(minX=-7.78mm, maxX=-6.22mm, minY=-10.32mm, maxY=-9.68mm)
@@ -222,6 +228,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     C2.pcbLeftEdgeX=calc(board.minX+22.22mm)
     C2.pcbTopEdgeY=calc(board.minY+3.68mm)
     C2.centerY=calc(board.centerY+10mm)
+    C2.padClearance=0.566mm [nearest=U2.pin4]
     C2.pcbLeftEdgeX=calc(U2.maxX+3mm)
     C3.center=(4mm, -8mm) on top
     C3.bounds=(minX=3.22mm, maxX=4.78mm, minY=-8.32mm, maxY=-7.68mm)
@@ -231,6 +238,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     C3.pcbRightEdgeX=calc(board.maxX-25.22mm)
     C3.pcbTopEdgeY=calc(board.minY+5.68mm)
     C3.centerY=calc(board.centerY+8mm)
+    C3.padClearance=4.44mm [nearest=R1.pin1]
     C3.pcbRightEdgeX=calc(R1.minX-6mm)
     J1.center=(24mm, 0mm) on top
     J1.bounds=(minX=23.25mm, maxX=24.75mm, minY=-12.18mm, maxY=12.18mm)
@@ -241,6 +249,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     J1.pcbRightEdgeX=calc(board.maxX-5.25mm)
     J1.pcbTopEdgeY=calc(board.minY+1.82mm)
     J1.centerX=calc(board.centerX+24mm)
+    J1.padClearance=8.275mm [nearest=D1.pin2]
     J1.pcbLeftEdgeX=calc(D1.maxX+10mm)"
   `)
 })
