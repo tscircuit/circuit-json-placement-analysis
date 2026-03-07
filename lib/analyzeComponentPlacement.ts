@@ -5,6 +5,7 @@ import type {
   ComponentBounds,
   ComponentOrientation,
   ComponentPadClearance,
+  DirectPinToPinDistance,
   ComponentPositionDefinedAs,
   ComponentSize,
   RelativeComponentEdgeToBoardEdgePosition,
@@ -193,6 +194,13 @@ const getDirectionAndDistance = (
   }
 }
 
+const getPinCenter = (pad: CircuitElement): { x: number; y: number } | null => {
+  const x = toNumber(pad.x)
+  const y = toNumber(pad.y)
+  if (x === null || y === null) return null
+  return { x, y }
+}
+
 const lineItemToString = (lineItem: AnalysisLineItem): string => {
   switch (lineItem.line_item_type) {
     case "absolute_component_position":
@@ -232,6 +240,8 @@ const lineItemToString = (lineItem: AnalysisLineItem): string => {
       return `${lineItem.component_name}.${lineItem.component_edge}=calc(${lineItem.board_edge}${withSignedMm(lineItem.offset)})${isOffBoardEdgeOffset(lineItem.board_edge, lineItem.offset) ? " [offboard]" : ""}`
     case "component_pad_clearance":
       return `${lineItem.component_name}.padClearance=${fmtMm(lineItem.clearance)} [nearest=${lineItem.nearest_pad_name}]`
+    case "direct_pin_to_pin_distance":
+      return `${lineItem.from_pin_name} -> ${lineItem.to_pin_name} distance: ${fmtMm(lineItem.distance)}`
     default:
       return ""
   }
@@ -485,6 +495,151 @@ export const analyzeComponentPlacement = (
       }
     }
   }
+
+  const sourcePortById = new Map<string, CircuitElement>()
+  for (const el of circuitJson) {
+    if (el.type === "source_port" && typeof el.source_port_id === "string") {
+      sourcePortById.set(el.source_port_id, el)
+    }
+  }
+
+  const sourcePortDisplayNameById = new Map<string, string>()
+  for (const el of circuitJson) {
+    if (el.type === "source_port" && typeof el.source_port_id === "string") {
+      if (
+        typeof el.source_component_id === "string" &&
+        typeof el.name === "string"
+      ) {
+        const sourceComp = circuitJson.find(
+          (candidate) =>
+            candidate.type === "source_component" &&
+            candidate.source_component_id === el.source_component_id &&
+            typeof candidate.name === "string",
+        )
+        if (sourceComp && typeof sourceComp.name === "string") {
+          sourcePortDisplayNameById.set(
+            el.source_port_id,
+            `${sourceComp.name}.${el.name}`,
+          )
+          continue
+        }
+      }
+      if (typeof el.name === "string") {
+        sourcePortDisplayNameById.set(el.source_port_id, el.name)
+      }
+    }
+  }
+
+  const padBySourcePortId = new Map<
+    string,
+    { pad: CircuitElement; padName: string; center: { x: number; y: number } }
+  >()
+
+  if (typeof pcbComponent?.pcb_component_id === "string") {
+    for (const el of circuitJson) {
+      if (
+        (el.type === "pcb_smtpad" || el.type === "pcb_plated_hole") &&
+        typeof el.pcb_component_id === "string" &&
+        typeof el.pcb_port_id === "string"
+      ) {
+        const pcbPort = circuitJson.find(
+          (candidate) =>
+            candidate.type === "pcb_port" &&
+            candidate.pcb_port_id === el.pcb_port_id &&
+            typeof candidate.source_port_id === "string",
+        )
+        if (!pcbPort || typeof pcbPort.source_port_id !== "string") continue
+        const center = getPinCenter(el)
+        if (!center) continue
+
+        const sourcePort = sourcePortById.get(pcbPort.source_port_id)
+        const sourcePortComponentId =
+          typeof sourcePort?.source_component_id === "string"
+            ? sourcePort.source_component_id
+            : null
+        if (sourcePortComponentId !== sourceComponentId) continue
+
+        padBySourcePortId.set(pcbPort.source_port_id, {
+          pad: el,
+          padName: getPadDisplayName(
+            el,
+            componentName,
+            sourcePortNameByPcbPortId,
+          ),
+          center,
+        })
+      }
+    }
+  }
+
+  const directPinDistanceLineItems: DirectPinToPinDistance[] = []
+
+  for (const fromPortId of padBySourcePortId.keys()) {
+    const directPinToPinTraces = circuitJson.filter(
+      (el) =>
+        el.type === "source_trace" &&
+        Array.isArray(el.connected_source_port_ids) &&
+        el.connected_source_port_ids.length === 2 &&
+        el.connected_source_port_ids.includes(fromPortId) &&
+        Array.isArray(el.connected_source_net_ids) &&
+        el.connected_source_net_ids.length === 0,
+    )
+
+    if (directPinToPinTraces.length !== 1) continue
+
+    const trace = directPinToPinTraces[0]
+    if (!trace) continue
+    const connectedPortIds = Array.isArray(trace.connected_source_port_ids)
+      ? trace.connected_source_port_ids.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : []
+
+    const otherPortId = connectedPortIds.find((portId) => portId !== fromPortId)
+    if (!otherPortId) continue
+
+    const fromPin = padBySourcePortId.get(fromPortId)
+    if (!fromPin) continue
+
+    const otherPcbPort = circuitJson.find(
+      (candidate) =>
+        candidate.type === "pcb_port" &&
+        candidate.source_port_id === otherPortId &&
+        typeof candidate.pcb_port_id === "string",
+    )
+
+    if (!otherPcbPort || typeof otherPcbPort.pcb_port_id !== "string") continue
+
+    const otherPad = circuitJson.find(
+      (candidate) =>
+        (candidate.type === "pcb_smtpad" ||
+          candidate.type === "pcb_plated_hole") &&
+        candidate.pcb_port_id === otherPcbPort.pcb_port_id,
+    )
+
+    if (!otherPad) continue
+
+    const otherCenter = getPinCenter(otherPad)
+    if (!otherCenter) continue
+
+    const fromPortDisplayName = sourcePortDisplayNameById.get(fromPortId)
+    const toPortDisplayName = sourcePortDisplayNameById.get(otherPortId)
+
+    if (!fromPortDisplayName || !toPortDisplayName) continue
+
+    directPinDistanceLineItems.push({
+      line_item_type: "direct_pin_to_pin_distance",
+      component_name: componentName,
+      from_pin_name: fromPortDisplayName,
+      to_pin_name: toPortDisplayName,
+      distance: Math.hypot(
+        otherCenter.x - fromPin.center.x,
+        otherCenter.y - fromPin.center.y,
+      ),
+    })
+  }
+
+  lineItems.push(...directPinDistanceLineItems)
 
   const componentPadBounds =
     typeof pcbComponent?.pcb_component_id === "string"

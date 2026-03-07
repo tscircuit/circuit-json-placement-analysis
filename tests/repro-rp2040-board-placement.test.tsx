@@ -168,6 +168,17 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     U1.pcbLeftEdgeX=calc(board.minX+25.1mm)
     U1.pcbBottomEdgeY=calc(board.maxY-7.1mm)
     U1.centerY=calc(board.centerY-2mm)
+    U1.GPIO0 -> J1.GPIO0 distance: 30.928mm
+    U1.GPIO1 -> J1.GPIO1 distance: 29.87mm
+    U1.GPIO2 -> J1.GPIO2 distance: 28.993mm
+    U1.GPIO3 -> J1.GPIO3 distance: 28.57mm
+    U1.GPIO4 -> J1.GPIO4 distance: 28.577mm
+    U1.GPIO5 -> J1.GPIO5 distance: 29.008mm
+    U1.GPIO6 -> J1.GPIO6 distance: 29.745mm
+    U1.GPIO7 -> J1.GPIO7 distance: 30.766mm
+    U1.GPIO25 -> R1.pin1 distance: 10.091mm
+    U1.USB_DM -> USB1.DM distance: 28.451mm
+    U1.USB_DP -> USB1.DP distance: 28.77mm
     U1.padClearance=4.78mm [nearest=C3.pin1]
     U1.pcbTopEdgeY=calc(C3.minY-10mm)
     USB1.center=(-24mm, 0mm) on top
@@ -178,6 +189,9 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     USB1.pcbLeftEdgeX=calc(board.minX+4.01mm)
     USB1.pcbTopEdgeY=calc(board.minY+11.93mm)
     USB1.centerX=calc(board.centerX-24mm)
+    USB1.VBUS -> U2.VIN distance: 13.999mm
+    USB1.DP -> U1.USB_DP distance: 28.77mm
+    USB1.DM -> U1.USB_DM distance: 28.451mm
     USB1.padClearance=12.634mm [nearest=C1.pin1]
     USB1.pcbRightEdgeX=calc(C1.minX-11mm)
     U2.center=(-10mm, -8mm) on top
@@ -188,6 +202,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     U2.pcbLeftEdgeX=calc(board.minX+18.2mm)
     U2.pcbTopEdgeY=calc(board.minY+4.7mm)
     U2.centerX=calc(board.centerX-10mm)
+    U2.VOUT -> C2.pin1 distance: 3.933mm
     U2.padClearance=0.566mm [nearest=C1.pin2]
     U2.pcbLeftEdgeX=calc(C1.maxX+3mm)
     D1.center=(14mm, -8mm) on top
@@ -198,6 +213,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     D1.pcbRightEdgeX=calc(board.maxX-14.775mm)
     D1.pcbTopEdgeY=calc(board.minY+5.525mm)
     D1.centerX=calc(board.centerX+14mm)
+    D1.pin1 -> R1.pin2 distance: 2.665mm
     D1.padClearance=1.995mm [nearest=R1.pin2]
     D1.pcbLeftEdgeX=calc(R1.maxX+4mm)
     R1.center=(10mm, -8mm) on top
@@ -208,6 +224,8 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     R1.pcbRightEdgeX=calc(board.maxX-19.22mm)
     R1.pcbTopEdgeY=calc(board.minY+5.68mm)
     R1.centerX=calc(board.centerX+10mm)
+    R1.pin1 -> U1.GPIO25 distance: 10.091mm
+    R1.pin2 -> D1.pin1 distance: 2.665mm
     R1.padClearance=1.995mm [nearest=D1.pin1]
     R1.pcbRightEdgeX=calc(D1.minX-4mm)
     C1.center=(-13mm, -10mm) on top
@@ -218,6 +236,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     C1.pcbLeftEdgeX=calc(board.minX+16.22mm)
     C1.pcbTopEdgeY=calc(board.minY+3.68mm)
     C1.centerX=calc(board.centerX-13mm)
+    C1.pin1 -> U2.VIN distance: 3.686mm
     C1.padClearance=0.566mm [nearest=U2.VOUT]
     C1.pcbRightEdgeX=calc(U2.minX-3mm)
     C2.center=(-7mm, -10mm) on top
@@ -228,6 +247,7 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     C2.pcbLeftEdgeX=calc(board.minX+22.22mm)
     C2.pcbTopEdgeY=calc(board.minY+3.68mm)
     C2.centerY=calc(board.centerY+10mm)
+    C2.pin1 -> U2.VOUT distance: 3.933mm
     C2.padClearance=0.566mm [nearest=U2.pin4]
     C2.pcbLeftEdgeX=calc(U2.maxX+3mm)
     C3.center=(4mm, -8mm) on top
@@ -249,6 +269,14 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     J1.pcbRightEdgeX=calc(board.maxX-5.25mm)
     J1.pcbTopEdgeY=calc(board.minY+1.82mm)
     J1.centerX=calc(board.centerX+24mm)
+    J1.GPIO0 -> U1.GPIO0 distance: 30.928mm
+    J1.GPIO1 -> U1.GPIO1 distance: 29.87mm
+    J1.GPIO2 -> U1.GPIO2 distance: 28.993mm
+    J1.GPIO3 -> U1.GPIO3 distance: 28.57mm
+    J1.GPIO4 -> U1.GPIO4 distance: 28.577mm
+    J1.GPIO5 -> U1.GPIO5 distance: 29.008mm
+    J1.GPIO6 -> U1.GPIO6 distance: 29.745mm
+    J1.GPIO7 -> U1.GPIO7 distance: 30.766mm
     J1.padClearance=8.275mm [nearest=D1.pin2]
     J1.pcbLeftEdgeX=calc(D1.maxX+10mm)"
   `)
