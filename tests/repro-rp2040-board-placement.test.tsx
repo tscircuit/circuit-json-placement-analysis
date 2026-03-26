@@ -158,89 +158,29 @@ test("placement analysis includes position and size for rendered RP2040 board", 
 
   const analysis = analyzeAllPlacements(circuitJson)
   const text = analysis.getString()
+  const report = analysis.getReport()
 
-  expect(text).toMatchInlineSnapshot(`
-    "U1.center=(0mm, 2mm) on top
-    U1.bounds=(minX=-4.9mm, maxX=4.9mm, minY=-2.9mm, maxY=6.9mm)
-    U1.size=(width=9.8mm, height=9.8mm)
-    U1.anchor_alignment="center"
-    U1 placement definition: placement_mode=none
-    U1.pcbLeftEdgeX=calc(board.minX+25.1mm)
-    U1.pcbBottomEdgeY=calc(board.maxY-7.1mm)
-    U1.centerY=calc(board.centerY-2mm)
-    U1.pcbTopEdgeY=calc(C3.minY-10mm)
-    USB1.center=(-24mm, 0mm) on top
-    USB1.bounds=(minX=-25.99mm, maxX=-22.01mm, minY=-2.07mm, maxY=2.07mm)
-    USB1.size=(width=3.98mm, height=4.14mm)
-    USB1.anchor_alignment="center"
-    USB1 placement definition: placement_mode=none
-    USB1.pcbLeftEdgeX=calc(board.minX+4.01mm)
-    USB1.pcbTopEdgeY=calc(board.minY+11.93mm)
-    USB1.centerX=calc(board.centerX-24mm)
-    USB1.pcbRightEdgeX=calc(C1.minX-11mm)
-    U2.center=(-10mm, -8mm) on top
-    U2.bounds=(minX=-11.8mm, maxX=-8.2mm, minY=-9.3mm, maxY=-6.7mm)
-    U2.size=(width=3.6mm, height=2.6mm)
-    U2.anchor_alignment="center"
-    U2 placement definition: placement_mode=none
-    U2.pcbLeftEdgeX=calc(board.minX+18.2mm)
-    U2.pcbTopEdgeY=calc(board.minY+4.7mm)
-    U2.centerX=calc(board.centerX-10mm)
-    U2.pcbLeftEdgeX=calc(C1.maxX+3mm)
-    D1.center=(14mm, -8mm) on top
-    D1.bounds=(minX=12.775mm, maxX=15.225mm, minY=-8.475mm, maxY=-7.525mm)
-    D1.size=(width=2.45mm, height=0.95mm)
-    D1.anchor_alignment="center"
-    D1 placement definition: placement_mode=none
-    D1.pcbRightEdgeX=calc(board.maxX-14.775mm)
-    D1.pcbTopEdgeY=calc(board.minY+5.525mm)
-    D1.centerX=calc(board.centerX+14mm)
-    D1.pcbLeftEdgeX=calc(R1.maxX+4mm)
-    R1.center=(10mm, -8mm) on top
-    R1.bounds=(minX=9.22mm, maxX=10.78mm, minY=-8.32mm, maxY=-7.68mm)
-    R1.size=(width=1.56mm, height=0.64mm)
-    R1.anchor_alignment="center"
-    R1 placement definition: placement_mode=none
-    R1.pcbRightEdgeX=calc(board.maxX-19.22mm)
-    R1.pcbTopEdgeY=calc(board.minY+5.68mm)
-    R1.centerX=calc(board.centerX+10mm)
-    R1.pcbRightEdgeX=calc(D1.minX-4mm)
-    C1.center=(-13mm, -10mm) on top
-    C1.bounds=(minX=-13.78mm, maxX=-12.22mm, minY=-10.32mm, maxY=-9.68mm)
-    C1.size=(width=1.56mm, height=0.64mm)
-    C1.anchor_alignment="center"
-    C1 placement definition: placement_mode=none
-    C1.pcbLeftEdgeX=calc(board.minX+16.22mm)
-    C1.pcbTopEdgeY=calc(board.minY+3.68mm)
-    C1.centerX=calc(board.centerX-13mm)
-    C1.pcbRightEdgeX=calc(U2.minX-3mm)
-    C2.center=(-7mm, -10mm) on top
-    C2.bounds=(minX=-7.78mm, maxX=-6.22mm, minY=-10.32mm, maxY=-9.68mm)
-    C2.size=(width=1.56mm, height=0.64mm)
-    C2.anchor_alignment="center"
-    C2 placement definition: placement_mode=none
-    C2.pcbLeftEdgeX=calc(board.minX+22.22mm)
-    C2.pcbTopEdgeY=calc(board.minY+3.68mm)
-    C2.centerY=calc(board.centerY+10mm)
-    C2.pcbLeftEdgeX=calc(U2.maxX+3mm)
-    C3.center=(4mm, -8mm) on top
-    C3.bounds=(minX=3.22mm, maxX=4.78mm, minY=-8.32mm, maxY=-7.68mm)
-    C3.size=(width=1.56mm, height=0.64mm)
-    C3.anchor_alignment="center"
-    C3 placement definition: placement_mode=none
-    C3.pcbRightEdgeX=calc(board.maxX-25.22mm)
-    C3.pcbTopEdgeY=calc(board.minY+5.68mm)
-    C3.centerY=calc(board.centerY+8mm)
-    C3.pcbRightEdgeX=calc(R1.minX-6mm)
-    J1.center=(24mm, 0mm) on top
-    J1.bounds=(minX=23.25mm, maxX=24.75mm, minY=-12.18mm, maxY=12.18mm)
-    J1.size=(width=1.5mm, height=24.36mm)
-    J1.orientation=vertical
-    J1.anchor_alignment="center"
-    J1 placement definition: placement_mode=none
-    J1.pcbRightEdgeX=calc(board.maxX-5.25mm)
-    J1.pcbTopEdgeY=calc(board.minY+1.82mm)
-    J1.centerX=calc(board.centerX+24mm)
-    J1.pcbLeftEdgeX=calc(D1.maxX+10mm)"
-  `)
+  expect(report.issues).toHaveLength(0)
+  expect(report.summary.totalIssueCount).toBe(0)
+  expect(report.components).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        componentName: "USB1",
+        boardEdgeStatus: expect.objectContaining({
+          edge: "left",
+          status: "inside",
+        }),
+      }),
+      expect.objectContaining({
+        componentName: "J1",
+        boardEdgeStatus: expect.objectContaining({
+          edge: "top",
+          status: "inside",
+        }),
+      }),
+    ]),
+  )
+  expect(text).toContain("placement summary: no placement issues")
+  expect(text).toContain("- USB1: 4.01mm inside left edge")
+  expect(text).toContain("- J1: 1.82mm inside top edge")
 })

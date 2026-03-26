@@ -86,6 +86,71 @@ export interface RelativeComponentEdgeToBoardEdgePosition {
   offset: number
 }
 
+export interface ComponentBoardEdgeStatus {
+  component_name: string
+  edge: "left" | "right" | "top" | "bottom"
+  status: "inside" | "outside"
+  distance: number
+}
+
+export type PlacementIssueType =
+  | "off_board"
+  | "pad_overlap"
+  | "courtyard_collision"
+  | "connector_body_intrusion"
+  | "footprint_intrusion"
+
+export interface PlacementIssue {
+  type: PlacementIssueType
+  componentA: string
+  componentB?: string
+  clearance: number
+  severity: number
+  summary: string
+  suggested_move?: string
+}
+
+export interface PlacementCluster {
+  clusterName: string
+  componentNames: string[]
+  severity: number
+}
+
+export interface PlacementComponentStatus {
+  componentName: string
+  placementMode: "none" | "auto" | "props_set"
+  sourcePlacement: {
+    xDefinition?: string
+    yDefinition?: string
+  }
+  resolvedPlacement: {
+    center?: AnchorPosition
+    bounds?: {
+      width: number
+      height: number
+      min_x: number
+      max_x: number
+      min_y: number
+      max_y: number
+    }
+    anchorAlignment: NinePointAnchor
+    orientation?: "horizontal" | "vertical"
+  }
+  boardEdgeStatus?: ComponentBoardEdgeStatus | null
+  issues: PlacementIssue[]
+}
+
+export interface PlacementAnalysisReport {
+  summary: {
+    totalIssueCount: number
+    countsByType: Partial<Record<PlacementIssueType, number>>
+    topIssues: PlacementIssue[]
+    likelyBadClusters: PlacementCluster[]
+  }
+  components: PlacementComponentStatus[]
+  issues: PlacementIssue[]
+}
+
 export type AnalysisLineItem =
   | AbsoluteComponentPosition
   | RelativeComponentToComponentPosition

@@ -25,6 +25,8 @@ const analysis = analyzeAllPlacements(circuitJson)
 
 console.log(analysis.getString())
 console.log(analysis.getLineItems())
+console.log(analysis.getIssues())
+console.log(analysis.getReport())
 ```
 
 An analysis line item is a single statement regarding the placement. There are
@@ -39,3 +41,36 @@ of a component:
   anchor_position: { x: number, y: number, layer: string },
 }
 ```
+
+`analyzeAllPlacements()` now also produces a board-level report intended for
+decision-making:
+
+```ts
+const report = analysis.getReport()
+
+report.summary.countsByType
+// {
+//   pad_overlap: 2,
+//   off_board: 1,
+//   connector_body_intrusion: 1,
+// }
+
+report.issues[0]
+// {
+//   type: "pad_overlap",
+//   componentA: "USB1",
+//   componentB: "C1",
+//   clearance: -0.25,
+//   severity: 330,
+//   summary: "USB1 and C1 pad overlap by 0.25mm",
+//   suggested_move: "move C1 0.25mm down",
+// }
+```
+
+The summary string returned by `getString()` now starts with:
+
+- A short failure summary
+- The top worst issues sorted by severity
+- Likely bad cluster groupings
+- Per-part board-edge status using rendered bounds
+- Focused details for flagged components
