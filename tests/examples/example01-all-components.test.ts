@@ -7,6 +7,7 @@ test("runs placement analysis for all components in example01", () => {
   const analysis = analyzeAllPlacements(circuitJson)
   const lineItems = analysis.getLineItems()
   const text = analysis.getString()
+  const report = analysis.getReport()
 
   const sourceComponentNames = [
     ...new Set(
@@ -24,6 +25,14 @@ test("runs placement analysis for all components in example01", () => {
 
   expect(lineItems.length).toBeGreaterThan(0)
   expect(analyzedComponentNames.sort()).toEqual(sourceComponentNames.sort())
-  expect(text).toContain("U1.center=(0mm, 0mm) on top")
-  expect(text).toContain("J2.center=(22mm, 0mm) on top")
+  expect(report.summary.countsByType.off_board).toBe(1)
+  expect(report.issues).toEqual([
+    expect.objectContaining({
+      type: "off_board",
+      componentA: "J2",
+      suggested_move: "move J2 4.18mm left to clear right edge",
+    }),
+  ])
+  expect(text).toContain("placement summary: 1 off-board")
+  expect(text).toContain("- J2: 4.18mm outside right edge")
 })

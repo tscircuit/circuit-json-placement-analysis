@@ -1,0 +1,1114 @@
+import type { LayerRef, NinePointAnchor } from "circuit-json"
+import type {
+  ComponentBoardEdgeStatus,
+  PlacementAnalysisReport,
+  PlacementCluster,
+  PlacementComponentStatus,
+  PlacementIssue,
+  PlacementIssueType,
+} from "./types"
+
+type CircuitElement = {
+  type?: string
+  [key: string]: unknown
+}
+
+type Bounds = {
+  min_x: number
+  max_x: number
+  min_y: number
+  max_y: number
+  width: number
+  height: number
+}
+
+type PhysicalShape = {
+  bounds: Bounds
+  layers: LayerRef[]
+}
+
+type ComponentContext = {
+  name: string
+  sourceComponent: CircuitElement
+  sourceComponentId: string
+  pcbComponent: CircuitElement | null
+  pcbComponentId: string | null
+  centerX: number | null
+  centerY: number | null
+  layer: LayerRef | null
+  width: number | null
+  height: number | null
+  bounds: Bounds | null
+  anchorAlignment: NinePointAnchor
+  orientation?: "horizontal" | "vertical"
+  placementMode: "none" | "auto" | "props_set"
+  xDefinition?: string
+  yDefinition?: string
+  pads: PhysicalShape[]
+  courtyards: Bounds[]
+  isConnectorLike: boolean
+  order: number
+}
+
+const TOP_ISSUE_LIMIT = 5
+const CENTER_ANCHOR = "center"
+
+const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
+  "pad_overlap",
+  "off_board",
+  "courtyard_collision",
+  "connector_body_intrusion",
+  "footprint_intrusion",
+]
+
+const toNumber = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) ? value : null
+
+const fmtNumber = (value: number): string => {
+  if (Number.isInteger(value)) return String(value)
+  return value
+    .toFixed(3)
+    .replace(/\.0+$/, "")
+    .replace(/(\.\d*?)0+$/, "$1")
+}
+
+const fmtMm = (value: number): string => `${fmtNumber(value)}mm`
+
+const getBoundsFromCenterAndSize = (
+  centerX: number,
+  centerY: number,
+  width: number,
+  height: number,
+): Bounds => ({
+  min_x: centerX - width / 2,
+  max_x: centerX + width / 2,
+  min_y: centerY - height / 2,
+  max_y: centerY + height / 2,
+  width,
+  height,
+})
+
+const getBoundsFromPoints = (
+  points: Array<{ x?: unknown; y?: unknown }>,
+): Bounds | null => {
+  const xs: number[] = []
+  const ys: number[] = []
+
+  for (const point of points) {
+    const x = toNumber(point.x)
+    const y = toNumber(point.y)
+    if (x === null || y === null) continue
+    xs.push(x)
+    ys.push(y)
+  }
+
+  if (xs.length === 0 || ys.length === 0) return null
+
+  const min_x = Math.min(...xs)
+  const max_x = Math.max(...xs)
+  const min_y = Math.min(...ys)
+  const max_y = Math.max(...ys)
+
+  return {
+    min_x,
+    max_x,
+    min_y,
+    max_y,
+    width: max_x - min_x,
+    height: max_y - min_y,
+  }
+}
+
+const getOverlap = (
+  a: Bounds,
+  b: Bounds,
+): { overlapX: number; overlapY: number; clearance: number } | null => {
+  const overlapX = Math.min(a.max_x, b.max_x) - Math.max(a.min_x, b.min_x)
+  const overlapY = Math.min(a.max_y, b.max_y) - Math.max(a.min_y, b.min_y)
+
+  if (overlapX <= 0 || overlapY <= 0) return null
+
+  return {
+    overlapX,
+    overlapY,
+    clearance: -Math.min(overlapX, overlapY),
+  }
+}
+
+const layersIntersect = (a: LayerRef[], b: LayerRef[]): boolean => {
+  const bSet = new Set(b)
+  return a.some((layer) => bSet.has(layer))
+}
+
+const getArea = (bounds: Bounds | null): number => {
+  if (!bounds) return Number.POSITIVE_INFINITY
+  return bounds.width * bounds.height
+}
+
+const stripNumericSuffix = (name: string): string => {
+  const stripped = name.replace(/\d+$/, "")
+  return stripped.length >= 2 ? stripped : name
+}
+
+const getSummaryLabel = (
+  type: PlacementIssueType,
+  count: number,
+): string | null => {
+  if (count === 0) return null
+
+  switch (type) {
+    case "pad_overlap":
+      return `${count} pad overlap${count === 1 ? "" : "s"}`
+    case "off_board":
+      return `${count} off-board`
+    case "courtyard_collision":
+      return `${count} courtyard collision${count === 1 ? "" : "s"}`
+    case "connector_body_intrusion":
+      return `${count} connector-body intrusion${count === 1 ? "" : "s"}`
+    case "footprint_intrusion":
+      return `${count} footprint intrusion${count === 1 ? "" : "s"}`
+  }
+}
+
+const getMoveDirectionForEdge = (
+  edge: ComponentBoardEdgeStatus["edge"],
+): "left" | "right" | "up" | "down" => {
+  switch (edge) {
+    case "left":
+      return "right"
+    case "right":
+      return "left"
+    case "top":
+      return "down"
+    case "bottom":
+      return "up"
+  }
+}
+
+const getBoardEdgeStatus = (
+  bounds: Bounds | null,
+  boardBounds: Bounds | null,
+  componentName: string,
+): ComponentBoardEdgeStatus | null => {
+  if (!bounds || !boardBounds) return null
+
+  const clearances = [
+    { edge: "left" as const, clearance: bounds.min_x - boardBounds.min_x },
+    { edge: "right" as const, clearance: boardBounds.max_x - bounds.max_x },
+    { edge: "top" as const, clearance: bounds.min_y - boardBounds.min_y },
+    {
+      edge: "bottom" as const,
+      clearance: boardBounds.max_y - bounds.max_y,
+    },
+  ]
+
+  const outside = clearances
+    .filter((entry) => entry.clearance < 0)
+    .sort((a, b) => a.clearance - b.clearance)
+
+  const selected =
+    outside[0] ??
+    [...clearances].sort((a, b) => a.clearance - b.clearance)[0] ??
+    null
+
+  if (!selected) return null
+
+  return {
+    component_name: componentName,
+    edge: selected.edge,
+    status: selected.clearance < 0 ? "outside" : "inside",
+    distance: Math.abs(selected.clearance),
+  }
+}
+
+const formatBoardEdgeStatus = (status: ComponentBoardEdgeStatus): string =>
+  `${fmtMm(status.distance)} ${status.status} ${status.edge} edge`
+
+const chooseMover = (
+  a: ComponentContext,
+  b: ComponentContext,
+  preferredMover?: string,
+): { mover: ComponentContext; anchor: ComponentContext } => {
+  if (preferredMover === a.name) return { mover: a, anchor: b }
+  if (preferredMover === b.name) return { mover: b, anchor: a }
+
+  if (a.isConnectorLike && !b.isConnectorLike) return { mover: b, anchor: a }
+  if (b.isConnectorLike && !a.isConnectorLike) return { mover: a, anchor: b }
+
+  const areaA = getArea(a.bounds)
+  const areaB = getArea(b.bounds)
+
+  if (areaA < areaB) return { mover: a, anchor: b }
+  if (areaB < areaA) return { mover: b, anchor: a }
+
+  return a.order > b.order ? { mover: a, anchor: b } : { mover: b, anchor: a }
+}
+
+const getMoveDirectionBetweenComponents = (
+  mover: ComponentContext,
+  anchor: ComponentContext,
+  axis: "x" | "y",
+): "left" | "right" | "up" | "down" => {
+  if (axis === "x") {
+    if ((mover.centerX ?? 0) >= (anchor.centerX ?? 0)) return "right"
+    return "left"
+  }
+
+  if ((mover.centerY ?? 0) >= (anchor.centerY ?? 0)) return "down"
+  return "up"
+}
+
+const getSeparationSuggestion = (
+  a: ComponentContext,
+  b: ComponentContext,
+  overlapX: number,
+  overlapY: number,
+  preferredMover?: string,
+): string | undefined => {
+  if (
+    a.centerX === null ||
+    a.centerY === null ||
+    b.centerX === null ||
+    b.centerY === null
+  ) {
+    return undefined
+  }
+
+  const { mover, anchor } = chooseMover(a, b, preferredMover)
+  const axis = overlapX <= overlapY ? "x" : "y"
+  const distance = axis === "x" ? overlapX : overlapY
+  const direction = getMoveDirectionBetweenComponents(mover, anchor, axis)
+
+  return `move ${mover.name} ${fmtMm(distance)} ${direction}`
+}
+
+const getCountainmentBonus = (
+  a: ComponentContext,
+  b: ComponentContext,
+): number => {
+  if (!a.bounds || !b.bounds || a.centerX === null || a.centerY === null)
+    return 0
+
+  const centerInsideB =
+    a.centerX >= b.bounds.min_x &&
+    a.centerX <= b.bounds.max_x &&
+    a.centerY >= b.bounds.min_y &&
+    a.centerY <= b.bounds.max_y
+
+  return centerInsideB ? 25 : 0
+}
+
+const createIssue = (issue: PlacementIssue): PlacementIssue => issue
+
+const getComponentNameFromSourceId = (
+  sourceComponentsById: Map<string, ComponentContext>,
+  sourceComponentId: unknown,
+): ComponentContext | null => {
+  if (typeof sourceComponentId !== "string") return null
+  return sourceComponentsById.get(sourceComponentId) ?? null
+}
+
+const getComponentByPcbId = (
+  componentsByPcbId: Map<string, ComponentContext>,
+  pcbComponentId: unknown,
+): ComponentContext | null => {
+  if (typeof pcbComponentId !== "string") return null
+  return componentsByPcbId.get(pcbComponentId) ?? null
+}
+
+const getLayers = (value: unknown): LayerRef[] => {
+  if (!Array.isArray(value)) return []
+  return value.filter((layer): layer is LayerRef => typeof layer === "string")
+}
+
+const buildComponentContexts = (
+  circuitJson: CircuitElement[],
+): {
+  components: ComponentContext[]
+  componentByName: Map<string, ComponentContext>
+  boardBounds: Bounds | null
+} => {
+  const components: ComponentContext[] = []
+  const sourceComponentsById = new Map<string, ComponentContext>()
+  const componentByName = new Map<string, ComponentContext>()
+  const componentsByPcbId = new Map<string, ComponentContext>()
+
+  let order = 0
+
+  for (const el of circuitJson) {
+    if (
+      el.type !== "source_component" ||
+      typeof el.source_component_id !== "string" ||
+      typeof el.name !== "string"
+    ) {
+      continue
+    }
+
+    if (componentByName.has(el.name)) continue
+
+    const context: ComponentContext = {
+      name: el.name,
+      sourceComponent: el,
+      sourceComponentId: el.source_component_id,
+      pcbComponent: null,
+      pcbComponentId: null,
+      centerX: null,
+      centerY: null,
+      layer: null,
+      width: null,
+      height: null,
+      bounds: null,
+      anchorAlignment: CENTER_ANCHOR,
+      placementMode: "none",
+      pads: [],
+      courtyards: [],
+      isConnectorLike: false,
+      order: order++,
+    }
+
+    const xDefinitionRaw = el.pcbX ?? el.pcb_x ?? el.x
+    const yDefinitionRaw = el.pcbY ?? el.pcb_y ?? el.y
+
+    context.xDefinition =
+      xDefinitionRaw === undefined ? undefined : String(xDefinitionRaw)
+    context.yDefinition =
+      yDefinitionRaw === undefined ? undefined : String(yDefinitionRaw)
+
+    if (
+      context.xDefinition !== undefined ||
+      context.yDefinition !== undefined
+    ) {
+      context.placementMode = "props_set"
+    } else if (el.placement_mode === "auto") {
+      context.placementMode = "auto"
+    }
+
+    components.push(context)
+    sourceComponentsById.set(context.sourceComponentId, context)
+    componentByName.set(context.name, context)
+  }
+
+  for (const el of circuitJson) {
+    if (
+      el.type !== "pcb_component" ||
+      typeof el.source_component_id !== "string" ||
+      typeof el.pcb_component_id !== "string"
+    ) {
+      continue
+    }
+
+    const context = sourceComponentsById.get(el.source_component_id)
+    if (!context) continue
+
+    context.pcbComponent = el
+    context.pcbComponentId = el.pcb_component_id
+    componentsByPcbId.set(el.pcb_component_id, context)
+
+    const center =
+      typeof el.center === "object" && el.center
+        ? (el.center as { x?: unknown; y?: unknown })
+        : null
+
+    context.centerX = center ? toNumber(center.x) : null
+    context.centerY = center ? toNumber(center.y) : null
+    context.layer = typeof el.layer === "string" ? (el.layer as LayerRef) : null
+    context.width = toNumber(el.width)
+    context.height = toNumber(el.height)
+
+    if (
+      context.centerX !== null &&
+      context.centerY !== null &&
+      context.width !== null &&
+      context.height !== null
+    ) {
+      context.bounds = getBoundsFromCenterAndSize(
+        context.centerX,
+        context.centerY,
+        context.width,
+        context.height,
+      )
+    }
+
+    if (context.placementMode === "none" && el.position_mode === "auto") {
+      context.placementMode = "auto"
+    }
+
+    if (
+      context.sourceComponent.ftype === "simple_pin_header" &&
+      context.width !== null &&
+      context.height !== null
+    ) {
+      context.orientation =
+        context.width >= context.height ? "horizontal" : "vertical"
+    }
+  }
+
+  for (const el of circuitJson) {
+    if (
+      el.type === "pcb_silkscreen_text" &&
+      typeof el.anchor_alignment === "string"
+    ) {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+      context.anchorAlignment = el.anchor_alignment as NinePointAnchor
+      continue
+    }
+
+    if (el.type === "pcb_smtpad") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+
+      const x = toNumber(el.x)
+      const y = toNumber(el.y)
+      const width = toNumber(el.width)
+      const height = toNumber(el.height)
+      const layer = typeof el.layer === "string" ? (el.layer as LayerRef) : null
+
+      if (
+        x === null ||
+        y === null ||
+        width === null ||
+        height === null ||
+        !layer
+      )
+        continue
+
+      context.pads.push({
+        bounds: getBoundsFromCenterAndSize(x, y, width, height),
+        layers: [layer],
+      })
+      continue
+    }
+
+    if (el.type === "pcb_plated_hole") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+
+      const x = toNumber(el.x)
+      const y = toNumber(el.y)
+      const layers = getLayers(el.layers)
+      if (x === null || y === null || layers.length === 0) continue
+
+      let width: number | null = null
+      let height: number | null = null
+
+      if (el.shape === "circle") {
+        const diameter =
+          toNumber(el.outer_diameter) ?? toNumber(el.hole_diameter)
+        width = diameter
+        height = diameter
+      } else if (
+        el.shape === "circular_hole_with_rect_pad" ||
+        el.shape === "pill_hole_with_rect_pad" ||
+        el.shape === "rotated_pill_hole_with_rect_pad"
+      ) {
+        width = toNumber(el.rect_pad_width)
+        height = toNumber(el.rect_pad_height)
+      } else if (el.shape === "hole_with_polygon_pad") {
+        const padOutline = Array.isArray(el.pad_outline)
+          ? (el.pad_outline as Array<{ x?: unknown; y?: unknown }>)
+          : []
+        const padBounds = getBoundsFromPoints(
+          padOutline.map((point) => ({
+            x: (toNumber(point.x) ?? 0) + x,
+            y: (toNumber(point.y) ?? 0) + y,
+          })),
+        )
+
+        if (padBounds) {
+          context.pads.push({
+            bounds: padBounds,
+            layers,
+          })
+        }
+        continue
+      }
+
+      if (width === null || height === null) continue
+
+      context.pads.push({
+        bounds: getBoundsFromCenterAndSize(x, y, width, height),
+        layers,
+      })
+      continue
+    }
+
+    if (el.type === "pcb_courtyard_rect") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+
+      const center =
+        typeof el.center === "object" && el.center
+          ? (el.center as { x?: unknown; y?: unknown })
+          : null
+      const centerX = center ? toNumber(center.x) : null
+      const centerY = center ? toNumber(center.y) : null
+      const width = toNumber(el.width)
+      const height = toNumber(el.height)
+
+      if (
+        centerX === null ||
+        centerY === null ||
+        width === null ||
+        height === null
+      )
+        continue
+
+      context.courtyards.push(
+        getBoundsFromCenterAndSize(centerX, centerY, width, height),
+      )
+      continue
+    }
+
+    if (el.type === "pcb_courtyard_outline") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+      const outline = Array.isArray(el.outline)
+        ? (el.outline as Array<{ x?: unknown; y?: unknown }>)
+        : []
+      const bounds = getBoundsFromPoints(outline)
+      if (bounds) context.courtyards.push(bounds)
+      continue
+    }
+
+    if (el.type === "pcb_courtyard_polygon") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+      const points = Array.isArray(el.points)
+        ? (el.points as Array<{ x?: unknown; y?: unknown }>)
+        : []
+      const bounds = getBoundsFromPoints(points)
+      if (bounds) context.courtyards.push(bounds)
+    }
+  }
+
+  for (const context of components) {
+    const nameUpper = context.name.toUpperCase()
+    const ftype = String(context.sourceComponent.ftype ?? "").toUpperCase()
+    const manufacturerPartNumber = String(
+      context.sourceComponent.manufacturer_part_number ??
+        context.sourceComponent.manufacturerPartNumber ??
+        "",
+    ).toUpperCase()
+    const platedHoleCount = context.pads.filter((pad) =>
+      pad.layers.includes("bottom"),
+    ).length
+
+    context.isConnectorLike =
+      ftype === "SIMPLE_PIN_HEADER" ||
+      nameUpper.startsWith("USB") ||
+      /^J[A-Z0-9_]*\d*$/.test(nameUpper) ||
+      /USB|CONN|CONNECTOR|HEADER|SOCKET|JST|HDMI|RJ|BARREL/.test(
+        manufacturerPartNumber,
+      ) ||
+      (platedHoleCount >= 4 &&
+        context.bounds !== null &&
+        Math.max(context.bounds.width, context.bounds.height) >= 4)
+  }
+
+  const pcbBoard = circuitJson.find((el) => el.type === "pcb_board")
+  const boardCenter =
+    pcbBoard && typeof pcbBoard.center === "object" && pcbBoard.center
+      ? (pcbBoard.center as { x?: unknown; y?: unknown })
+      : null
+  const boardCenterX = boardCenter ? toNumber(boardCenter.x) : null
+  const boardCenterY = boardCenter ? toNumber(boardCenter.y) : null
+  const boardWidth = toNumber(pcbBoard?.width)
+  const boardHeight = toNumber(pcbBoard?.height)
+
+  const boardBounds =
+    boardCenterX !== null &&
+    boardCenterY !== null &&
+    boardWidth !== null &&
+    boardHeight !== null
+      ? getBoundsFromCenterAndSize(
+          boardCenterX,
+          boardCenterY,
+          boardWidth,
+          boardHeight,
+        )
+      : null
+
+  return {
+    components,
+    componentByName,
+    boardBounds,
+  }
+}
+
+const buildIssues = (
+  components: ComponentContext[],
+  boardBounds: Bounds | null,
+): PlacementIssue[] => {
+  const issues: PlacementIssue[] = []
+
+  for (const component of components) {
+    const boardEdgeStatus = getBoardEdgeStatus(
+      component.bounds,
+      boardBounds,
+      component.name,
+    )
+    if (!boardEdgeStatus || boardEdgeStatus.status !== "outside") continue
+
+    const moveDirection = getMoveDirectionForEdge(boardEdgeStatus.edge)
+    issues.push(
+      createIssue({
+        type: "off_board",
+        componentA: component.name,
+        clearance: -boardEdgeStatus.distance,
+        severity: 220 + boardEdgeStatus.distance * 100,
+        summary: `${component.name} is ${fmtMm(boardEdgeStatus.distance)} outside ${boardEdgeStatus.edge} edge`,
+        suggested_move: `move ${component.name} ${fmtMm(boardEdgeStatus.distance)} ${moveDirection} to clear ${boardEdgeStatus.edge} edge`,
+      }),
+    )
+  }
+
+  for (let i = 0; i < components.length; i += 1) {
+    const a = components[i]
+    if (!a) continue
+    for (let j = i + 1; j < components.length; j += 1) {
+      const b = components[j]
+      if (!b) continue
+
+      if (!a.bounds || !b.bounds) continue
+      if (a.layer !== null && b.layer !== null && a.layer !== b.layer) continue
+
+      let strongestPadOverlap: {
+        overlapX: number
+        overlapY: number
+        clearance: number
+      } | null = null
+
+      for (const padA of a.pads) {
+        for (const padB of b.pads) {
+          if (!layersIntersect(padA.layers, padB.layers)) continue
+          const overlap = getOverlap(padA.bounds, padB.bounds)
+          if (!overlap) continue
+          if (
+            !strongestPadOverlap ||
+            overlap.clearance < strongestPadOverlap.clearance
+          ) {
+            strongestPadOverlap = overlap
+          }
+        }
+      }
+
+      const bodyOverlap = getOverlap(a.bounds, b.bounds)
+      let strongestCourtyardOverlap: {
+        overlapX: number
+        overlapY: number
+        clearance: number
+      } | null = null
+
+      if (!strongestPadOverlap) {
+        for (const courtyardA of a.courtyards) {
+          for (const courtyardB of b.courtyards) {
+            const overlap = getOverlap(courtyardA, courtyardB)
+            if (!overlap) continue
+            if (
+              !strongestCourtyardOverlap ||
+              overlap.clearance < strongestCourtyardOverlap.clearance
+            ) {
+              strongestCourtyardOverlap = overlap
+            }
+          }
+        }
+      }
+
+      if (strongestPadOverlap) {
+        issues.push(
+          createIssue({
+            type: "pad_overlap",
+            componentA: a.name,
+            componentB: b.name,
+            clearance: strongestPadOverlap.clearance,
+            severity: 300 + Math.abs(strongestPadOverlap.clearance) * 120,
+            summary: `${a.name} and ${b.name} pad overlap by ${fmtMm(Math.abs(strongestPadOverlap.clearance))}`,
+            suggested_move: getSeparationSuggestion(
+              a,
+              b,
+              strongestPadOverlap.overlapX,
+              strongestPadOverlap.overlapY,
+            ),
+          }),
+        )
+      }
+
+      if (bodyOverlap) {
+        if (a.isConnectorLike || b.isConnectorLike) {
+          const connector = a.isConnectorLike ? a : b
+          const intruder = connector === a ? b : a
+          const overlapX = bodyOverlap.overlapX
+          const overlapY = bodyOverlap.overlapY
+          const containmentBonus = getCountainmentBonus(intruder, connector)
+
+          issues.push(
+            createIssue({
+              type: "connector_body_intrusion",
+              componentA: intruder.name,
+              componentB: connector.name,
+              clearance: bodyOverlap.clearance,
+              severity:
+                260 + Math.abs(bodyOverlap.clearance) * 100 + containmentBonus,
+              summary: `${intruder.name} intrudes ${fmtMm(Math.abs(bodyOverlap.clearance))} into ${connector.name} connector body`,
+              suggested_move: getSeparationSuggestion(
+                a,
+                b,
+                overlapX,
+                overlapY,
+                intruder.name,
+              ),
+            }),
+          )
+        } else if (!strongestPadOverlap) {
+          const containmentBonus =
+            getCountainmentBonus(a, b) + getCountainmentBonus(b, a)
+
+          issues.push(
+            createIssue({
+              type: "footprint_intrusion",
+              componentA: a.name,
+              componentB: b.name,
+              clearance: bodyOverlap.clearance,
+              severity:
+                180 + Math.abs(bodyOverlap.clearance) * 80 + containmentBonus,
+              summary: `${a.name} and ${b.name} footprint intrusion by ${fmtMm(Math.abs(bodyOverlap.clearance))}`,
+              suggested_move: getSeparationSuggestion(
+                a,
+                b,
+                bodyOverlap.overlapX,
+                bodyOverlap.overlapY,
+              ),
+            }),
+          )
+        }
+      } else if (strongestCourtyardOverlap) {
+        issues.push(
+          createIssue({
+            type: "courtyard_collision",
+            componentA: a.name,
+            componentB: b.name,
+            clearance: strongestCourtyardOverlap.clearance,
+            severity: 120 + Math.abs(strongestCourtyardOverlap.clearance) * 80,
+            summary: `${a.name} and ${b.name} courtyard collision by ${fmtMm(Math.abs(strongestCourtyardOverlap.clearance))}`,
+            suggested_move: getSeparationSuggestion(
+              a,
+              b,
+              strongestCourtyardOverlap.overlapX,
+              strongestCourtyardOverlap.overlapY,
+            ),
+          }),
+        )
+      }
+    }
+  }
+
+  return issues.sort((a, b) => b.severity - a.severity)
+}
+
+const buildClusters = (
+  components: ComponentContext[],
+  issues: PlacementIssue[],
+): PlacementCluster[] => {
+  const componentsByName = new Map(
+    components.map((component) => [component.name, component]),
+  )
+  const adjacency = new Map<string, Set<string>>()
+  const incidentSeverity = new Map<string, number>()
+
+  for (const component of components) {
+    adjacency.set(component.name, new Set())
+    incidentSeverity.set(component.name, 0)
+  }
+
+  for (const issue of issues) {
+    if (!issue.componentB) continue
+
+    adjacency.get(issue.componentA)?.add(issue.componentB)
+    adjacency.get(issue.componentB)?.add(issue.componentA)
+    incidentSeverity.set(
+      issue.componentA,
+      (incidentSeverity.get(issue.componentA) ?? 0) + issue.severity,
+    )
+    incidentSeverity.set(
+      issue.componentB,
+      (incidentSeverity.get(issue.componentB) ?? 0) + issue.severity,
+    )
+  }
+
+  const visited = new Set<string>()
+  const clusters: PlacementCluster[] = []
+
+  for (const component of components) {
+    if (visited.has(component.name)) continue
+
+    const queue = [component.name]
+    const members: string[] = []
+
+    while (queue.length > 0) {
+      const current = queue.shift()!
+      if (visited.has(current)) continue
+      visited.add(current)
+      members.push(current)
+      for (const neighbor of adjacency.get(current) ?? []) {
+        if (!visited.has(neighbor)) queue.push(neighbor)
+      }
+    }
+
+    if (members.length < 3) continue
+
+    const memberSet = new Set(members)
+    const severity = issues
+      .filter(
+        (issue) =>
+          issue.componentB &&
+          memberSet.has(issue.componentA) &&
+          memberSet.has(issue.componentB),
+      )
+      .reduce((sum, issue) => sum + issue.severity, 0)
+
+    if (severity === 0) continue
+
+    const sortedMembers = [...members].sort((a, b) => {
+      const severityA = incidentSeverity.get(a) ?? 0
+      const severityB = incidentSeverity.get(b) ?? 0
+      if (severityA !== severityB) return severityB - severityA
+      const orderA = componentsByName.get(a)?.order ?? 0
+      const orderB = componentsByName.get(b)?.order ?? 0
+      return orderA - orderB
+    })
+
+    const labelComponent =
+      sortedMembers.find(
+        (name) => componentsByName.get(name)?.isConnectorLike,
+      ) ?? sortedMembers[0]
+
+    if (!labelComponent) continue
+
+    clusters.push({
+      clusterName: `${stripNumericSuffix(labelComponent)} cluster`,
+      componentNames: sortedMembers,
+      severity,
+    })
+  }
+
+  return clusters.sort((a, b) => b.severity - a.severity)
+}
+
+const buildCountsByType = (
+  issues: PlacementIssue[],
+): Partial<Record<PlacementIssueType, number>> => {
+  const counts: Partial<Record<PlacementIssueType, number>> = {}
+
+  for (const issue of issues) {
+    counts[issue.type] = (counts[issue.type] ?? 0) + 1
+  }
+
+  return counts
+}
+
+const buildComponentStatuses = (
+  components: ComponentContext[],
+  boardBounds: Bounds | null,
+  issues: PlacementIssue[],
+): PlacementComponentStatus[] =>
+  components.map((component) => {
+    const componentIssues = issues.filter(
+      (issue) =>
+        issue.componentA === component.name ||
+        issue.componentB === component.name,
+    )
+
+    return {
+      componentName: component.name,
+      placementMode: component.placementMode,
+      sourcePlacement: {
+        xDefinition: component.xDefinition,
+        yDefinition: component.yDefinition,
+      },
+      resolvedPlacement: {
+        center:
+          component.centerX !== null &&
+          component.centerY !== null &&
+          component.layer !== null
+            ? {
+                x: component.centerX,
+                y: component.centerY,
+                layer: component.layer,
+              }
+            : undefined,
+        bounds: component.bounds
+          ? {
+              width: component.bounds.width,
+              height: component.bounds.height,
+              min_x: component.bounds.min_x,
+              max_x: component.bounds.max_x,
+              min_y: component.bounds.min_y,
+              max_y: component.bounds.max_y,
+            }
+          : undefined,
+        anchorAlignment: component.anchorAlignment,
+        orientation: component.orientation,
+      },
+      boardEdgeStatus: getBoardEdgeStatus(
+        component.bounds,
+        boardBounds,
+        component.name,
+      ),
+      issues: componentIssues,
+    }
+  })
+
+const formatSourcePlacement = (component: PlacementComponentStatus): string => {
+  const bits: string[] = [`placement_mode=${component.placementMode}`]
+  if (component.sourcePlacement.xDefinition !== undefined) {
+    bits.push(`x=${component.sourcePlacement.xDefinition}`)
+  }
+  if (component.sourcePlacement.yDefinition !== undefined) {
+    bits.push(`y=${component.sourcePlacement.yDefinition}`)
+  }
+  return bits.join(", ")
+}
+
+const formatResolvedPlacement = (
+  component: PlacementComponentStatus,
+): string => {
+  const bits: string[] = []
+  const center = component.resolvedPlacement.center
+  const bounds = component.resolvedPlacement.bounds
+
+  if (center) {
+    bits.push(
+      `center=(${fmtMm(center.x)}, ${fmtMm(center.y)}) on ${center.layer}`,
+    )
+  }
+
+  if (bounds) {
+    bits.push(
+      `bounds=(minX=${fmtMm(bounds.min_x)}, maxX=${fmtMm(bounds.max_x)}, minY=${fmtMm(bounds.min_y)}, maxY=${fmtMm(bounds.max_y)})`,
+    )
+    bits.push(
+      `size=(width=${fmtMm(bounds.width)}, height=${fmtMm(bounds.height)})`,
+    )
+  }
+
+  bits.push(`anchor_alignment="${component.resolvedPlacement.anchorAlignment}"`)
+
+  if (component.resolvedPlacement.orientation) {
+    bits.push(`orientation=${component.resolvedPlacement.orientation}`)
+  }
+
+  return bits.join("; ")
+}
+
+const formatIssue = (issue: PlacementIssue): string => {
+  const suffix = issue.suggested_move
+    ? ` Suggested move: ${issue.suggested_move}.`
+    : ""
+  return `${issue.summary}.${suffix}`
+}
+
+export const formatPlacementAnalysisReport = (
+  report: PlacementAnalysisReport,
+): string => {
+  const lines: string[] = []
+  const summaryBits = ISSUE_TYPE_ORDER.map((type) =>
+    getSummaryLabel(type, report.summary.countsByType[type] ?? 0),
+  ).filter((entry): entry is string => Boolean(entry))
+
+  lines.push(
+    summaryBits.length > 0
+      ? `placement summary: ${summaryBits.join(", ")}`
+      : "placement summary: no placement issues",
+  )
+
+  if (report.summary.topIssues.length > 0) {
+    lines.push("")
+    lines.push("worst issues:")
+    report.summary.topIssues.forEach((issue, index) => {
+      lines.push(`${index + 1}. ${formatIssue(issue)}`)
+    })
+  }
+
+  if (report.summary.likelyBadClusters.length > 0) {
+    lines.push("")
+    lines.push("likely bad clusters:")
+    for (const cluster of report.summary.likelyBadClusters) {
+      lines.push(
+        `- ${cluster.clusterName}: ${cluster.componentNames.join(", ")}`,
+      )
+    }
+  }
+
+  lines.push("")
+  lines.push("board-edge status:")
+  for (const component of report.components) {
+    if (!component.boardEdgeStatus) continue
+    lines.push(
+      `- ${component.componentName}: ${formatBoardEdgeStatus(component.boardEdgeStatus)}`,
+    )
+  }
+
+  const flaggedComponents = report.components.filter(
+    (component) => component.issues.length > 0,
+  )
+
+  if (flaggedComponents.length > 0) {
+    lines.push("")
+    lines.push("flagged components:")
+    for (const component of flaggedComponents) {
+      lines.push(`- ${component.componentName}`)
+      lines.push(`  source placement: ${formatSourcePlacement(component)}`)
+      lines.push(`  resolved placement: ${formatResolvedPlacement(component)}`)
+      if (component.boardEdgeStatus) {
+        lines.push(
+          `  board edge status: ${formatBoardEdgeStatus(component.boardEdgeStatus)}`,
+        )
+      }
+      lines.push("  issues:")
+      for (const issue of component.issues) {
+        lines.push(`  - ${formatIssue(issue)}`)
+      }
+    }
+  }
+
+  return lines.join("\n")
+}
+
+export const buildPlacementAnalysisReport = (
+  circuitJson: CircuitElement[],
+): PlacementAnalysisReport => {
+  const { components, boardBounds } = buildComponentContexts(circuitJson)
+  const issues = buildIssues(components, boardBounds)
+  const clusters = buildClusters(components, issues)
+  const countsByType = buildCountsByType(issues)
+
+  return {
+    summary: {
+      totalIssueCount: issues.length,
+      countsByType,
+      topIssues: issues.slice(0, TOP_ISSUE_LIMIT),
+      likelyBadClusters: clusters,
+    },
+    components: buildComponentStatuses(components, boardBounds, issues),
+    issues,
+  }
+}

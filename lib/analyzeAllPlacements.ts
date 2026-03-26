@@ -1,5 +1,13 @@
 import { analyzeComponentPlacement } from "./analyzeComponentPlacement"
-import type { AnalysisLineItem } from "./types"
+import {
+  buildPlacementAnalysisReport,
+  formatPlacementAnalysisReport,
+} from "./buildPlacementAnalysisReport"
+import type {
+  AnalysisLineItem,
+  PlacementAnalysisReport,
+  PlacementIssue,
+} from "./types"
 
 type CircuitElement = {
   type?: string
@@ -9,6 +17,8 @@ type CircuitElement = {
 export type AnalyzeAllPlacementsResult = {
   getLineItems: () => AnalysisLineItem[]
   getString: () => string
+  getIssues: () => PlacementIssue[]
+  getReport: () => PlacementAnalysisReport
 }
 
 export const analyzeAllPlacements = (
@@ -30,10 +40,12 @@ export const analyzeAllPlacements = (
   }))
 
   const lineItems = analyses.flatMap(({ analysis }) => analysis.getLineItems())
+  const report = buildPlacementAnalysisReport(circuitJson)
 
   return {
     getLineItems: () => lineItems,
-    getString: () =>
-      analyses.map(({ analysis }) => analysis.getString()).join("\n"),
+    getString: () => formatPlacementAnalysisReport(report),
+    getIssues: () => report.issues,
+    getReport: () => report,
   }
 }
