@@ -157,30 +157,19 @@ test("placement analysis includes position and size for rendered RP2040 board", 
   const circuitJson = circuit.getCircuitJson()
 
   const analysis = analyzeAllPlacements(circuitJson)
-  const text = analysis.getString()
-  const report = analysis.getReport()
 
-  expect(report.issues).toHaveLength(0)
-  expect(report.summary.totalIssueCount).toBe(0)
-  expect(report.components).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        componentName: "USB1",
-        boardEdgeStatus: expect.objectContaining({
-          edge: "left",
-          status: "inside",
-        }),
-      }),
-      expect.objectContaining({
-        componentName: "J1",
-        boardEdgeStatus: expect.objectContaining({
-          edge: "top",
-          status: "inside",
-        }),
-      }),
-    ]),
-  )
-  expect(text).toContain("placement summary: no placement issues")
-  expect(text).toContain("- USB1: 4.01mm inside left edge")
-  expect(text).toContain("- J1: 1.82mm inside top edge")
+  expect(analysis.getString()).toMatchInlineSnapshot(`
+    "placement summary: no placement issues
+
+    board-edge status:
+    - U1: 7.1mm inside bottom edge
+    - USB1: 4.01mm inside left edge
+    - U2: 4.7mm inside top edge
+    - D1: 5.525mm inside top edge
+    - R1: 5.68mm inside top edge
+    - C1: 3.68mm inside top edge
+    - C2: 3.68mm inside top edge
+    - C3: 5.68mm inside top edge
+    - J1: 1.82mm inside top edge"
+  `)
 })
