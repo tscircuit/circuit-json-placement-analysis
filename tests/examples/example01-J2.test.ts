@@ -19,6 +19,7 @@ J2 placement definition: placement_mode=none
 J2.pcbRightEdgeX=calc(board.maxX+4.18mm) [offboard]
 J2.pcbTopEdgeY=calc(board.minY+11.75mm)
 J2.centerX=calc(board.centerX+22mm)
+J2.padClearance=4.775mm [nearest=R1.pin2]
 J2.pcbLeftEdgeX=calc(D1.maxX+8mm)"
 `)
 })

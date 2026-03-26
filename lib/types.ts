@@ -86,6 +86,22 @@ export interface RelativeComponentEdgeToBoardEdgePosition {
   offset: number
 }
 
+export interface ComponentPadClearance {
+  line_item_type: "component_pad_clearance"
+  component_name: string
+  clearance: number
+  nearest_component_name: string
+  nearest_pad_name: string
+}
+
+export interface DirectPinToPinDistance {
+  line_item_type: "direct_pin_to_pin_distance"
+  component_name: string
+  from_pin_name: string
+  to_pin_name: string
+  distance: number
+}
+
 export interface ComponentBoardEdgeStatus {
   component_name: string
   edge: "left" | "right" | "top" | "bottom"
@@ -150,7 +166,6 @@ export interface PlacementAnalysisReport {
   components: PlacementComponentStatus[]
   issues: PlacementIssue[]
 }
-
 export type AnalysisLineItem =
   | AbsoluteComponentPosition
   | RelativeComponentToComponentPosition
@@ -161,3 +176,5 @@ export type AnalysisLineItem =
   | ComponentSize
   | ComponentOrientation
   | RelativeComponentEdgeToBoardEdgePosition
+  | ComponentPadClearance
+  | DirectPinToPinDistance
