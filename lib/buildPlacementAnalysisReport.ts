@@ -770,7 +770,12 @@ const isBoundsEmpty = (
   }
 
   const candidates = occupiedIndex
-    ? occupiedIndex.search(bounds.min_x, bounds.min_y, bounds.max_x, bounds.max_y)
+    ? occupiedIndex.search(
+        bounds.min_x,
+        bounds.min_y,
+        bounds.max_x,
+        bounds.max_y,
+      )
     : occupiedBounds.map((_, index) => index)
 
   return !candidates.some((candidateIndex) =>
@@ -885,7 +890,9 @@ const getExpansionDelta = (
         Math.min(
           bounds.min_x - boardBounds.min_x,
           ...overlappingCandidates
-            .filter((candidate) => candidate.max_x <= bounds.min_x + GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.max_x <= bounds.min_x + GEOMETRY_EPSILON,
+            )
             .map((candidate) => bounds.min_x - candidate.max_x),
         ),
       )
@@ -895,7 +902,9 @@ const getExpansionDelta = (
         Math.min(
           boardBounds.max_x - bounds.max_x,
           ...overlappingCandidates
-            .filter((candidate) => candidate.min_x >= bounds.max_x - GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.min_x >= bounds.max_x - GEOMETRY_EPSILON,
+            )
             .map((candidate) => candidate.min_x - bounds.max_x),
         ),
       )
@@ -905,7 +914,9 @@ const getExpansionDelta = (
         Math.min(
           bounds.min_y - boardBounds.min_y,
           ...overlappingCandidates
-            .filter((candidate) => candidate.max_y <= bounds.min_y + GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.max_y <= bounds.min_y + GEOMETRY_EPSILON,
+            )
             .map((candidate) => bounds.min_y - candidate.max_y),
         ),
       )
@@ -915,7 +926,9 @@ const getExpansionDelta = (
         Math.min(
           boardBounds.max_y - bounds.max_y,
           ...overlappingCandidates
-            .filter((candidate) => candidate.min_y >= bounds.max_y - GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.min_y >= bounds.max_y - GEOMETRY_EPSILON,
+            )
             .map((candidate) => candidate.min_y - bounds.max_y),
         ),
       )
@@ -990,9 +1003,7 @@ const growRectangleFully = (
   let currentBounds = initialBounds
 
   while (true) {
-    const candidates = (
-      ["left", "right", "up", "down"] as const
-    )
+    const candidates = (["left", "right", "up", "down"] as const)
       .map((direction) => {
         const delta = getExpansionDelta(
           currentBounds,
@@ -1003,7 +1014,8 @@ const growRectangleFully = (
         )
         if (delta <= GEOMETRY_EPSILON) return null
         const nextBounds = expandBounds(currentBounds, direction, delta)
-        if (!isBoundsEmpty(nextBounds, occupiedBounds, occupiedIndex)) return null
+        if (!isBoundsEmpty(nextBounds, occupiedBounds, occupiedIndex))
+          return null
         return {
           direction,
           bounds: nextBounds,
@@ -1040,12 +1052,7 @@ const getLargestEmptySpaceFromPoint = (
 ): Bounds | null => {
   if (isPointOccupied(x, y, occupiedBounds, occupiedIndex)) return null
 
-  const horizontalSpan = (
-    [
-      "left",
-      "right",
-    ] as const
-  ).reduce(
+  const horizontalSpan = (["left", "right"] as const).reduce(
     (bounds, direction) =>
       growBoundsInDirection(
         bounds,
@@ -1054,20 +1061,10 @@ const getLargestEmptySpaceFromPoint = (
         occupiedIndex,
         direction,
       ),
-    createBounds(
-      x,
-      x,
-      y - GEOMETRY_EPSILON,
-      y + GEOMETRY_EPSILON,
-    ),
+    createBounds(x, x, y - GEOMETRY_EPSILON, y + GEOMETRY_EPSILON),
   )
 
-  const verticalSpan = (
-    [
-      "up",
-      "down",
-    ] as const
-  ).reduce(
+  const verticalSpan = (["up", "down"] as const).reduce(
     (bounds, direction) =>
       growBoundsInDirection(
         bounds,
@@ -1076,26 +1073,19 @@ const getLargestEmptySpaceFromPoint = (
         occupiedIndex,
         direction,
       ),
-    createBounds(
-      x - GEOMETRY_EPSILON,
-      x + GEOMETRY_EPSILON,
-      y,
-      y,
-    ),
+    createBounds(x - GEOMETRY_EPSILON, x + GEOMETRY_EPSILON, y, y),
   )
 
   const horizontalFirst = growRectangleFully(
-    (
-      ["up", "down"] as const
-    ).reduce(
+    (["up", "down"] as const).reduce(
       (bounds, direction) =>
         growBoundsInDirection(
-        bounds,
-        boardBounds,
-        occupiedBounds,
-        occupiedIndex,
-        direction,
-      ),
+          bounds,
+          boardBounds,
+          occupiedBounds,
+          occupiedIndex,
+          direction,
+        ),
       horizontalSpan,
     ),
     boardBounds,
@@ -1104,17 +1094,15 @@ const getLargestEmptySpaceFromPoint = (
   )
 
   const verticalFirst = growRectangleFully(
-    (
-      ["left", "right"] as const
-    ).reduce(
+    (["left", "right"] as const).reduce(
       (bounds, direction) =>
         growBoundsInDirection(
-        bounds,
-        boardBounds,
-        occupiedBounds,
-        occupiedIndex,
-        direction,
-      ),
+          bounds,
+          boardBounds,
+          occupiedBounds,
+          occupiedIndex,
+          direction,
+        ),
       verticalSpan,
     ),
     boardBounds,
@@ -1186,7 +1174,11 @@ const buildLargeEmptySpaces = (
       const area = bounds.width * bounds.height
       if (area <= thresholdArea) continue
 
-      const candidate = createEmptySpaceIndexItem(bounds, boardArea, sequenceNumber++)
+      const candidate = createEmptySpaceIndexItem(
+        bounds,
+        boardArea,
+        sequenceNumber++,
+      )
       const overlappingSpaces = emptySpaceIndex
         .search(candidate)
         .filter((space) =>

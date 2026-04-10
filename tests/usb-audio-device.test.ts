@@ -4,7 +4,10 @@ import { analyzeAllPlacements } from "../lib/index"
 
 test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error", () => {
   const circuitJson = JSON.parse(
-    readFileSync(new URL("./assets/usb-audio-device.json", import.meta.url), "utf8"),
+    readFileSync(
+      new URL("./assets/usb-audio-device.json", import.meta.url),
+      "utf8",
+    ),
   )
 
   const analysis = analyzeAllPlacements(circuitJson)
