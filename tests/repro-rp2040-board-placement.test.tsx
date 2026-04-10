@@ -161,9 +161,15 @@ test("placement analysis includes position and size for rendered RP2040 board", 
   expect(analysis.getString()).toMatchInlineSnapshot(`
     "placement summary: no placement issues
 
+    board top-layer utilization:
+    - occupied: 12.842% (215.749mm^2 of 1680mm^2)
+    - empty spaces over 5% of board area:
+      - 24.107% (405mm^2); bounds=(minX=-30mm, maxX=30mm, minY=7.25mm, maxY=14mm)
+      - 11.315% (190.089mm^2); bounds=(minX=-6.07mm, maxX=30mm, minY=-14mm, maxY=-8.73mm)
+
     board-edge status:
     - U1: 7.1mm inside bottom edge
-    - USB1: 4.01mm inside left edge
+    - USB1: 5.15mm inside left edge
     - U2: 4.7mm inside top edge
     - D1: 5.525mm inside top edge
     - R1: 5.68mm inside top edge

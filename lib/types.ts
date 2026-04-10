@@ -132,6 +132,29 @@ export interface PlacementCluster {
   severity: number
 }
 
+export interface PlacementAreaBounds {
+  width: number
+  height: number
+  min_x: number
+  max_x: number
+  min_y: number
+  max_y: number
+}
+
+export interface PlacementEmptySpace {
+  area: number
+  areaPercent: number
+  bounds: PlacementAreaBounds
+}
+
+export interface PlacementBoardTopLayerReport {
+  boardArea: number
+  occupiedArea: number
+  utilizationPercent: number
+  largeEmptySpaceThresholdArea: number
+  largeEmptySpaces: PlacementEmptySpace[]
+}
+
 export interface PlacementComponentStatus {
   componentName: string
   placementMode: "none" | "auto" | "props_set"
@@ -141,14 +164,7 @@ export interface PlacementComponentStatus {
   }
   resolvedPlacement: {
     center?: AnchorPosition
-    bounds?: {
-      width: number
-      height: number
-      min_x: number
-      max_x: number
-      min_y: number
-      max_y: number
-    }
+    bounds?: PlacementAreaBounds
     anchorAlignment: NinePointAnchor
     orientation?: "horizontal" | "vertical"
   }
@@ -163,6 +179,7 @@ export interface PlacementAnalysisReport {
     topIssues: PlacementIssue[]
     likelyBadClusters: PlacementCluster[]
   }
+  boardTopLayer: PlacementBoardTopLayerReport | null
   components: PlacementComponentStatus[]
   issues: PlacementIssue[]
 }

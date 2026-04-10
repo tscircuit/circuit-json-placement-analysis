@@ -74,8 +74,14 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
     likely bad clusters:
     - USB cluster: USB1, R1, R2, C1
 
+    board top-layer utilization:
+    - occupied: 6.407% (25.627mm^2 of 400mm^2)
+    - empty spaces over 5% of board area:
+      - 58.9% (235.6mm^2); bounds=(minX=-5.12mm, maxX=6.66mm, minY=-10mm, maxY=10mm)
+      - 9.1% (36.4mm^2); bounds=(minX=-10mm, maxX=-8.18mm, minY=-10mm, maxY=10mm)
+
     board-edge status:
-    - USB1: 1.01mm inside left edge
+    - USB1: 2.15mm inside left edge
     - C1: 2.075mm inside left edge
     - R1: 2.175mm inside left edge
     - R2: 2.175mm inside left edge
@@ -84,8 +90,8 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
     flagged components:
     - USB1
       source placement: placement_mode=none
-      resolved placement: center=(-7mm, 0mm) on top; bounds=(minX=-8.99mm, maxX=-5.01mm, minY=-2.07mm, maxY=2.07mm); size=(width=3.98mm, height=4.14mm); anchor_alignment=\"center\"
-      board edge status: 1.01mm inside left edge
+      resolved placement: center=(-7mm, 0mm) on top; bounds=(minX=-7.85mm, maxX=-6.15mm, minY=-2.07mm, maxY=2.07mm); size=(width=1.7mm, height=4.14mm); anchor_alignment="center"
+      board edge status: 2.15mm inside left edge
       issues:
       - C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm down.
       - R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm down.
@@ -95,7 +101,7 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
       - USB1 and C1 pad overlap by 0.005mm. Suggested move: move C1 0.005mm down.
     - C1
       source placement: placement_mode=none
-      resolved placement: center=(-6.7mm, 0mm) on top; bounds=(minX=-7.925mm, maxX=-5.475mm, minY=-0.475mm, maxY=0.475mm); size=(width=2.45mm, height=0.95mm); anchor_alignment=\"center\"
+      resolved placement: center=(-6.7mm, 0mm) on top; bounds=(minX=-7.925mm, maxX=-5.475mm, minY=-0.475mm, maxY=0.475mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 2.075mm inside left edge
       issues:
       - C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm down.
@@ -104,7 +110,7 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
       - USB1 and C1 pad overlap by 0.005mm. Suggested move: move C1 0.005mm down.
     - R1
       source placement: placement_mode=none
-      resolved placement: center=(-6.6mm, 0.4mm) on top; bounds=(minX=-7.825mm, maxX=-5.375mm, minY=-0.075mm, maxY=0.875mm); size=(width=2.45mm, height=0.95mm); anchor_alignment=\"center\"
+      resolved placement: center=(-6.6mm, 0.4mm) on top; bounds=(minX=-7.825mm, maxX=-5.375mm, minY=-0.075mm, maxY=0.875mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 2.175mm inside left edge
       issues:
       - R1 and R2 pad overlap by 0.8mm. Suggested move: move R2 0.8mm right.
@@ -113,7 +119,7 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
       - USB1 and R1 pad overlap by 0.405mm. Suggested move: move R1 0.405mm down.
     - R2
       source placement: placement_mode=none
-      resolved placement: center=(-6.6mm, 0.4mm) on top; bounds=(minX=-7.825mm, maxX=-5.375mm, minY=-0.075mm, maxY=0.875mm); size=(width=2.45mm, height=0.95mm); anchor_alignment=\"center\"
+      resolved placement: center=(-6.6mm, 0.4mm) on top; bounds=(minX=-7.825mm, maxX=-5.375mm, minY=-0.075mm, maxY=0.875mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 2.175mm inside left edge
       issues:
       - R1 and R2 pad overlap by 0.8mm. Suggested move: move R2 0.8mm right.
@@ -122,7 +128,7 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
       - USB1 and R2 pad overlap by 0.405mm. Suggested move: move R2 0.405mm down.
     - J1
       source placement: placement_mode=none
-      resolved placement: center=(9.7mm, 0mm) on top; bounds=(minX=7.68mm, maxX=11.72mm, minY=-0.75mm, maxY=0.75mm); size=(width=4.04mm, height=1.5mm); anchor_alignment=\"center\"; orientation=horizontal
+      resolved placement: center=(9.7mm, 0mm) on top; bounds=(minX=7.68mm, maxX=11.72mm, minY=-0.75mm, maxY=0.75mm); size=(width=4.04mm, height=1.5mm); anchor_alignment="center"; orientation=horizontal
       board edge status: 1.72mm outside right edge
       issues:
       - J1 is 1.72mm outside right edge. Suggested move: move J1 1.72mm left to clear right edge."
