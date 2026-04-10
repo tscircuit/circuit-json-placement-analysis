@@ -1,7 +1,12 @@
+import Flatbush from "flatbush"
+import RBush from "rbush"
 import type { LayerRef, NinePointAnchor } from "circuit-json"
 import type {
+  PlacementAreaBounds,
   ComponentBoardEdgeStatus,
   PlacementAnalysisReport,
+  PlacementEmptySpace,
+  PlacementBoardTopLayerReport,
   PlacementCluster,
   PlacementComponentStatus,
   PlacementIssue,
@@ -13,14 +18,7 @@ type CircuitElement = {
   [key: string]: unknown
 }
 
-type Bounds = {
-  min_x: number
-  max_x: number
-  min_y: number
-  max_y: number
-  width: number
-  height: number
-}
+type Bounds = PlacementAreaBounds
 
 type PhysicalShape = {
   bounds: Bounds
@@ -52,6 +50,9 @@ type ComponentContext = {
 
 const TOP_ISSUE_LIMIT = 5
 const CENTER_ANCHOR = "center"
+const LARGE_EMPTY_SPACE_THRESHOLD_RATIO = 0.05
+const EMPTY_SPACE_SAMPLE_STEP_MM = 5
+const GEOMETRY_EPSILON = 1e-6
 
 const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "pad_overlap",
@@ -73,6 +74,10 @@ const fmtNumber = (value: number): string => {
 }
 
 const fmtMm = (value: number): string => `${fmtNumber(value)}mm`
+
+const fmtArea = (value: number): string => `${fmtNumber(value)}mm^2`
+
+const fmtPercent = (value: number): string => `${fmtNumber(value)}%`
 
 const getBoundsFromCenterAndSize = (
   centerX: number,
@@ -135,6 +140,24 @@ const getOverlap = (
   }
 }
 
+const getBoundsIntersection = (a: Bounds, b: Bounds): Bounds | null => {
+  const min_x = Math.max(a.min_x, b.min_x)
+  const max_x = Math.min(a.max_x, b.max_x)
+  const min_y = Math.max(a.min_y, b.min_y)
+  const max_y = Math.min(a.max_y, b.max_y)
+
+  if (min_x >= max_x || min_y >= max_y) return null
+
+  return {
+    min_x,
+    max_x,
+    min_y,
+    max_y,
+    width: max_x - min_x,
+    height: max_y - min_y,
+  }
+}
+
 const layersIntersect = (a: LayerRef[], b: LayerRef[]): boolean => {
   const bSet = new Set(b)
   return a.some((layer) => bSet.has(layer))
@@ -144,6 +167,15 @@ const getArea = (bounds: Bounds | null): number => {
   if (!bounds) return Number.POSITIVE_INFINITY
   return bounds.width * bounds.height
 }
+
+const toPlacementBounds = (bounds: Bounds): PlacementAreaBounds => ({
+  width: bounds.width,
+  height: bounds.height,
+  min_x: bounds.min_x,
+  max_x: bounds.max_x,
+  min_y: bounds.min_y,
+  max_y: bounds.max_y,
+})
 
 const stripNumericSuffix = (name: string): string => {
   const stripped = name.replace(/\d+$/, "")
@@ -654,6 +686,624 @@ const buildComponentContexts = (
   }
 }
 
+const getTopCopperBounds = (component: ComponentContext): Bounds | null => {
+  const topPadBounds = component.pads
+    .filter((pad) => pad.layers.includes("top"))
+    .map((pad) => pad.bounds)
+
+  if (topPadBounds.length === 0) return null
+
+  return {
+    min_x: Math.min(...topPadBounds.map((bounds) => bounds.min_x)),
+    max_x: Math.max(...topPadBounds.map((bounds) => bounds.max_x)),
+    min_y: Math.min(...topPadBounds.map((bounds) => bounds.min_y)),
+    max_y: Math.max(...topPadBounds.map((bounds) => bounds.max_y)),
+    width:
+      Math.max(...topPadBounds.map((bounds) => bounds.max_x)) -
+      Math.min(...topPadBounds.map((bounds) => bounds.min_x)),
+    height:
+      Math.max(...topPadBounds.map((bounds) => bounds.max_y)) -
+      Math.min(...topPadBounds.map((bounds) => bounds.min_y)),
+  }
+}
+
+const getTopOccupancyBounds = (component: ComponentContext): Bounds[] => {
+  if (component.layer !== "top") return []
+  if (component.courtyards.length > 0) return component.courtyards
+
+  const topCopperBounds = getTopCopperBounds(component)
+  return topCopperBounds ? [topCopperBounds] : []
+}
+
+const getUniqueSortedCoordinates = (values: number[]): number[] =>
+  [...new Set(values)].sort((a, b) => a - b)
+
+type EmptySpaceIndexItem = PlacementEmptySpace & {
+  id: string
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}
+
+const createBounds = (
+  min_x: number,
+  max_x: number,
+  min_y: number,
+  max_y: number,
+): Bounds => ({
+  min_x,
+  max_x,
+  min_y,
+  max_y,
+  width: max_x - min_x,
+  height: max_y - min_y,
+})
+
+const pointIsInsideBounds = (x: number, y: number, bounds: Bounds): boolean =>
+  x > bounds.min_x + GEOMETRY_EPSILON &&
+  x < bounds.max_x - GEOMETRY_EPSILON &&
+  y > bounds.min_y + GEOMETRY_EPSILON &&
+  y < bounds.max_y - GEOMETRY_EPSILON
+
+const buildFlatbushIndex = (boundsList: Bounds[]): Flatbush | null => {
+  if (boundsList.length === 0) return null
+
+  const index = new Flatbush(boundsList.length)
+  for (const bounds of boundsList) {
+    index.add(bounds.min_x, bounds.min_y, bounds.max_x, bounds.max_y)
+  }
+  index.finish()
+  return index
+}
+
+const boundsOverlapWithArea = (a: Bounds, b: Bounds): boolean =>
+  getBoundsIntersection(a, b) !== null
+
+const isBoundsEmpty = (
+  bounds: Bounds,
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+): boolean => {
+  if (bounds.width <= GEOMETRY_EPSILON || bounds.height <= GEOMETRY_EPSILON) {
+    return true
+  }
+
+  const candidates = occupiedIndex
+    ? occupiedIndex.search(bounds.min_x, bounds.min_y, bounds.max_x, bounds.max_y)
+    : occupiedBounds.map((_, index) => index)
+
+  return !candidates.some((candidateIndex) =>
+    boundsOverlapWithArea(bounds, occupiedBounds[candidateIndex]!),
+  )
+}
+
+const isPointOccupied = (
+  x: number,
+  y: number,
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+): boolean => {
+  const candidates = occupiedIndex
+    ? occupiedIndex.search(x, y, x, y)
+    : occupiedBounds.map((_, index) => index)
+
+  return candidates.some((candidateIndex) =>
+    pointIsInsideBounds(x, y, occupiedBounds[candidateIndex]!),
+  )
+}
+
+const getSampleAxisValues = (
+  min: number,
+  max: number,
+  step: number,
+): number[] => {
+  const values = new Set<number>([min, max])
+
+  let current = min
+  while (current < max - GEOMETRY_EPSILON) {
+    const next = Math.min(current + step, max)
+    values.add(current)
+    values.add((current + next) / 2)
+    values.add(next)
+    current = next
+  }
+
+  return [...values].sort((a, b) => a - b)
+}
+
+const getExpansionDelta = (
+  bounds: Bounds,
+  boardBounds: Bounds,
+  direction: "left" | "right" | "up" | "down",
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+): number => {
+  const searchIndices = (() => {
+    switch (direction) {
+      case "left":
+        return occupiedIndex
+          ? occupiedIndex.search(
+              boardBounds.min_x,
+              bounds.min_y,
+              bounds.min_x,
+              bounds.max_y,
+            )
+          : occupiedBounds.map((_, index) => index)
+      case "right":
+        return occupiedIndex
+          ? occupiedIndex.search(
+              bounds.max_x,
+              bounds.min_y,
+              boardBounds.max_x,
+              bounds.max_y,
+            )
+          : occupiedBounds.map((_, index) => index)
+      case "up":
+        return occupiedIndex
+          ? occupiedIndex.search(
+              bounds.min_x,
+              boardBounds.min_y,
+              bounds.max_x,
+              bounds.min_y,
+            )
+          : occupiedBounds.map((_, index) => index)
+      case "down":
+        return occupiedIndex
+          ? occupiedIndex.search(
+              bounds.min_x,
+              bounds.max_y,
+              bounds.max_x,
+              boardBounds.max_y,
+            )
+          : occupiedBounds.map((_, index) => index)
+    }
+  })()
+
+  const overlappingCandidates = searchIndices
+    .map((index) => occupiedBounds[index]!)
+    .filter((candidate) => {
+      if (direction === "left" || direction === "right") {
+        return (
+          Math.min(bounds.max_y, candidate.max_y) -
+            Math.max(bounds.min_y, candidate.min_y) >
+          GEOMETRY_EPSILON
+        )
+      }
+
+      return (
+        Math.min(bounds.max_x, candidate.max_x) -
+          Math.max(bounds.min_x, candidate.min_x) >
+        GEOMETRY_EPSILON
+      )
+    })
+
+  switch (direction) {
+    case "left":
+      return Math.max(
+        0,
+        Math.min(
+          bounds.min_x - boardBounds.min_x,
+          ...overlappingCandidates
+            .filter((candidate) => candidate.max_x <= bounds.min_x + GEOMETRY_EPSILON)
+            .map((candidate) => bounds.min_x - candidate.max_x),
+        ),
+      )
+    case "right":
+      return Math.max(
+        0,
+        Math.min(
+          boardBounds.max_x - bounds.max_x,
+          ...overlappingCandidates
+            .filter((candidate) => candidate.min_x >= bounds.max_x - GEOMETRY_EPSILON)
+            .map((candidate) => candidate.min_x - bounds.max_x),
+        ),
+      )
+    case "up":
+      return Math.max(
+        0,
+        Math.min(
+          bounds.min_y - boardBounds.min_y,
+          ...overlappingCandidates
+            .filter((candidate) => candidate.max_y <= bounds.min_y + GEOMETRY_EPSILON)
+            .map((candidate) => bounds.min_y - candidate.max_y),
+        ),
+      )
+    case "down":
+      return Math.max(
+        0,
+        Math.min(
+          boardBounds.max_y - bounds.max_y,
+          ...overlappingCandidates
+            .filter((candidate) => candidate.min_y >= bounds.max_y - GEOMETRY_EPSILON)
+            .map((candidate) => candidate.min_y - bounds.max_y),
+        ),
+      )
+  }
+}
+
+const expandBounds = (
+  bounds: Bounds,
+  direction: "left" | "right" | "up" | "down",
+  delta: number,
+): Bounds => {
+  switch (direction) {
+    case "left":
+      return createBounds(
+        bounds.min_x - delta,
+        bounds.max_x,
+        bounds.min_y,
+        bounds.max_y,
+      )
+    case "right":
+      return createBounds(
+        bounds.min_x,
+        bounds.max_x + delta,
+        bounds.min_y,
+        bounds.max_y,
+      )
+    case "up":
+      return createBounds(
+        bounds.min_x,
+        bounds.max_x,
+        bounds.min_y - delta,
+        bounds.max_y,
+      )
+    case "down":
+      return createBounds(
+        bounds.min_x,
+        bounds.max_x,
+        bounds.min_y,
+        bounds.max_y + delta,
+      )
+  }
+}
+
+const growBoundsInDirection = (
+  initialBounds: Bounds,
+  boardBounds: Bounds,
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+  direction: "left" | "right" | "up" | "down",
+): Bounds => {
+  const delta = getExpansionDelta(
+    initialBounds,
+    boardBounds,
+    direction,
+    occupiedBounds,
+    occupiedIndex,
+  )
+  if (delta <= GEOMETRY_EPSILON) return initialBounds
+
+  const nextBounds = expandBounds(initialBounds, direction, delta)
+  return isBoundsEmpty(nextBounds, occupiedBounds, occupiedIndex)
+    ? nextBounds
+    : initialBounds
+}
+
+const growRectangleFully = (
+  initialBounds: Bounds,
+  boardBounds: Bounds,
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+): Bounds => {
+  let currentBounds = initialBounds
+
+  while (true) {
+    const candidates = (
+      ["left", "right", "up", "down"] as const
+    )
+      .map((direction) => {
+        const delta = getExpansionDelta(
+          currentBounds,
+          boardBounds,
+          direction,
+          occupiedBounds,
+          occupiedIndex,
+        )
+        if (delta <= GEOMETRY_EPSILON) return null
+        const nextBounds = expandBounds(currentBounds, direction, delta)
+        if (!isBoundsEmpty(nextBounds, occupiedBounds, occupiedIndex)) return null
+        return {
+          direction,
+          bounds: nextBounds,
+          area: nextBounds.width * nextBounds.height,
+        }
+      })
+      .filter(
+        (
+          candidate,
+        ): candidate is {
+          direction: "left" | "right" | "up" | "down"
+          bounds: Bounds
+          area: number
+        } => Boolean(candidate),
+      )
+      .sort((a, b) => {
+        if (b.area !== a.area) return b.area - a.area
+        return a.direction.localeCompare(b.direction)
+      })
+
+    const bestCandidate = candidates[0]
+    if (!bestCandidate) return currentBounds
+
+    currentBounds = bestCandidate.bounds
+  }
+}
+
+const getLargestEmptySpaceFromPoint = (
+  x: number,
+  y: number,
+  boardBounds: Bounds,
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+): Bounds | null => {
+  if (isPointOccupied(x, y, occupiedBounds, occupiedIndex)) return null
+
+  const horizontalSpan = (
+    [
+      "left",
+      "right",
+    ] as const
+  ).reduce(
+    (bounds, direction) =>
+      growBoundsInDirection(
+        bounds,
+        boardBounds,
+        occupiedBounds,
+        occupiedIndex,
+        direction,
+      ),
+    createBounds(
+      x,
+      x,
+      y - GEOMETRY_EPSILON,
+      y + GEOMETRY_EPSILON,
+    ),
+  )
+
+  const verticalSpan = (
+    [
+      "up",
+      "down",
+    ] as const
+  ).reduce(
+    (bounds, direction) =>
+      growBoundsInDirection(
+        bounds,
+        boardBounds,
+        occupiedBounds,
+        occupiedIndex,
+        direction,
+      ),
+    createBounds(
+      x - GEOMETRY_EPSILON,
+      x + GEOMETRY_EPSILON,
+      y,
+      y,
+    ),
+  )
+
+  const horizontalFirst = growRectangleFully(
+    (
+      ["up", "down"] as const
+    ).reduce(
+      (bounds, direction) =>
+        growBoundsInDirection(
+        bounds,
+        boardBounds,
+        occupiedBounds,
+        occupiedIndex,
+        direction,
+      ),
+      horizontalSpan,
+    ),
+    boardBounds,
+    occupiedBounds,
+    occupiedIndex,
+  )
+
+  const verticalFirst = growRectangleFully(
+    (
+      ["left", "right"] as const
+    ).reduce(
+      (bounds, direction) =>
+        growBoundsInDirection(
+        bounds,
+        boardBounds,
+        occupiedBounds,
+        occupiedIndex,
+        direction,
+      ),
+      verticalSpan,
+    ),
+    boardBounds,
+    occupiedBounds,
+    occupiedIndex,
+  )
+
+  const horizontalArea = horizontalFirst.width * horizontalFirst.height
+  const verticalArea = verticalFirst.width * verticalFirst.height
+
+  if (horizontalArea <= GEOMETRY_EPSILON && verticalArea <= GEOMETRY_EPSILON) {
+    return null
+  }
+
+  return horizontalArea >= verticalArea ? horizontalFirst : verticalFirst
+}
+
+const createEmptySpaceIndexItem = (
+  bounds: Bounds,
+  boardArea: number,
+  sequenceNumber: number,
+): EmptySpaceIndexItem => {
+  const area = bounds.width * bounds.height
+  return {
+    id: `empty-space-${sequenceNumber}`,
+    minX: bounds.min_x,
+    minY: bounds.min_y,
+    maxX: bounds.max_x,
+    maxY: bounds.max_y,
+    area,
+    areaPercent: boardArea === 0 ? 0 : (area / boardArea) * 100,
+    bounds: toPlacementBounds(bounds),
+  }
+}
+
+const buildLargeEmptySpaces = (
+  boardBounds: Bounds,
+  occupiedBounds: Bounds[],
+  occupiedIndex: Flatbush | null,
+  boardArea: number,
+  thresholdArea: number,
+): PlacementEmptySpace[] => {
+  const emptySpaceIndex = new RBush<EmptySpaceIndexItem>()
+  const sampleXs = getSampleAxisValues(
+    boardBounds.min_x,
+    boardBounds.max_x,
+    EMPTY_SPACE_SAMPLE_STEP_MM,
+  )
+  const sampleYs = getSampleAxisValues(
+    boardBounds.min_y,
+    boardBounds.max_y,
+    EMPTY_SPACE_SAMPLE_STEP_MM,
+  )
+
+  let sequenceNumber = 0
+
+  for (const y of sampleYs) {
+    for (const x of sampleXs) {
+      const bounds = getLargestEmptySpaceFromPoint(
+        x,
+        y,
+        boardBounds,
+        occupiedBounds,
+        occupiedIndex,
+      )
+
+      if (!bounds) continue
+
+      const area = bounds.width * bounds.height
+      if (area <= thresholdArea) continue
+
+      const candidate = createEmptySpaceIndexItem(bounds, boardArea, sequenceNumber++)
+      const overlappingSpaces = emptySpaceIndex
+        .search(candidate)
+        .filter((space) =>
+          boundsOverlapWithArea(
+            bounds,
+            createBounds(space.minX, space.maxX, space.minY, space.maxY),
+          ),
+        )
+
+      if (overlappingSpaces.some((space) => space.area >= candidate.area)) {
+        continue
+      }
+
+      for (const overlappingSpace of overlappingSpaces) {
+        emptySpaceIndex.remove(overlappingSpace)
+      }
+
+      emptySpaceIndex.insert(candidate)
+    }
+  }
+
+  return emptySpaceIndex
+    .all()
+    .map(({ area, areaPercent, bounds }) => ({
+      area,
+      areaPercent,
+      bounds,
+    }))
+    .sort((a, b) => {
+      if (b.area !== a.area) return b.area - a.area
+      if (a.bounds.min_y !== b.bounds.min_y) {
+        return a.bounds.min_y - b.bounds.min_y
+      }
+      return a.bounds.min_x - b.bounds.min_x
+    })
+}
+
+const buildBoardTopLayerReport = (
+  components: ComponentContext[],
+  boardBounds: Bounds | null,
+): PlacementBoardTopLayerReport | null => {
+  if (!boardBounds) return null
+
+  const boardArea = boardBounds.width * boardBounds.height
+  const largeEmptySpaceThresholdArea =
+    boardArea * LARGE_EMPTY_SPACE_THRESHOLD_RATIO
+
+  const occupancyBounds = components.flatMap((component) =>
+    getTopOccupancyBounds(component)
+      .map((bounds) => getBoundsIntersection(bounds, boardBounds))
+      .filter((bounds): bounds is Bounds => Boolean(bounds)),
+  )
+  const occupiedIndex = buildFlatbushIndex(occupancyBounds)
+
+  const xCoords = getUniqueSortedCoordinates([
+    boardBounds.min_x,
+    boardBounds.max_x,
+    ...occupancyBounds.flatMap((bounds) => [bounds.min_x, bounds.max_x]),
+  ])
+  const yCoords = getUniqueSortedCoordinates([
+    boardBounds.min_y,
+    boardBounds.max_y,
+    ...occupancyBounds.flatMap((bounds) => [bounds.min_y, bounds.max_y]),
+  ])
+
+  const occupied: boolean[][] = []
+  let occupiedArea = 0
+
+  for (let yi = 0; yi < yCoords.length - 1; yi += 1) {
+    const row: boolean[] = []
+
+    for (let xi = 0; xi < xCoords.length - 1; xi += 1) {
+      const cellBounds: Bounds = {
+        min_x: xCoords[xi]!,
+        max_x: xCoords[xi + 1]!,
+        min_y: yCoords[yi]!,
+        max_y: yCoords[yi + 1]!,
+        width: xCoords[xi + 1]! - xCoords[xi]!,
+        height: yCoords[yi + 1]! - yCoords[yi]!,
+      }
+
+      const candidateIndices = occupiedIndex
+        ? occupiedIndex.search(
+            cellBounds.min_x,
+            cellBounds.min_y,
+            cellBounds.max_x,
+            cellBounds.max_y,
+          )
+        : occupancyBounds.map((_, index) => index)
+      const isOccupied = candidateIndices.some((candidateIndex) =>
+        boundsOverlapWithArea(cellBounds, occupancyBounds[candidateIndex]!),
+      )
+
+      row.push(isOccupied)
+      if (isOccupied) occupiedArea += cellBounds.width * cellBounds.height
+    }
+
+    occupied.push(row)
+  }
+
+  const largeEmptySpaces = buildLargeEmptySpaces(
+    boardBounds,
+    occupancyBounds,
+    occupiedIndex,
+    boardArea,
+    largeEmptySpaceThresholdArea,
+  )
+
+  return {
+    boardArea,
+    occupiedArea,
+    utilizationPercent: boardArea === 0 ? 0 : (occupiedArea / boardArea) * 100,
+    largeEmptySpaceThresholdArea,
+    largeEmptySpaces,
+  }
+}
+
 const buildIssues = (
   components: ComponentContext[],
   boardBounds: Bounds | null,
@@ -988,6 +1638,9 @@ const formatSourcePlacement = (component: PlacementComponentStatus): string => {
   return bits.join(", ")
 }
 
+const formatBounds = (bounds: PlacementAreaBounds): string =>
+  `bounds=(minX=${fmtMm(bounds.min_x)}, maxX=${fmtMm(bounds.max_x)}, minY=${fmtMm(bounds.min_y)}, maxY=${fmtMm(bounds.max_y)})`
+
 const formatResolvedPlacement = (
   component: PlacementComponentStatus,
 ): string => {
@@ -1002,9 +1655,7 @@ const formatResolvedPlacement = (
   }
 
   if (bounds) {
-    bits.push(
-      `bounds=(minX=${fmtMm(bounds.min_x)}, maxX=${fmtMm(bounds.max_x)}, minY=${fmtMm(bounds.min_y)}, maxY=${fmtMm(bounds.max_y)})`,
-    )
+    bits.push(formatBounds(bounds))
     bits.push(
       `size=(width=${fmtMm(bounds.width)}, height=${fmtMm(bounds.height)})`,
     )
@@ -1058,6 +1709,36 @@ export const formatPlacementAnalysisReport = (
     }
   }
 
+  if (report.boardTopLayer) {
+    const emptySpaceThresholdPercent =
+      report.boardTopLayer.boardArea === 0
+        ? 0
+        : (report.boardTopLayer.largeEmptySpaceThresholdArea /
+            report.boardTopLayer.boardArea) *
+          100
+
+    lines.push("")
+    lines.push("board top-layer utilization:")
+    lines.push(
+      `- occupied: ${fmtPercent(report.boardTopLayer.utilizationPercent)} (${fmtArea(report.boardTopLayer.occupiedArea)} of ${fmtArea(report.boardTopLayer.boardArea)})`,
+    )
+
+    if (report.boardTopLayer.largeEmptySpaces.length > 0) {
+      lines.push(
+        `- empty spaces over ${fmtPercent(emptySpaceThresholdPercent)} of board area:`,
+      )
+      for (const emptySpace of report.boardTopLayer.largeEmptySpaces) {
+        lines.push(
+          `  - ${fmtPercent(emptySpace.areaPercent)} (${fmtArea(emptySpace.area)}); ${formatBounds(emptySpace.bounds)}`,
+        )
+      }
+    } else {
+      lines.push(
+        `- empty spaces over ${fmtPercent(emptySpaceThresholdPercent)} of board area: none`,
+      )
+    }
+  }
+
   lines.push("")
   lines.push("board-edge status:")
   for (const component of report.components) {
@@ -1100,6 +1781,7 @@ export const buildPlacementAnalysisReport = (
   const issues = buildIssues(components, boardBounds)
   const clusters = buildClusters(components, issues)
   const countsByType = buildCountsByType(issues)
+  const boardTopLayer = buildBoardTopLayerReport(components, boardBounds)
 
   return {
     summary: {
@@ -1108,6 +1790,7 @@ export const buildPlacementAnalysisReport = (
       topIssues: issues.slice(0, TOP_ISSUE_LIMIT),
       likelyBadClusters: clusters,
     },
+    boardTopLayer,
     components: buildComponentStatuses(components, boardBounds, issues),
     issues,
   }

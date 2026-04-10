@@ -74,6 +74,12 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
     likely bad clusters:
     - USB cluster: USB1, R1, R2, C1
 
+    board top-layer utilization:
+    - occupied: 2.899% (11.595mm^2 of 400mm^2)
+    - empty spaces over 5% of board area:
+      - 65.275% (261.1mm^2); bounds=(minX=-5.375mm, maxX=7.68mm, minY=-10mm, maxY=10mm)
+      - 10.375% (41.5mm^2); bounds=(minX=-10mm, maxX=-7.925mm, minY=-10mm, maxY=10mm)
+
     board-edge status:
     - USB1: 1.01mm inside left edge
     - C1: 2.075mm inside left edge
