@@ -25,6 +25,8 @@ type PhysicalShape = {
   layers: LayerRef[]
 }
 
+type BoardSide = "top" | "bottom"
+
 type ComponentContext = {
   name: string
   sourceComponent: CircuitElement
@@ -43,7 +45,7 @@ type ComponentContext = {
   xDefinition?: string
   yDefinition?: string
   pads: PhysicalShape[]
-  courtyards: Bounds[]
+  courtyards: PhysicalShape[]
   isConnectorLike: boolean
   order: number
 }
@@ -64,6 +66,12 @@ const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
 
 const toNumber = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) ? value : null
+
+const getLayer = (value: unknown): LayerRef | null =>
+  typeof value === "string" ? (value as LayerRef) : null
+
+const isBoardSide = (layer: LayerRef | null): layer is BoardSide =>
+  layer === "top" || layer === "bottom"
 
 const fmtNumber = (value: number): string => {
   if (Number.isInteger(value)) return String(value)
@@ -353,6 +361,29 @@ const getLayers = (value: unknown): LayerRef[] => {
   return value.filter((layer): layer is LayerRef => typeof layer === "string")
 }
 
+const getBoardSideFromShape = (shape: PhysicalShape): BoardSide | null => {
+  const hasTop = shape.layers.includes("top")
+  const hasBottom = shape.layers.includes("bottom")
+
+  if (hasTop === hasBottom) return null
+  return hasTop ? "top" : "bottom"
+}
+
+const getComponentSide = (component: ComponentContext): BoardSide | null => {
+  if (isBoardSide(component.layer)) return component.layer
+
+  let inferredSide: BoardSide | null = null
+
+  for (const shape of [...component.courtyards, ...component.pads]) {
+    const side = getBoardSideFromShape(shape)
+    if (!side) continue
+    if (inferredSide && inferredSide !== side) return null
+    inferredSide = side
+  }
+
+  return inferredSide
+}
+
 const buildComponentContexts = (
   circuitJson: CircuitElement[],
 ): {
@@ -443,7 +474,7 @@ const buildComponentContexts = (
 
     context.centerX = center ? toNumber(center.x) : null
     context.centerY = center ? toNumber(center.y) : null
-    context.layer = typeof el.layer === "string" ? (el.layer as LayerRef) : null
+    context.layer = getLayer(el.layer)
     context.width = toNumber(el.width)
     context.height = toNumber(el.height)
 
@@ -500,7 +531,7 @@ const buildComponentContexts = (
       const y = toNumber(el.y)
       const width = toNumber(el.width)
       const height = toNumber(el.height)
-      const layer = typeof el.layer === "string" ? (el.layer as LayerRef) : null
+      const layer = getLayer(el.layer)
 
       if (
         x === null ||
@@ -598,9 +629,11 @@ const buildComponentContexts = (
       )
         continue
 
-      context.courtyards.push(
-        getBoundsFromCenterAndSize(centerX, centerY, width, height),
-      )
+      const layer = getLayer(el.layer) ?? context.layer
+      context.courtyards.push({
+        bounds: getBoundsFromCenterAndSize(centerX, centerY, width, height),
+        layers: layer ? [layer] : [],
+      })
       continue
     }
 
@@ -614,7 +647,13 @@ const buildComponentContexts = (
         ? (el.outline as Array<{ x?: unknown; y?: unknown }>)
         : []
       const bounds = getBoundsFromPoints(outline)
-      if (bounds) context.courtyards.push(bounds)
+      const layer = getLayer(el.layer) ?? context.layer
+      if (bounds) {
+        context.courtyards.push({
+          bounds,
+          layers: layer ? [layer] : [],
+        })
+      }
       continue
     }
 
@@ -628,7 +667,13 @@ const buildComponentContexts = (
         ? (el.points as Array<{ x?: unknown; y?: unknown }>)
         : []
       const bounds = getBoundsFromPoints(points)
-      if (bounds) context.courtyards.push(bounds)
+      const layer = getLayer(el.layer) ?? context.layer
+      if (bounds) {
+        context.courtyards.push({
+          bounds,
+          layers: layer ? [layer] : [],
+        })
+      }
     }
   }
 
@@ -708,8 +753,12 @@ const getTopCopperBounds = (component: ComponentContext): Bounds | null => {
 }
 
 const getTopOccupancyBounds = (component: ComponentContext): Bounds[] => {
-  if (component.layer !== "top") return []
-  if (component.courtyards.length > 0) return component.courtyards
+  if (getComponentSide(component) !== "top") return []
+
+  const topCourtyards = component.courtyards
+    .filter((courtyard) => courtyard.layers.includes("top"))
+    .map((courtyard) => courtyard.bounds)
+  if (topCourtyards.length > 0) return topCourtyards
 
   const topCopperBounds = getTopCopperBounds(component)
   return topCopperBounds ? [topCopperBounds] : []
@@ -770,7 +819,12 @@ const isBoundsEmpty = (
   }
 
   const candidates = occupiedIndex
-    ? occupiedIndex.search(bounds.min_x, bounds.min_y, bounds.max_x, bounds.max_y)
+    ? occupiedIndex.search(
+        bounds.min_x,
+        bounds.min_y,
+        bounds.max_x,
+        bounds.max_y,
+      )
     : occupiedBounds.map((_, index) => index)
 
   return !candidates.some((candidateIndex) =>
@@ -885,7 +939,9 @@ const getExpansionDelta = (
         Math.min(
           bounds.min_x - boardBounds.min_x,
           ...overlappingCandidates
-            .filter((candidate) => candidate.max_x <= bounds.min_x + GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.max_x <= bounds.min_x + GEOMETRY_EPSILON,
+            )
             .map((candidate) => bounds.min_x - candidate.max_x),
         ),
       )
@@ -895,7 +951,9 @@ const getExpansionDelta = (
         Math.min(
           boardBounds.max_x - bounds.max_x,
           ...overlappingCandidates
-            .filter((candidate) => candidate.min_x >= bounds.max_x - GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.min_x >= bounds.max_x - GEOMETRY_EPSILON,
+            )
             .map((candidate) => candidate.min_x - bounds.max_x),
         ),
       )
@@ -905,7 +963,9 @@ const getExpansionDelta = (
         Math.min(
           bounds.min_y - boardBounds.min_y,
           ...overlappingCandidates
-            .filter((candidate) => candidate.max_y <= bounds.min_y + GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.max_y <= bounds.min_y + GEOMETRY_EPSILON,
+            )
             .map((candidate) => bounds.min_y - candidate.max_y),
         ),
       )
@@ -915,7 +975,9 @@ const getExpansionDelta = (
         Math.min(
           boardBounds.max_y - bounds.max_y,
           ...overlappingCandidates
-            .filter((candidate) => candidate.min_y >= bounds.max_y - GEOMETRY_EPSILON)
+            .filter(
+              (candidate) => candidate.min_y >= bounds.max_y - GEOMETRY_EPSILON,
+            )
             .map((candidate) => candidate.min_y - bounds.max_y),
         ),
       )
@@ -990,9 +1052,7 @@ const growRectangleFully = (
   let currentBounds = initialBounds
 
   while (true) {
-    const candidates = (
-      ["left", "right", "up", "down"] as const
-    )
+    const candidates = (["left", "right", "up", "down"] as const)
       .map((direction) => {
         const delta = getExpansionDelta(
           currentBounds,
@@ -1003,7 +1063,8 @@ const growRectangleFully = (
         )
         if (delta <= GEOMETRY_EPSILON) return null
         const nextBounds = expandBounds(currentBounds, direction, delta)
-        if (!isBoundsEmpty(nextBounds, occupiedBounds, occupiedIndex)) return null
+        if (!isBoundsEmpty(nextBounds, occupiedBounds, occupiedIndex))
+          return null
         return {
           direction,
           bounds: nextBounds,
@@ -1040,12 +1101,7 @@ const getLargestEmptySpaceFromPoint = (
 ): Bounds | null => {
   if (isPointOccupied(x, y, occupiedBounds, occupiedIndex)) return null
 
-  const horizontalSpan = (
-    [
-      "left",
-      "right",
-    ] as const
-  ).reduce(
+  const horizontalSpan = (["left", "right"] as const).reduce(
     (bounds, direction) =>
       growBoundsInDirection(
         bounds,
@@ -1054,20 +1110,10 @@ const getLargestEmptySpaceFromPoint = (
         occupiedIndex,
         direction,
       ),
-    createBounds(
-      x,
-      x,
-      y - GEOMETRY_EPSILON,
-      y + GEOMETRY_EPSILON,
-    ),
+    createBounds(x, x, y - GEOMETRY_EPSILON, y + GEOMETRY_EPSILON),
   )
 
-  const verticalSpan = (
-    [
-      "up",
-      "down",
-    ] as const
-  ).reduce(
+  const verticalSpan = (["up", "down"] as const).reduce(
     (bounds, direction) =>
       growBoundsInDirection(
         bounds,
@@ -1076,26 +1122,19 @@ const getLargestEmptySpaceFromPoint = (
         occupiedIndex,
         direction,
       ),
-    createBounds(
-      x - GEOMETRY_EPSILON,
-      x + GEOMETRY_EPSILON,
-      y,
-      y,
-    ),
+    createBounds(x - GEOMETRY_EPSILON, x + GEOMETRY_EPSILON, y, y),
   )
 
   const horizontalFirst = growRectangleFully(
-    (
-      ["up", "down"] as const
-    ).reduce(
+    (["up", "down"] as const).reduce(
       (bounds, direction) =>
         growBoundsInDirection(
-        bounds,
-        boardBounds,
-        occupiedBounds,
-        occupiedIndex,
-        direction,
-      ),
+          bounds,
+          boardBounds,
+          occupiedBounds,
+          occupiedIndex,
+          direction,
+        ),
       horizontalSpan,
     ),
     boardBounds,
@@ -1104,17 +1143,15 @@ const getLargestEmptySpaceFromPoint = (
   )
 
   const verticalFirst = growRectangleFully(
-    (
-      ["left", "right"] as const
-    ).reduce(
+    (["left", "right"] as const).reduce(
       (bounds, direction) =>
         growBoundsInDirection(
-        bounds,
-        boardBounds,
-        occupiedBounds,
-        occupiedIndex,
-        direction,
-      ),
+          bounds,
+          boardBounds,
+          occupiedBounds,
+          occupiedIndex,
+          direction,
+        ),
       verticalSpan,
     ),
     boardBounds,
@@ -1186,7 +1223,11 @@ const buildLargeEmptySpaces = (
       const area = bounds.width * bounds.height
       if (area <= thresholdArea) continue
 
-      const candidate = createEmptySpaceIndexItem(bounds, boardArea, sequenceNumber++)
+      const candidate = createEmptySpaceIndexItem(
+        bounds,
+        boardArea,
+        sequenceNumber++,
+      )
       const overlappingSpaces = emptySpaceIndex
         .search(candidate)
         .filter((space) =>
@@ -1339,7 +1380,10 @@ const buildIssues = (
       if (!b) continue
 
       if (!a.bounds || !b.bounds) continue
-      if (a.layer !== null && b.layer !== null && a.layer !== b.layer) continue
+
+      const sideA = getComponentSide(a)
+      const sideB = getComponentSide(b)
+      if (sideA !== null && sideB !== null && sideA !== sideB) continue
 
       let strongestPadOverlap: {
         overlapX: number
@@ -1371,7 +1415,8 @@ const buildIssues = (
       if (!strongestPadOverlap) {
         for (const courtyardA of a.courtyards) {
           for (const courtyardB of b.courtyards) {
-            const overlap = getOverlap(courtyardA, courtyardB)
+            if (!layersIntersect(courtyardA.layers, courtyardB.layers)) continue
+            const overlap = getOverlap(courtyardA.bounds, courtyardB.bounds)
             if (!overlap) continue
             if (
               !strongestCourtyardOverlap ||
@@ -1598,11 +1643,11 @@ const buildComponentStatuses = (
         center:
           component.centerX !== null &&
           component.centerY !== null &&
-          component.layer !== null
+          (component.layer !== null || getComponentSide(component) !== null)
             ? {
                 x: component.centerX,
                 y: component.centerY,
-                layer: component.layer,
+                layer: component.layer ?? getComponentSide(component)!,
               }
             : undefined,
         bounds: component.bounds
