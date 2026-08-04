@@ -115,6 +115,7 @@ export type PlacementIssueType =
   | "courtyard_collision"
   | "connector_body_intrusion"
   | "footprint_intrusion"
+  | "avoidable_via_by_rotation"
 
 export interface PlacementIssue {
   type: PlacementIssueType
@@ -124,6 +125,9 @@ export interface PlacementIssue {
   severity: number
   summary: string
   suggested_move?: string
+  suggested_pcb_rotation_delta_degrees?: number
+  avoidable_via_count?: number
+  related_pcb_trace_ids?: string[]
 }
 
 export interface PlacementCluster {

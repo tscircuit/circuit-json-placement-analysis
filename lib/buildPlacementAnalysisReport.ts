@@ -1,6 +1,7 @@
 import Flatbush from "flatbush"
 import RBush from "rbush"
 import type { LayerRef, NinePointAnchor } from "circuit-json"
+import { detectAvoidableViaRotations } from "./detectAvoidableViaRotations"
 import type {
   PlacementAreaBounds,
   ComponentBoardEdgeStatus,
@@ -62,6 +63,7 @@ const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "courtyard_collision",
   "connector_body_intrusion",
   "footprint_intrusion",
+  "avoidable_via_by_rotation",
 ]
 
 const toNumber = (value: unknown): number | null =>
@@ -207,6 +209,8 @@ const getSummaryLabel = (
       return `${count} connector-body intrusion${count === 1 ? "" : "s"}`
     case "footprint_intrusion":
       return `${count} footprint intrusion${count === 1 ? "" : "s"}`
+    case "avoidable_via_by_rotation":
+      return `${count} avoidable-via rotation${count === 1 ? "" : "s"}`
   }
 }
 
@@ -1716,9 +1720,12 @@ const formatResolvedPlacement = (
 }
 
 const formatIssue = (issue: PlacementIssue): string => {
-  const suffix = issue.suggested_move
-    ? ` Suggested move: ${issue.suggested_move}.`
-    : ""
+  const suggestion = issue.suggested_move
+    ? `Suggested move: ${issue.suggested_move}`
+    : issue.suggested_pcb_rotation_delta_degrees !== undefined
+      ? `Suggested rotation: rotate ${issue.componentA} ${fmtNumber(issue.suggested_pcb_rotation_delta_degrees)}\u00b0 to uncross its connections and potentially remove ${issue.avoidable_via_count ?? 0} via${issue.avoidable_via_count === 1 ? "" : "s"}`
+      : null
+  const suffix = suggestion ? ` ${suggestion}.` : ""
   return `${issue.summary}.${suffix}`
 }
 
@@ -1823,7 +1830,10 @@ export const buildPlacementAnalysisReport = (
   circuitJson: CircuitElement[],
 ): PlacementAnalysisReport => {
   const { components, boardBounds } = buildComponentContexts(circuitJson)
-  const issues = buildIssues(components, boardBounds)
+  const issues = [
+    ...buildIssues(components, boardBounds),
+    ...detectAvoidableViaRotations(circuitJson),
+  ].sort((a, b) => b.severity - a.severity)
   const clusters = buildClusters(components, issues)
   const countsByType = buildCountsByType(issues)
   const boardTopLayer = buildBoardTopLayerReport(components, boardBounds)

@@ -67,6 +67,24 @@ report.issues[0]
 // }
 ```
 
+The report also identifies routed crossovers at symmetric, interchangeable
+two-pin parts. When a trace changes layers to cross the other pin's route and a
+180-degree component rotation would uncross and shorten both connections, the
+report includes an `avoidable_via_by_rotation` issue:
+
+```ts
+{
+  type: "avoidable_via_by_rotation",
+  componentA: "C_BIAS_PRE1",
+  clearance: 0,
+  severity: 103.904,
+  summary: "C_BIAS_PRE1 has crossed two-pin connections using 2 vias",
+  avoidable_via_count: 2,
+  suggested_pcb_rotation_delta_degrees: 180,
+  related_pcb_trace_ids: ["pcb_trace_1", "pcb_trace_2"],
+}
+```
+
 The summary string returned by `getString()` now starts with:
 
 - A short failure summary
