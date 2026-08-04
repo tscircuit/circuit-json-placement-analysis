@@ -4,19 +4,23 @@ import { analyzeAllPlacements } from "../lib/index"
 
 test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error", () => {
   const circuitJson = JSON.parse(
-    readFileSync(new URL("./assets/usb-audio-device.json", import.meta.url), "utf8"),
+    readFileSync(
+      new URL("./assets/usb-audio-device.json", import.meta.url),
+      "utf8",
+    ),
   )
 
   const analysis = analyzeAllPlacements(circuitJson)
 
   expect(analysis.getString()).toMatchInlineSnapshot(`
-    "placement summary: 2 courtyard collisions, 2 footprint intrusions
+    "placement summary: 2 courtyard collisions, 2 footprint intrusions, 5 avoidable-via rotations
 
     worst issues:
     1. Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
     2. U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
     3. Y1 and J3 courtyard collision by 0.17mm. Suggested move: move Y1 0.17mm left.
     4. C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
+    5. C1 has crossed two-pin connections using 2 vias. Suggested rotation: rotate C1 180° to uncross its connections and potentially remove 2 vias.
 
     likely bad clusters:
     - J3 cluster: Y1, C7, J3
@@ -65,12 +69,25 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
     - J4: 1.17mm inside bottom edge
 
     flagged components:
+    - C1
+      source placement: placement_mode=none
+      resolved placement: center=(-15.8mm, -2.8mm) on top; bounds=(minX=-17.025mm, maxX=-14.575mm, minY=-3.275mm, maxY=-2.325mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
+      board edge status: 10.475mm inside left edge
+      issues:
+      - C1 has crossed two-pin connections using 2 vias. Suggested rotation: rotate C1 180° to uncross its connections and potentially remove 2 vias.
+    - C4
+      source placement: placement_mode=none
+      resolved placement: center=(-12.5mm, 12mm) on top; bounds=(minX=-13.925mm, maxX=-11.075mm, minY=11.3mm, maxY=12.7mm); size=(width=2.85mm, height=1.4mm); anchor_alignment="center"
+      board edge status: 2.3mm inside bottom edge
+      issues:
+      - C4 has crossed two-pin connections using 2 vias. Suggested rotation: rotate C4 180° to uncross its connections and potentially remove 2 vias.
     - C5
       source placement: placement_mode=none
       resolved placement: center=(-8.9mm, 7.6mm) on top; bounds=(minX=-10.325mm, maxX=-7.475mm, minY=6.9mm, maxY=8.3mm); size=(width=2.85mm, height=1.4mm); anchor_alignment="center"
       board edge status: 6.7mm inside bottom edge
       issues:
       - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
+      - C5 has crossed two-pin connections using 2 vias. Suggested rotation: rotate C5 180° to uncross its connections and potentially remove 2 vias.
     - U1
       source placement: placement_mode=none
       resolved placement: center=(-1mm, 0mm) on top; bounds=(minX=-7.4mm, maxX=5.4mm, minY=-6.4mm, maxY=6.4mm); size=(width=12.8mm, height=12.8mm); anchor_alignment="center"
@@ -97,6 +114,18 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       board edge status: 4.195mm inside top edge
       issues:
       - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
+    - C9
+      source placement: placement_mode=none
+      resolved placement: center=(-8.6mm, 2.75mm) on top; bounds=(minX=-9.38mm, maxX=-7.82mm, minY=2.43mm, maxY=3.07mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
+      board edge status: 11.93mm inside bottom edge
+      issues:
+      - C9 has crossed two-pin connections using 2 vias. Suggested rotation: rotate C9 180° to uncross its connections and potentially remove 2 vias.
+    - C16
+      source placement: placement_mode=none
+      resolved placement: center=(6.8mm, -3.4mm) on top; bounds=(minX=6.02mm, maxX=7.58mm, minY=-3.72mm, maxY=-3.08mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
+      board edge status: 11.28mm inside top edge
+      issues:
+      - C16 has crossed two-pin connections using 2 vias. Suggested rotation: rotate C16 180° to uncross its connections and potentially remove 2 vias.
     - J3
       source placement: placement_mode=none
       resolved placement: center=(24.23mm, -8mm) on top; bounds=(minX=22.21mm, maxX=26.25mm, minY=-13.83mm, maxY=-2.17mm); size=(width=4.04mm, height=11.66mm); anchor_alignment="center"; orientation=vertical
