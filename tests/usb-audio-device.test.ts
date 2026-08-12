@@ -1,8 +1,10 @@
+import "bun-match-svg"
 import { expect, test } from "bun:test"
+import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
 import { readFileSync } from "node:fs"
 import { analyzeAllPlacements } from "../lib/index"
 
-test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error", () => {
+test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error", async () => {
   const circuitJson = JSON.parse(
     readFileSync(
       new URL("./assets/usb-audio-device.json", import.meta.url),
@@ -13,22 +15,22 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
   const analysis = analyzeAllPlacements(circuitJson)
 
   expect(analysis.getString()).toMatchInlineSnapshot(`
-    "placement summary: 2 courtyard collisions, 2 footprint intrusions
+    "placement summary: 5 courtyard collisions, 2 footprint intrusions
 
     worst issues:
     1. Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
     2. U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
-    3. Y1 and J3 courtyard collision by 0.17mm. Suggested move: move Y1 0.17mm left.
-    4. C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
+    3. C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm up.
+    4. U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
+    5. C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm up.
 
     likely bad clusters:
-    - J3 cluster: Y1, C7, J3
-    - U1 cluster: U1, U4, C5
+    - J2 cluster: U1, J2, C13, U4, C10, C15, C5
 
     board top-layer utilization:
-    - occupied: 45.961% (758.358mm^2 of 1650mm^2)
+    - occupied: 48.57% (801.412mm^2 of 1650mm^2)
     - empty spaces over 5% of board area:
-      - 7.571% (124.923mm^2); bounds=(minX=9.93mm, maxX=27.5mm, minY=-2.15mm, maxY=4.96mm)
+      - 7.397% (122.058mm^2); bounds=(minX=9.93mm, maxX=21.19mm, minY=-2.15mm, maxY=8.69mm)
       - 7.259% (119.769mm^2); bounds=(minX=-27.5mm, maxX=4.87mm, minY=-15mm, maxY=-11.3mm)
 
     board-edge status:
@@ -80,6 +82,7 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       board edge status: 8.6mm inside top edge
       issues:
       - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
+      - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
       - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
     - Y1
       source placement: placement_mode=none
@@ -87,7 +90,6 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       board edge status: 1.08mm inside top edge
       issues:
       - Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
-      - Y1 and J3 courtyard collision by 0.17mm. Suggested move: move Y1 0.17mm left.
     - C7
       source placement: placement_mode=none
       resolved placement: center=(15.8mm, -14.2mm) on top; bounds=(minX=15.02mm, maxX=16.58mm, minY=-14.52mm, maxY=-13.88mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
@@ -100,11 +102,72 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       board edge status: 4.195mm inside top edge
       issues:
       - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
-    - J3
+    - C10
       source placement: placement_mode=none
-      resolved placement: center=(24.23mm, -8mm) on top; bounds=(minX=22.21mm, maxX=26.25mm, minY=-13.83mm, maxY=-2.17mm); size=(width=4.04mm, height=11.66mm); anchor_alignment="center"; orientation=vertical
-      board edge status: 1.17mm inside top edge
+      resolved placement: center=(-1.25mm, 7.85mm) on top; bounds=(minX=-1.52mm, maxX=-0.98mm, minY=7.02mm, maxY=8.68mm); size=(width=0.54mm, height=1.66mm); anchor_alignment="center"
+      board edge status: 6.32mm inside bottom edge
       issues:
-      - Y1 and J3 courtyard collision by 0.17mm. Suggested move: move Y1 0.17mm left."
+      - C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm up.
+    - C13
+      source placement: placement_mode=none
+      resolved placement: center=(-4mm, 7.7mm) on top; bounds=(minX=-4.4mm, maxX=-3.6mm, minY=6.4mm, maxY=9mm); size=(width=0.8mm, height=2.6mm); anchor_alignment="center"
+      board edge status: 6mm inside bottom edge
+      issues:
+      - C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm up.
+      - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
+    - C15
+      source placement: placement_mode=none
+      resolved placement: center=(1.5mm, 7.85mm) on top; bounds=(minX=1.23mm, maxX=1.77mm, minY=7.02mm, maxY=8.68mm); size=(width=0.54mm, height=1.66mm); anchor_alignment="center"
+      board edge status: 6.32mm inside bottom edge
+      issues:
+      - C15 and J2 courtyard collision by 0.09mm. Suggested move: move C15 0.09mm up.
+    - J2
+      source placement: placement_mode=none
+      resolved placement: center=(0mm, 11.73mm) on top; bounds=(minX=-9.64mm, maxX=9.64mm, minY=9.71mm, maxY=13.75mm); size=(width=19.28mm, height=4.04mm); anchor_alignment="center"; orientation=horizontal
+      board edge status: 1.25mm inside bottom edge
+      issues:
+      - C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm up.
+      - C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm up.
+      - C15 and J2 courtyard collision by 0.09mm. Suggested move: move C15 0.09mm up."
   `)
+
+  const focusedComponentNames = new Set(["C5", "U1", "C10", "C13", "C15", "J2"])
+  const focusedSourceComponentIds = new Set(
+    circuitJson
+      .filter(
+        (element: any) =>
+          element.type === "source_component" &&
+          focusedComponentNames.has(element.name),
+      )
+      .map((element: any) => element.source_component_id),
+  )
+  const focusedPcbComponentIds = new Set(
+    circuitJson
+      .filter(
+        (element: any) =>
+          element.type === "pcb_component" &&
+          focusedSourceComponentIds.has(element.source_component_id),
+      )
+      .map((element: any) => element.pcb_component_id),
+  )
+  const focusedCircuitJson = circuitJson.filter((element: any) => {
+    if (
+      typeof element.type === "string" &&
+      (element.type.endsWith("_error") || element.type.endsWith("_warning"))
+    ) {
+      return false
+    }
+
+    return (
+      focusedSourceComponentIds.has(element.source_component_id) ||
+      focusedPcbComponentIds.has(element.pcb_component_id)
+    )
+  })
+
+  await expect(
+    convertCircuitJsonToPcbSvg(focusedCircuitJson, {
+      showCourtyards: true,
+      shouldDrawErrors: false,
+    }),
+  ).toMatchSvgSnapshot(import.meta.path, "rotated-courtyard-collisions")
 })

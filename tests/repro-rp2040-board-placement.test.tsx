@@ -162,11 +162,11 @@ test("placement analysis includes position and size for rendered RP2040 board", 
     "placement summary: no placement issues
 
     board top-layer utilization:
-    - occupied: 6.28% (105.499mm^2 of 1680mm^2)
+    - occupied: 7.797% (130.987mm^2 of 1680mm^2)
     - empty spaces over 5% of board area:
-      - 40.721% (684.11mm^2); bounds=(minX=-22.9mm, maxX=10.8mm, minY=-6.3mm, maxY=14mm)
-      - 10.57% (177.58mm^2); bounds=(minX=15.48mm, maxX=30mm, minY=-14mm, maxY=-1.77mm)
+      - 54.532% (916.139mm^2); bounds=(minX=-22.9mm, maxX=22.23mm, minY=-6.3mm, maxY=14mm)
       - 8.167% (137.2mm^2); bounds=(minX=-30mm, maxX=-25.1mm, minY=-14mm, maxY=14mm)
+      - 7.05% (118.44mm^2); bounds=(minX=25.77mm, maxX=30mm, minY=-14mm, maxY=14mm)
 
     board-edge status:
     - U1: 10.5mm inside bottom edge
