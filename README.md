@@ -67,6 +67,11 @@ report.issues[0]
 // }
 ```
 
+For two-pin components with two direct pin-to-pin connections, the report can
+also emit a `suboptimal_orientation` issue when both connections cross the
+centerline between the component's pads and block that routing channel. Its
+suggested move recommends rotating the component 180 degrees.
+
 The summary string returned by `getString()` now starts with:
 
 - A short failure summary

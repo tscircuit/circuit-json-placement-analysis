@@ -115,6 +115,7 @@ export type PlacementIssueType =
   | "courtyard_collision"
   | "connector_body_intrusion"
   | "footprint_intrusion"
+  | "suboptimal_orientation"
 
 export interface PlacementIssue {
   type: PlacementIssueType
