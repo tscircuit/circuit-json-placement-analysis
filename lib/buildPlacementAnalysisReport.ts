@@ -1,6 +1,6 @@
 import Flatbush from "flatbush"
 import RBush from "rbush"
-import type { LayerRef, NinePointAnchor } from "circuit-json"
+import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
 import type {
   PlacementAreaBounds,
   ComponentBoardEdgeStatus,
@@ -27,10 +27,32 @@ type PhysicalShape = {
 
 type BoardSide = "top" | "bottom"
 
+type SourcePortId = string
+type SourceComponentId = string
+
+const isPcbPort = (
+  circuitElement: CircuitElement,
+): circuitElement is CircuitElement & PcbPort => {
+  if (circuitElement.type !== "pcb_port") return false
+  if (typeof circuitElement.pcb_port_id !== "string") return false
+  if (typeof circuitElement.source_port_id !== "string") return false
+  if (typeof circuitElement.x !== "number") return false
+  if (!Number.isFinite(circuitElement.x)) return false
+  if (typeof circuitElement.y !== "number") return false
+  if (!Number.isFinite(circuitElement.y)) return false
+  if (!Array.isArray(circuitElement.layers)) return false
+
+  for (const layer of circuitElement.layers) {
+    if (typeof layer !== "string") return false
+  }
+
+  return true
+}
+
 type ComponentContext = {
   name: string
   sourceComponent: CircuitElement
-  sourceComponentId: string
+  sourceComponentId: SourceComponentId
   pcbComponent: CircuitElement | null
   pcbComponentId: string | null
   centerX: number | null
@@ -55,6 +77,7 @@ const CENTER_ANCHOR = "center"
 const LARGE_EMPTY_SPACE_THRESHOLD_RATIO = 0.05
 const EMPTY_SPACE_SAMPLE_STEP_MM = 5
 const GEOMETRY_EPSILON = 1e-6
+const SUBOPTIMAL_ORIENTATION_SEVERITY = 100
 
 const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "pad_overlap",
@@ -62,6 +85,7 @@ const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "courtyard_collision",
   "connector_body_intrusion",
   "footprint_intrusion",
+  "suboptimal_orientation",
 ]
 
 const toNumber = (value: unknown): number | null =>
@@ -233,6 +257,9 @@ const getSummaryLabel = (
       return `${count} connector-body intrusion${count === 1 ? "" : "s"}`
     case "footprint_intrusion":
       return `${count} footprint intrusion${count === 1 ? "" : "s"}`
+    case "suboptimal_orientation":
+      if (count === 1) return "1 suboptimal orientation"
+      return `${count} suboptimal orientations`
   }
 }
 
@@ -1378,10 +1405,224 @@ const buildBoardTopLayerReport = (
   }
 }
 
-const buildIssues = (
+type PcbPortIndexes = {
+  pcbPortBySourcePortId: Map<SourcePortId, PcbPort>
+  pcbPortsBySourceComponentId: Map<SourceComponentId, PcbPort[]>
+  sourceComponentIdBySourcePortId: Map<SourcePortId, SourceComponentId>
+}
+
+const buildDirectlyConnectedSourcePortIdsBySourcePortId = (
+  circuitJson: CircuitElement[],
+): Map<SourcePortId, Set<SourcePortId>> => {
+  const directlyConnectedSourcePortIdsBySourcePortId = new Map<
+    SourcePortId,
+    Set<SourcePortId>
+  >()
+
+  for (const element of circuitJson) {
+    if (element.type !== "source_trace") continue
+    if (!Array.isArray(element.connected_source_port_ids)) continue
+
+    const connectedSourcePortIds = element.connected_source_port_ids.filter(
+      (sourcePortId): sourcePortId is SourcePortId =>
+        typeof sourcePortId === "string",
+    )
+    if (connectedSourcePortIds.length !== 2) continue
+
+    if (Array.isArray(element.connected_source_net_ids)) {
+      const connectedSourceNetIds = element.connected_source_net_ids.filter(
+        (sourceNetId) => typeof sourceNetId === "string",
+      )
+      if (connectedSourceNetIds.length !== 0) continue
+    }
+
+    const [firstSourcePortId, secondSourcePortId] = connectedSourcePortIds
+    if (!firstSourcePortId || !secondSourcePortId) continue
+
+    const connectedSourcePortPairs: [SourcePortId, SourcePortId][] = [
+      [firstSourcePortId, secondSourcePortId],
+      [secondSourcePortId, firstSourcePortId],
+    ]
+
+    for (const [
+      sourcePortId,
+      connectedSourcePortId,
+    ] of connectedSourcePortPairs) {
+      let directlyConnectedSourcePortIds =
+        directlyConnectedSourcePortIdsBySourcePortId.get(sourcePortId)
+      if (!directlyConnectedSourcePortIds) {
+        directlyConnectedSourcePortIds = new Set<SourcePortId>()
+        directlyConnectedSourcePortIdsBySourcePortId.set(
+          sourcePortId,
+          directlyConnectedSourcePortIds,
+        )
+      }
+      directlyConnectedSourcePortIds.add(connectedSourcePortId)
+    }
+  }
+
+  return directlyConnectedSourcePortIdsBySourcePortId
+}
+
+const buildPcbPortIndexes = (circuitJson: CircuitElement[]): PcbPortIndexes => {
+  const sourceComponentIdBySourcePortId = new Map<
+    SourcePortId,
+    SourceComponentId
+  >()
+  const pcbPortBySourcePortId = new Map<SourcePortId, PcbPort>()
+  const pcbPortsBySourceComponentId = new Map<SourceComponentId, PcbPort[]>()
+
+  for (const element of circuitJson) {
+    if (
+      element.type === "source_port" &&
+      typeof element.source_port_id === "string" &&
+      typeof element.source_component_id === "string"
+    ) {
+      sourceComponentIdBySourcePortId.set(
+        element.source_port_id,
+        element.source_component_id,
+      )
+    }
+  }
+
+  for (const element of circuitJson) {
+    if (!isPcbPort(element)) continue
+
+    const pcbPort = element
+
+    const sourceComponentId = sourceComponentIdBySourcePortId.get(
+      pcbPort.source_port_id,
+    )
+    if (!sourceComponentId) continue
+
+    pcbPortBySourcePortId.set(pcbPort.source_port_id, pcbPort)
+
+    let componentPcbPorts = pcbPortsBySourceComponentId.get(sourceComponentId)
+    if (!componentPcbPorts) {
+      componentPcbPorts = []
+      pcbPortsBySourceComponentId.set(sourceComponentId, componentPcbPorts)
+    }
+    componentPcbPorts.push(pcbPort)
+  }
+
+  return {
+    pcbPortBySourcePortId,
+    pcbPortsBySourceComponentId,
+    sourceComponentIdBySourcePortId,
+  }
+}
+
+const doesDirectConnectionCrossPadCenterline = ({
+  pcbPort,
+  connectedPcbPort,
+  firstComponentPcbPort,
+  secondComponentPcbPort,
+}: {
+  pcbPort: PcbPort
+  connectedPcbPort: PcbPort
+  firstComponentPcbPort: PcbPort
+  secondComponentPcbPort: PcbPort
+}): boolean => {
+  const padCenterlineX =
+    (firstComponentPcbPort.x + secondComponentPcbPort.x) / 2
+  const padCenterlineY =
+    (firstComponentPcbPort.y + secondComponentPcbPort.y) / 2
+  const padAxisX = secondComponentPcbPort.x - firstComponentPcbPort.x
+  const padAxisY = secondComponentPcbPort.y - firstComponentPcbPort.y
+  const pcbPortSide =
+    (pcbPort.x - padCenterlineX) * padAxisX +
+    (pcbPort.y - padCenterlineY) * padAxisY
+  const connectedPcbPortSide =
+    (connectedPcbPort.x - padCenterlineX) * padAxisX +
+    (connectedPcbPort.y - padCenterlineY) * padAxisY
+
+  if (pcbPortSide > GEOMETRY_EPSILON) {
+    return connectedPcbPortSide <= GEOMETRY_EPSILON
+  }
+  if (pcbPortSide < -GEOMETRY_EPSILON) {
+    return connectedPcbPortSide >= -GEOMETRY_EPSILON
+  }
+
+  return false
+}
+
+const buildSuboptimalOrientationIssues = (
+  circuitJson: CircuitElement[],
   components: ComponentContext[],
-  boardBounds: Bounds | null,
 ): PlacementIssue[] => {
+  const issues: PlacementIssue[] = []
+  const pcbPortIndexes = buildPcbPortIndexes(circuitJson)
+  const directlyConnectedSourcePortIdsBySourcePortId =
+    buildDirectlyConnectedSourcePortIdsBySourcePortId(circuitJson)
+
+  for (const component of components) {
+    const componentPcbPorts = pcbPortIndexes.pcbPortsBySourceComponentId.get(
+      component.sourceComponentId,
+    )
+    if (!componentPcbPorts || componentPcbPorts.length !== 2) continue
+
+    const [firstComponentPcbPort, secondComponentPcbPort] = componentPcbPorts
+    if (!firstComponentPcbPort || !secondComponentPcbPort) continue
+
+    let crossingConnectionCount = 0
+
+    for (const pcbPort of componentPcbPorts) {
+      const directlyConnectedSourcePortIds =
+        directlyConnectedSourcePortIdsBySourcePortId.get(pcbPort.source_port_id)
+      if (!directlyConnectedSourcePortIds) break
+      if (directlyConnectedSourcePortIds.size !== 1) break
+
+      const [connectedSourcePortId] = directlyConnectedSourcePortIds
+      if (!connectedSourcePortId) break
+
+      const connectedPcbPort = pcbPortIndexes.pcbPortBySourcePortId.get(
+        connectedSourcePortId,
+      )
+      if (!connectedPcbPort) break
+
+      const connectedSourceComponentId =
+        pcbPortIndexes.sourceComponentIdBySourcePortId.get(
+          connectedSourcePortId,
+        )
+      if (connectedSourceComponentId === component.sourceComponentId) break
+
+      const crossesPadCenterline = doesDirectConnectionCrossPadCenterline({
+        pcbPort,
+        connectedPcbPort,
+        firstComponentPcbPort,
+        secondComponentPcbPort,
+      })
+      if (!crossesPadCenterline) break
+
+      crossingConnectionCount += 1
+    }
+
+    if (crossingConnectionCount !== 2) continue
+
+    issues.push(
+      createIssue({
+        type: "suboptimal_orientation",
+        componentA: component.name,
+        clearance: 0,
+        severity: SUBOPTIMAL_ORIENTATION_SEVERITY,
+        summary: `${component.name} direct traces cross the routing path between its pads`,
+        suggested_move: `rotate ${component.name} 180 degrees`,
+      }),
+    )
+  }
+
+  return issues
+}
+
+const buildIssues = ({
+  circuitJson,
+  components,
+  boardBounds,
+}: {
+  circuitJson: CircuitElement[]
+  components: ComponentContext[]
+  boardBounds: Bounds | null
+}): PlacementIssue[] => {
   const issues: PlacementIssue[] = []
 
   for (const component of components) {
@@ -1548,6 +1789,8 @@ const buildIssues = (
       }
     }
   }
+
+  issues.push(...buildSuboptimalOrientationIssues(circuitJson, components))
 
   return issues.sort((a, b) => b.severity - a.severity)
 }
@@ -1856,7 +2099,7 @@ export const buildPlacementAnalysisReport = (
   circuitJson: CircuitElement[],
 ): PlacementAnalysisReport => {
   const { components, boardBounds } = buildComponentContexts(circuitJson)
-  const issues = buildIssues(components, boardBounds)
+  const issues = buildIssues({ circuitJson, components, boardBounds })
   const clusters = buildClusters(components, issues)
   const countsByType = buildCountsByType(issues)
   const boardTopLayer = buildBoardTopLayerReport(components, boardBounds)

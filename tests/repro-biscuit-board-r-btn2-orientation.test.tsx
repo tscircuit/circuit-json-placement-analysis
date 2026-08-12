@@ -3,7 +3,7 @@ import "bun-match-svg"
 import { expect, test } from "bun:test"
 import { convertCircuitJsonToPcbSvg } from "circuit-to-svg"
 import { Circuit } from "tscircuit"
-import { analyzeComponentPlacement } from "../lib/index"
+import { analyzeAllPlacements } from "../lib/index"
 
 const ButtonFootprint = () => (
   <footprint>
@@ -44,7 +44,11 @@ const ButtonFootprint = () => (
   </footprint>
 )
 
-const renderButtonCircuit = async () => {
+const renderButtonCircuit = async ({
+  rBtn2PcbRotation,
+}: {
+  rBtn2PcbRotation: number
+}) => {
   const circuit = new Circuit()
 
   circuit.add(
@@ -73,6 +77,7 @@ const renderButtonCircuit = async () => {
         footprint="0603"
         pcbX={0}
         pcbY={0}
+        pcbRotation={rBtn2PcbRotation}
       />
       <connector
         name="J_V3V3"
@@ -100,14 +105,54 @@ const renderButtonCircuit = async () => {
   return circuit.getCircuitJson()
 }
 
-test("repro: biscuit-board R_BTN2 current orientation", async () => {
-  const circuitJson = await renderButtonCircuit()
-  const analysis = analyzeComponentPlacement(circuitJson, "R_BTN2")
+test("warns that biscuit-board R_BTN2 should rotate 180 degrees", async () => {
+  const circuitJson = await renderButtonCircuit({ rBtn2PcbRotation: 0 })
+  const analysis = analyzeAllPlacements(circuitJson)
 
-  expect(analysis.getString()).toContain(
-    "R_BTN2.pin2 -> SW_BTN2.A distance: 4.831mm",
-  )
+  expect(analysis.getIssues()).toContainEqual({
+    type: "suboptimal_orientation",
+    componentA: "R_BTN2",
+    clearance: 0,
+    severity: 100,
+    summary: "R_BTN2 direct traces cross the routing path between its pads",
+    suggested_move: "rotate R_BTN2 180 degrees",
+  })
+  expect(analysis.getString()).toMatchInlineSnapshot(`
+    "placement summary: 1 suboptimal orientation
+
+    worst issues:
+    1. R_BTN2 direct traces cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees.
+
+    board top-layer utilization:
+    - occupied: 15.881% (62.252mm^2 of 392mm^2)
+    - empty spaces over 5% of board area:
+      - 31.321% (122.78mm^2); bounds=(minX=1.48mm, maxX=10.25mm, minY=-7mm, maxY=7mm)
+      - 8.036% (31.5mm^2); bounds=(minX=11.75mm, maxX=14mm, minY=-7mm, maxY=7mm)
+      - 6.071% (23.8mm^2); bounds=(minX=-14mm, maxX=-12.3mm, minY=-7mm, maxY=7mm)
+
+    board-edge status:
+    - SW_BTN2: 1.7mm inside left edge
+    - R_BTN2: 6.525mm inside top edge
+    - J_V3V3: 2.25mm inside right edge
+
+    flagged components:
+    - R_BTN2
+      source placement: placement_mode=none
+      resolved placement: center=(0mm, 0mm) on top; bounds=(minX=-1.225mm, maxX=1.225mm, minY=-0.475mm, maxY=0.475mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
+      board edge status: 6.525mm inside top edge
+      issues:
+      - R_BTN2 direct traces cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees."
+  `)
   await expect(
     convertCircuitJsonToPcbSvg(circuitJson, { shouldDrawErrors: true }),
   ).toMatchSvgSnapshot(import.meta.path)
+})
+
+test("does not warn after R_BTN2 is rotated 180 degrees", async () => {
+  const circuitJson = await renderButtonCircuit({ rBtn2PcbRotation: 180 })
+  const orientationIssues = analyzeAllPlacements(circuitJson)
+    .getIssues()
+    .filter((issue) => issue.type === "suboptimal_orientation")
+
+  expect(orientationIssues).toHaveLength(0)
 })
