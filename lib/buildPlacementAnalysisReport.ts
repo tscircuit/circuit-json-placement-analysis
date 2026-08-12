@@ -132,6 +132,32 @@ const getBoundsFromPoints = (
   }
 }
 
+const getBoundsFromRotatedCenterAndSize = (
+  centerX: number,
+  centerY: number,
+  width: number,
+  height: number,
+  ccwRotation: number,
+): Bounds => {
+  const halfWidth = width / 2
+  const halfHeight = height / 2
+  const angle = (ccwRotation * Math.PI) / 180
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+
+  return getBoundsFromPoints(
+    [
+      { x: -halfWidth, y: -halfHeight },
+      { x: halfWidth, y: -halfHeight },
+      { x: halfWidth, y: halfHeight },
+      { x: -halfWidth, y: halfHeight },
+    ].map(({ x, y }) => ({
+      x: centerX + x * cos - y * sin,
+      y: centerY + x * sin + y * cos,
+    })),
+  )!
+}
+
 const getOverlap = (
   a: Bounds,
   b: Bounds,
@@ -620,6 +646,7 @@ const buildComponentContexts = (
       const centerY = center ? toNumber(center.y) : null
       const width = toNumber(el.width)
       const height = toNumber(el.height)
+      const ccwRotation = toNumber(el.ccw_rotation) ?? 0
 
       if (
         centerX === null ||
@@ -631,7 +658,13 @@ const buildComponentContexts = (
 
       const layer = getLayer(el.layer) ?? context.layer
       context.courtyards.push({
-        bounds: getBoundsFromCenterAndSize(centerX, centerY, width, height),
+        bounds: getBoundsFromRotatedCenterAndSize(
+          centerX,
+          centerY,
+          width,
+          height,
+          ccwRotation,
+        ),
         layers: layer ? [layer] : [],
       })
       continue
