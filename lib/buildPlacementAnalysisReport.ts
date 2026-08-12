@@ -55,6 +55,8 @@ const CENTER_ANCHOR = "center"
 const LARGE_EMPTY_SPACE_THRESHOLD_RATIO = 0.05
 const EMPTY_SPACE_SAMPLE_STEP_MM = 5
 const GEOMETRY_EPSILON = 1e-6
+const MIN_ORIENTATION_PIN_IMPROVEMENT_MM = 0.25
+const MIN_ORIENTATION_TOTAL_IMPROVEMENT_MM = 0.5
 
 const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "pad_overlap",
@@ -62,6 +64,7 @@ const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "courtyard_collision",
   "connector_body_intrusion",
   "footprint_intrusion",
+  "suboptimal_orientation",
 ]
 
 const toNumber = (value: unknown): number | null =>
@@ -233,6 +236,8 @@ const getSummaryLabel = (
       return `${count} connector-body intrusion${count === 1 ? "" : "s"}`
     case "footprint_intrusion":
       return `${count} footprint intrusion${count === 1 ? "" : "s"}`
+    case "suboptimal_orientation":
+      return `${count} suboptimal orientation${count === 1 ? "" : "s"}`
   }
 }
 
@@ -1378,11 +1383,184 @@ const buildBoardTopLayerReport = (
   }
 }
 
+type PlacedPort = {
+  sourcePortId: string
+  sourceComponentId: string
+  x: number
+  y: number
+}
+
+const getDirectlyConnectedPortIds = (
+  circuitJson: CircuitElement[],
+): Map<string, Set<string>> => {
+  const connectedPortIds = new Map<string, Set<string>>()
+
+  for (const element of circuitJson) {
+    if (element.type !== "source_trace") continue
+
+    const portIds = Array.isArray(element.connected_source_port_ids)
+      ? element.connected_source_port_ids.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : []
+    const netIds = Array.isArray(element.connected_source_net_ids)
+      ? element.connected_source_net_ids.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : []
+
+    if (portIds.length !== 2 || netIds.length !== 0) continue
+
+    const [firstPortId, secondPortId] = portIds
+    if (!firstPortId || !secondPortId) continue
+
+    if (!connectedPortIds.has(firstPortId)) {
+      connectedPortIds.set(firstPortId, new Set())
+    }
+    if (!connectedPortIds.has(secondPortId)) {
+      connectedPortIds.set(secondPortId, new Set())
+    }
+    connectedPortIds.get(firstPortId)!.add(secondPortId)
+    connectedPortIds.get(secondPortId)!.add(firstPortId)
+  }
+
+  return connectedPortIds
+}
+
+const getPlacedPortIndexes = (
+  circuitJson: CircuitElement[],
+): {
+  bySourcePortId: Map<string, PlacedPort>
+  bySourceComponentId: Map<string, PlacedPort[]>
+} => {
+  const sourceComponentIdBySourcePortId = new Map<string, string>()
+  const bySourcePortId = new Map<string, PlacedPort>()
+  const bySourceComponentId = new Map<string, PlacedPort[]>()
+
+  for (const element of circuitJson) {
+    if (
+      element.type === "source_port" &&
+      typeof element.source_port_id === "string" &&
+      typeof element.source_component_id === "string"
+    ) {
+      sourceComponentIdBySourcePortId.set(
+        element.source_port_id,
+        element.source_component_id,
+      )
+    }
+  }
+
+  for (const element of circuitJson) {
+    if (
+      element.type !== "pcb_port" ||
+      typeof element.source_port_id !== "string"
+    ) {
+      continue
+    }
+
+    const sourceComponentId = sourceComponentIdBySourcePortId.get(
+      element.source_port_id,
+    )
+    const x = toNumber(element.x)
+    const y = toNumber(element.y)
+    if (!sourceComponentId || x === null || y === null) continue
+
+    const placedPort: PlacedPort = {
+      sourcePortId: element.source_port_id,
+      sourceComponentId,
+      x,
+      y,
+    }
+    bySourcePortId.set(placedPort.sourcePortId, placedPort)
+
+    const componentPorts = bySourceComponentId.get(sourceComponentId) ?? []
+    componentPorts.push(placedPort)
+    bySourceComponentId.set(sourceComponentId, componentPorts)
+  }
+
+  return { bySourcePortId, bySourceComponentId }
+}
+
+const buildSuboptimalOrientationIssues = (
+  circuitJson: CircuitElement[],
+  components: ComponentContext[],
+): PlacementIssue[] => {
+  const issues: PlacementIssue[] = []
+  const placedPorts = getPlacedPortIndexes(circuitJson)
+  const directlyConnectedPortIds = getDirectlyConnectedPortIds(circuitJson)
+
+  for (const component of components) {
+    if (component.centerX === null || component.centerY === null) continue
+
+    const componentPorts =
+      placedPorts.bySourceComponentId.get(component.sourceComponentId) ?? []
+    if (componentPorts.length !== 2) continue
+
+    const pinImprovements: number[] = []
+
+    for (const port of componentPorts) {
+      const targetPortIds = [
+        ...(directlyConnectedPortIds.get(port.sourcePortId) ?? []),
+      ]
+      if (targetPortIds.length !== 1) break
+
+      const targetPort = placedPorts.bySourcePortId.get(targetPortIds[0]!)
+      if (
+        !targetPort ||
+        targetPort.sourceComponentId === component.sourceComponentId
+      )
+        break
+
+      const currentDistance = Math.hypot(
+        targetPort.x - port.x,
+        targetPort.y - port.y,
+      )
+      const flippedPortX = component.centerX * 2 - port.x
+      const flippedPortY = component.centerY * 2 - port.y
+      const flippedDistance = Math.hypot(
+        targetPort.x - flippedPortX,
+        targetPort.y - flippedPortY,
+      )
+
+      pinImprovements.push(currentDistance - flippedDistance)
+    }
+
+    if (
+      pinImprovements.length !== 2 ||
+      pinImprovements.some(
+        (improvement) => improvement < MIN_ORIENTATION_PIN_IMPROVEMENT_MM,
+      )
+    ) {
+      continue
+    }
+
+    const totalImprovement = pinImprovements.reduce(
+      (total, improvement) => total + improvement,
+      0,
+    )
+    if (totalImprovement < MIN_ORIENTATION_TOTAL_IMPROVEMENT_MM) continue
+
+    issues.push(
+      createIssue({
+        type: "suboptimal_orientation",
+        componentA: component.name,
+        clearance: totalImprovement,
+        severity: 80 + totalImprovement * 10,
+        summary: `${component.name} direct connections would be ${fmtMm(totalImprovement)} shorter if rotated 180 degrees`,
+        suggested_move: `rotate ${component.name} 180 degrees`,
+      }),
+    )
+  }
+
+  return issues
+}
+
 const buildIssues = (
+  circuitJson: CircuitElement[],
   components: ComponentContext[],
   boardBounds: Bounds | null,
 ): PlacementIssue[] => {
-  const issues: PlacementIssue[] = []
+  const issues = buildSuboptimalOrientationIssues(circuitJson, components)
 
   for (const component of components) {
     const boardEdgeStatus = getBoardEdgeStatus(
@@ -1856,7 +2034,7 @@ export const buildPlacementAnalysisReport = (
   circuitJson: CircuitElement[],
 ): PlacementAnalysisReport => {
   const { components, boardBounds } = buildComponentContexts(circuitJson)
-  const issues = buildIssues(components, boardBounds)
+  const issues = buildIssues(circuitJson, components, boardBounds)
   const clusters = buildClusters(components, issues)
   const countsByType = buildCountsByType(issues)
   const boardTopLayer = buildBoardTopLayerReport(components, boardBounds)

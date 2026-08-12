@@ -67,6 +67,12 @@ report.issues[0]
 // }
 ```
 
+For two-pin components with two direct pin-to-pin connections, the report can
+also emit a `suboptimal_orientation` issue when rotating the component 180
+degrees shortens both connections. Its `clearance` value is the total estimated
+connection-length reduction in millimeters, and its suggested move recommends
+the rotation.
+
 The summary string returned by `getString()` now starts with:
 
 - A short failure summary
