@@ -11,10 +11,11 @@
   "devDependencies": {
     "@types/bun": "latest",
     "bun-match-svg": "^0.0.15",
-    "circuit-json": "^0.0.387",
+    "circuit-json": "^0.0.465",
+    "circuit-to-svg": "^0.0.400",
     "graphics-debug": "^0.0.86",
     "stack-svgs": "^0.0.1",
-    "tscircuit": "^0.0.1605",
+    "tscircuit": "^0.0.2301",
     "tsup": "^8.5.1"
   },
   "peerDependencies": {
