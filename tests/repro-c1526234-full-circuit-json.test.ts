@@ -31,7 +31,7 @@ test("repro: full C1526234 circuit JSON produces a false 0.64mm footprint intrus
       { showCourtyards: true, shouldDrawErrors: true },
     ),
   ).toMatchSvgSnapshot(import.meta.path)
-    expect(analysis.getString()).toMatchInlineSnapshot(`
+  expect(analysis.getString()).toMatchInlineSnapshot(`
       "placement summary: 1 footprint intrusion
 
       worst issues:
