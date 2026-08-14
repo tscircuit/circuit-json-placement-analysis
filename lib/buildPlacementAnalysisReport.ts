@@ -1,14 +1,14 @@
+import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
 import Flatbush from "flatbush"
 import RBush from "rbush"
-import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
 import type {
-  PlacementAreaBounds,
   ComponentBoardEdgeStatus,
   PlacementAnalysisReport,
-  PlacementEmptySpace,
+  PlacementAreaBounds,
   PlacementBoardTopLayerReport,
   PlacementCluster,
   PlacementComponentStatus,
+  PlacementEmptySpace,
   PlacementIssue,
   PlacementIssueType,
 } from "./types"
@@ -1680,6 +1680,11 @@ const buildIssues = ({
       }
 
       const bodyOverlap = getOverlap(a.bounds, b.bounds)
+      const haveComparableCourtyards = a.courtyards.some((courtyardA) =>
+        b.courtyards.some((courtyardB) =>
+          layersIntersect(courtyardA.layers, courtyardB.layers),
+        ),
+      )
       let strongestCourtyardOverlap: {
         overlapX: number
         overlapY: number
@@ -1747,7 +1752,10 @@ const buildIssues = ({
               ),
             }),
           )
-        } else if (!strongestPadOverlap) {
+        } else if (
+          !strongestPadOverlap &&
+          (!haveComparableCourtyards || strongestCourtyardOverlap)
+        ) {
           const containmentBonus =
             getCountainmentBonus(a, b) + getCountainmentBonus(b, a)
 
