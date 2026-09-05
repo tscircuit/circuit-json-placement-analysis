@@ -79,3 +79,14 @@ The summary string returned by `getString()` now starts with:
 - Likely bad cluster groupings
 - Per-part board-edge status using rendered bounds
 - Focused details for flagged components
+
+Circular courtyards (`pcb_courtyard_circle`) are checked directly from geometry,
+without requiring cached DRC error records. A `courtyard_collision` is reported
+for circles that overlap on the same board side, including circles against
+rotated rectangular courtyards. Tangent circles and disjoint bounding-box
+corners are not reported as collisions.
+
+Circle/circle and circle/rectangle intersection checks use the actual shape.
+Reported clearance, suggested moves, and occupied area still use conservative
+axis-aligned bounds; those values are not exact radial penetration or circular
+area. Polygon and rectangle/rectangle checks retain the existing bounds model.

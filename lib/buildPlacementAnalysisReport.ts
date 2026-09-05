@@ -1,6 +1,7 @@
 import Flatbush from "flatbush"
 import RBush from "rbush"
 import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
+import { shapesOverlap, type CourtyardShape } from "./courtyardGeometry"
 import type {
   PlacementAreaBounds,
   ComponentBoardEdgeStatus,
@@ -20,8 +21,7 @@ type CircuitElement = {
 
 type Bounds = PlacementAreaBounds
 
-type PhysicalShape = {
-  bounds: Bounds
+type PhysicalShape = CourtyardShape & {
   layers: LayerRef[]
 }
 
@@ -658,6 +658,31 @@ const buildComponentContexts = (
       continue
     }
 
+    if (el.type === "pcb_courtyard_circle") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) continue
+
+      const center =
+        typeof el.center === "object" && el.center
+          ? (el.center as { x?: unknown; y?: unknown })
+          : null
+      const x = center ? toNumber(center.x) : null
+      const y = center ? toNumber(center.y) : null
+      const radius = toNumber(el.radius)
+      if (x === null || y === null || radius === null || radius <= 0) continue
+
+      const layer = getLayer(el.layer) ?? context.layer
+      context.courtyards.push({
+        bounds: getBoundsFromCenterAndSize(x, y, radius * 2, radius * 2),
+        layers: layer ? [layer] : [],
+        circle: { x, y, radius },
+      })
+      continue
+    }
+
     if (el.type === "pcb_courtyard_rect") {
       const context = getComponentByPcbId(
         componentsByPcbId,
@@ -693,6 +718,7 @@ const buildComponentContexts = (
           ccwRotation,
         ),
         layers: layer ? [layer] : [],
+        orientedRect: { x: centerX, y: centerY, width, height, ccwRotation },
       })
       continue
     }
@@ -1690,6 +1716,8 @@ const buildIssues = ({
         for (const courtyardA of a.courtyards) {
           for (const courtyardB of b.courtyards) {
             if (!layersIntersect(courtyardA.layers, courtyardB.layers)) continue
+            if (!shapesOverlap(courtyardA, courtyardB)) continue
+            // Keep the existing bounds-based clearance and move estimates.
             const overlap = getOverlap(courtyardA.bounds, courtyardB.bounds)
             if (!overlap) continue
             if (
