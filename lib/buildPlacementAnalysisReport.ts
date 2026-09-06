@@ -663,24 +663,43 @@ const buildComponentContexts = (
         componentsByPcbId,
         el.pcb_component_id,
       )
-      if (!context) continue
+      if (!context) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: pcb_component_id must reference an existing component",
+        )
+      }
 
-      if (!el.center || typeof el.center !== "object") continue
+      if (!el.center || typeof el.center !== "object") {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: center must contain finite x and y coordinates",
+        )
+      }
       const center = el.center as { x?: unknown; y?: unknown }
       const x = toNumber(center.x)
       const y = toNumber(center.y)
-      if (x === null || y === null) continue
+      if (x === null || y === null) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: center must contain finite x and y coordinates",
+        )
+      }
 
       const radius = toNumber(el.radius)
-      if (radius === null || radius <= 0) continue
+      if (radius === null || radius <= 0) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: radius must be a positive finite number",
+        )
+      }
 
-      const layer = getLayer(el.layer) ?? context.layer
-      const layers: LayerRef[] = []
-      if (layer) layers.push(layer)
+      const layer = getLayer(el.layer)
+      if (!isBoardSide(layer)) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: layer must be top or bottom",
+        )
+      }
 
       context.courtyards.push({
         bounds: getBoundsFromCenterAndSize(x, y, radius * 2, radius * 2),
-        layers,
+        layers: [layer],
         circle: { x, y, radius },
       })
       continue

@@ -123,10 +123,12 @@ test("circle intersects the actual rotated rectangle in either component order",
   expect(collisions(fixture(rectangle, circle(0, 0, 0.2)))).toHaveLength(1)
 })
 
-test("circle layer falls back to the owning component layer", () => {
-  expect(
-    collisions(fixture({ ...circle(0, 0), layer: undefined }, circle(3, 0))),
-  ).toHaveLength(1)
+test("circle layer must be explicitly top or bottom", () => {
+  for (const layer of [undefined, null, "", "inner1", "invalid", 1]) {
+    expect(() => collisions(fixture({ ...circle(0, 0), layer }))).toThrow(
+      "Invalid pcb_courtyard_circle: layer must be top or bottom",
+    )
+  }
 })
 
 test("opposite-layer circles do not collide and bottom occupancy is excluded", () => {
@@ -142,7 +144,7 @@ test("opposite-layer circles do not collide and bottom occupancy is excluded", (
   expect(report.boardTopLayer?.occupiedArea).toBe(16)
 })
 
-test("invalid circle radius or center is ignored without manufacturing bounds", () => {
+test("invalid circle radius or center throws a clear error", () => {
   for (const radius of [
     0,
     -1,
@@ -153,7 +155,9 @@ test("invalid circle radius or center is ignored without manufacturing bounds", 
     null,
     "2",
   ]) {
-    expect(collisions(fixture({ ...circle(0, 0), radius }))).toEqual([])
+    expect(() => collisions(fixture({ ...circle(0, 0), radius }))).toThrow(
+      "Invalid pcb_courtyard_circle: radius must be a positive finite number",
+    )
   }
   for (const center of [
     undefined,
@@ -163,11 +167,13 @@ test("invalid circle radius or center is ignored without manufacturing bounds", 
     { x: 0, y: Infinity },
     { x: "0", y: 0 },
   ]) {
-    expect(collisions(fixture({ ...circle(0, 0), center }))).toEqual([])
+    expect(() => collisions(fixture({ ...circle(0, 0), center }))).toThrow(
+      "Invalid pcb_courtyard_circle: center must contain finite x and y coordinates",
+    )
   }
 })
 
-test("orphaned circle records do not attach to another component", () => {
+test("orphaned circle records throw a clear error", () => {
   const data = fixture()
   const first = data.find(
     (item) =>
@@ -175,5 +181,7 @@ test("orphaned circle records do not attach to another component", () => {
       item.pcb_component_id === "pcb_component_1",
   )!
   first.pcb_component_id = "missing"
-  expect(collisions(data)).toEqual([])
+  expect(() => collisions(data)).toThrow(
+    "Invalid pcb_courtyard_circle: pcb_component_id must reference an existing component",
+  )
 })

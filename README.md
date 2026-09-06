@@ -84,7 +84,9 @@ Circular courtyards (`pcb_courtyard_circle`) are checked directly from geometry,
 without requiring cached DRC error records. A `courtyard_collision` is reported
 for circles that overlap on the same board side, including circles against
 rotated rectangular courtyards. Tangent circles and disjoint bounding-box
-corners are not reported as collisions.
+corners are not reported as collisions. Invalid circular courtyards throw an error:
+each must reference an existing component, have finite center coordinates and a
+positive finite radius, and explicitly specify `top` or `bottom` as its layer.
 
 Circle/circle and circle/rectangle intersection checks use the actual shape.
 Reported clearance, suggested moves, and occupied area still use conservative
