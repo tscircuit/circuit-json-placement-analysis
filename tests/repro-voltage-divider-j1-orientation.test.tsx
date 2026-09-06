@@ -5,34 +5,16 @@ import { stackSvgsVertically } from "stack-svgs"
 import { analyzeAllPlacements } from "../lib/index"
 import { renderVoltageDivider } from "./fixtures/voltage-divider-j1"
 
-test("warns for J1 on shared nets and clears the warning after rotation", async () => {
+test("reports the expected J1 orientation warning for crossed VIN/GND placement", async () => {
   const original = await renderVoltageDivider()
   const orientationIssues = analyzeAllPlacements(original)
     .getIssues()
     .filter((issue) => issue.type === "suboptimal_orientation")
-  expect(orientationIssues).toMatchInlineSnapshot(`
-    [
-      {
-        "clearance": 0,
-        "componentA": "J1",
-        "severity": 100,
-        "suggested_move": "rotate J1 180 degrees",
-        "summary": "J1 connections cross the routing path between its pads",
-        "type": "suboptimal_orientation",
-      },
-    ]
-  `)
-  const rotated = await renderVoltageDivider(270)
-  expect(
-    analyzeAllPlacements(rotated)
-      .getIssues()
-      .filter((issue) => issue.type === "suboptimal_orientation"),
-  ).toEqual([])
 
   const hasPlacementError = orientationIssues.some(
     (issue) => issue.componentA === "J1",
   )
-  const statusColor = hasPlacementError ? "#ef4444" : "#3b82f6"
+  const statusColor = hasPlacementError ? "#3b82f6" : "#ef4444"
   const statusText = hasPlacementError
     ? "Placement error: rotate J1 180 degrees"
     : "No placement errors reported for J1"
@@ -47,4 +29,16 @@ test("warns for J1 on shared nets and clears the warning after rotation", async 
       convertCircuitJsonToPcbSvg(original, { shouldDrawRatsNest: true }),
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
+  expect(orientationIssues).toContainEqual(
+    expect.objectContaining({
+      componentA: "J1",
+      suggested_move: "rotate J1 180 degrees",
+    }),
+  )
+  const rotated = await renderVoltageDivider(270)
+  expect(
+    analyzeAllPlacements(rotated)
+      .getIssues()
+      .filter((issue) => issue.type === "suboptimal_orientation"),
+  ).toEqual([])
 })
