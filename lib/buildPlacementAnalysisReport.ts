@@ -78,6 +78,13 @@ const LARGE_EMPTY_SPACE_THRESHOLD_RATIO = 0.05
 const EMPTY_SPACE_SAMPLE_STEP_MM = 5
 const GEOMETRY_EPSILON = 1e-6
 const SUBOPTIMAL_ORIENTATION_SEVERITY = 100
+const ORIENTATION_ANALYSIS_COMPONENT_TYPES = new Set([
+  "simple_resistor",
+  "simple_capacitor",
+  "simple_inductor",
+  "simple_crystal",
+  "simple_diode",
+])
 
 const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
   "pad_overlap",
@@ -1542,6 +1549,15 @@ const buildSuboptimalOrientationIssues = (
     buildConnectedSourcePortIdsBySourcePortId(circuitJson)
 
   for (const component of components) {
+    // Board interfaces can have fixed pin ordering. Only analyze known two-pin
+    // device types; legacy jumpers may be represented as simple_chip.
+    if (
+      !ORIENTATION_ANALYSIS_COMPONENT_TYPES.has(
+        String(component.sourceComponent.ftype),
+      )
+    ) {
+      continue
+    }
     if (component.centerX === null || component.centerY === null) continue
     const componentPcbPorts = pcbPortIndexes.pcbPortsBySourceComponentId.get(
       component.sourceComponentId,
