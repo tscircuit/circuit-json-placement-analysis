@@ -665,19 +665,22 @@ const buildComponentContexts = (
       )
       if (!context) continue
 
-      const center =
-        typeof el.center === "object" && el.center
-          ? (el.center as { x?: unknown; y?: unknown })
-          : null
-      const x = center ? toNumber(center.x) : null
-      const y = center ? toNumber(center.y) : null
+      if (!el.center || typeof el.center !== "object") continue
+      const center = el.center as { x?: unknown; y?: unknown }
+      const x = toNumber(center.x)
+      const y = toNumber(center.y)
+      if (x === null || y === null) continue
+
       const radius = toNumber(el.radius)
-      if (x === null || y === null || radius === null || radius <= 0) continue
+      if (radius === null || radius <= 0) continue
 
       const layer = getLayer(el.layer) ?? context.layer
+      const layers: LayerRef[] = []
+      if (layer) layers.push(layer)
+
       context.courtyards.push({
         bounds: getBoundsFromCenterAndSize(x, y, radius * 2, radius * 2),
-        layers: layer ? [layer] : [],
+        layers,
         circle: { x, y, radius },
       })
       continue
