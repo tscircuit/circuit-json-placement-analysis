@@ -10,6 +10,7 @@ const escapeXml = (text: string) =>
 // Render the fixture geometry directly, then label it with the actual report.
 // Nothing moves between the failing and fixed snapshots.
 const renderFixture = (reportText: string, collisionCount: number): string => {
+  const statusColor = collisionCount === 1 ? "#15803d" : "#dc2626"
   const board = fixture.find((item) => item.type === "pcb_board")!
   const shapes: string[] = []
   for (const item of fixture) {
@@ -36,8 +37,8 @@ const renderFixture = (reportText: string, collisionCount: number): string => {
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="600" viewBox="-6.5 -6 13 11" font-family="sans-serif">
 <rect x="-6.5" y="-6" width="13" height="11" fill="white"/>
-<text x="-6" y="-5.35" font-size="0.35" fill="#0f172a">${escapeXml(reportText.split("\n")[0]!)}</text>
-<text x="-6" y="-4.7" font-size="0.3" fill="#334155">Courtyard collisions reported: ${collisionCount}</text>
+<text x="-6" y="-5.35" font-size="0.35" fill="${statusColor}">${escapeXml(reportText.split("\n")[0]!)}</text>
+<text x="-6" y="-4.7" font-size="0.3" fill="${statusColor}">Courtyard collisions reported: ${collisionCount}</text>
 <rect x="${-(board.width as number) / 2}" y="${-(board.height as number) / 2}" width="${board.width}" height="${board.height}" fill="#f8fafc" stroke="#64748b" stroke-width="0.04"/>
 ${shapes.join("\n")}
 <text x="-5.8" y="3.5" font-size="0.27" fill="#334155">Two 2 mm radius courtyards; centers 3 mm apart; physical overlap 1 mm.</text>
