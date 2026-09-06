@@ -5,17 +5,16 @@ import { stackSvgsVertically } from "stack-svgs"
 import { analyzeAllPlacements } from "../lib/index"
 import { renderVoltageDivider } from "./fixtures/voltage-divider-j1"
 
-test("reproduces missing J1 warning despite crossed VIN/GND placement", async () => {
+test.failing("reports the expected J1 orientation warning for crossed VIN/GND placement", async () => {
   const original = await renderVoltageDivider()
   const orientationIssues = analyzeAllPlacements(original)
     .getIssues()
     .filter((issue) => issue.type === "suboptimal_orientation")
-  expect(orientationIssues).toEqual([])
 
   const hasPlacementError = orientationIssues.some(
     (issue) => issue.componentA === "J1",
   )
-  const statusColor = hasPlacementError ? "#ef4444" : "#3b82f6"
+  const statusColor = hasPlacementError ? "#3b82f6" : "#ef4444"
   const statusText = hasPlacementError
     ? "Placement error: rotate J1 180 degrees"
     : "No placement errors reported for J1"
@@ -30,4 +29,10 @@ test("reproduces missing J1 warning despite crossed VIN/GND placement", async ()
       convertCircuitJsonToPcbSvg(original, { shouldDrawRatsNest: true }),
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
+  expect(orientationIssues).toContainEqual(
+    expect.objectContaining({
+      componentA: "J1",
+      suggested_move: "rotate J1 180 degrees",
+    }),
+  )
 })
