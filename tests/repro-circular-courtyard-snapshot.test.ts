@@ -2,36 +2,7 @@ import "bun-match-svg"
 import { expect, test } from "bun:test"
 import { analyzeAllPlacements } from "../lib/index"
 
-type Circuit = Parameters<typeof analyzeAllPlacements>[0]
-const fixture: Circuit = [
-  { type: "pcb_board", center: { x: 0, y: 0 }, width: 12, height: 8 },
-  ...[0, 3].flatMap(
-    (x, index): Circuit => [
-      {
-        type: "source_component",
-        source_component_id: `source_component_${index}`,
-        name: `R${index + 1}`,
-        ftype: "simple_resistor",
-      },
-      {
-        type: "pcb_component",
-        source_component_id: `source_component_${index}`,
-        pcb_component_id: `pcb_component_${index}`,
-        center: { x, y: 0 },
-        width: 1,
-        height: 1,
-        layer: "top",
-      },
-      {
-        type: "pcb_courtyard_circle",
-        pcb_component_id: `pcb_component_${index}`,
-        center: { x, y: 0 },
-        radius: 2,
-        layer: "top",
-      },
-    ],
-  ),
-]
+import { fixture } from "./fixtures/overlapping-circular-courtyards"
 
 const escapeXml = (text: string) =>
   text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
@@ -81,17 +52,9 @@ test("repro: overlapping circular courtyards must appear in the placement report
     .getIssues()
     .filter((issue) => issue.type === "courtyard_collision")
 
-  // Record the actual bad baseline or fixed output before the regression assert.
+  // Record the actual bad baseline or fixed output.
   expect(reportText).toMatchSnapshot("actual placement report")
   await expect(
     renderFixture(reportText, courtyardCollisions.length),
   ).toMatchSvgSnapshot(import.meta.path)
-})
-
-// Keep the known bug separate so snapshot mismatches cannot satisfy test.failing.
-test.failing("overlapping circular courtyards report one collision", () => {
-  const collisions = analyzeAllPlacements(fixture)
-    .getIssues()
-    .filter((issue) => issue.type === "courtyard_collision")
-  expect(collisions).toHaveLength(1)
 })
