@@ -13,6 +13,7 @@
     "format": "biome format --write ."
   },
   "devDependencies": {
+    "@tscircuit/math-utils": "^0.0.36",
     "@types/bun": "latest",
     "bun-match-svg": "^0.0.15",
     "circuit-json": "^0.0.465",
@@ -26,7 +27,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@tscircuit/math-utils": "^0.0.36",
     "flatbush": "^4.5.1",
     "rbush": "^4.0.1"
   }
