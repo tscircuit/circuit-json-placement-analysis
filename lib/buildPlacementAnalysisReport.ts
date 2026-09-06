@@ -1,6 +1,7 @@
 import Flatbush from "flatbush"
 import RBush from "rbush"
 import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
+import { shapesOverlap, type CourtyardShape } from "./courtyardGeometry"
 import type {
   PlacementAreaBounds,
   ComponentBoardEdgeStatus,
@@ -20,8 +21,7 @@ type CircuitElement = {
 
 type Bounds = PlacementAreaBounds
 
-type PhysicalShape = {
-  bounds: Bounds
+type PhysicalShape = CourtyardShape & {
   layers: LayerRef[]
 }
 
@@ -658,6 +658,53 @@ const buildComponentContexts = (
       continue
     }
 
+    if (el.type === "pcb_courtyard_circle") {
+      const context = getComponentByPcbId(
+        componentsByPcbId,
+        el.pcb_component_id,
+      )
+      if (!context) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: pcb_component_id must reference an existing component",
+        )
+      }
+
+      if (!el.center || typeof el.center !== "object") {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: center must contain finite x and y coordinates",
+        )
+      }
+      const center = el.center as { x?: unknown; y?: unknown }
+      const x = toNumber(center.x)
+      const y = toNumber(center.y)
+      if (x === null || y === null) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: center must contain finite x and y coordinates",
+        )
+      }
+
+      const radius = toNumber(el.radius)
+      if (radius === null || radius <= 0) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: radius must be a positive finite number",
+        )
+      }
+
+      const layer = getLayer(el.layer)
+      if (!isBoardSide(layer)) {
+        throw new Error(
+          "Invalid pcb_courtyard_circle: layer must be top or bottom",
+        )
+      }
+
+      context.courtyards.push({
+        bounds: getBoundsFromCenterAndSize(x, y, radius * 2, radius * 2),
+        layers: [layer],
+        circle: { x, y, radius },
+      })
+      continue
+    }
+
     if (el.type === "pcb_courtyard_rect") {
       const context = getComponentByPcbId(
         componentsByPcbId,
@@ -693,6 +740,7 @@ const buildComponentContexts = (
           ccwRotation,
         ),
         layers: layer ? [layer] : [],
+        orientedRect: { x: centerX, y: centerY, width, height, ccwRotation },
       })
       continue
     }
@@ -1690,6 +1738,8 @@ const buildIssues = ({
         for (const courtyardA of a.courtyards) {
           for (const courtyardB of b.courtyards) {
             if (!layersIntersect(courtyardA.layers, courtyardB.layers)) continue
+            if (!shapesOverlap(courtyardA, courtyardB)) continue
+            // Keep the existing bounds-based clearance and move estimates.
             const overlap = getOverlap(courtyardA.bounds, courtyardB.bounds)
             if (!overlap) continue
             if (
