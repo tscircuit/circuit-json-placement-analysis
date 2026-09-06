@@ -1,0 +1,14 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`repro: overlapping circular courtyards must appear in the placement report: actual placement report 1`] = `
+"placement summary: no placement issues
+
+board top-layer utilization:
+- occupied: 0% (0mm^2 of 96mm^2)
+- empty spaces over 5% of board area:
+  - 100% (96mm^2); bounds=(minX=-6mm, maxX=6mm, minY=-4mm, maxY=4mm)
+
+board-edge status:
+- R1: 3.5mm inside top edge
+- R2: 2.5mm inside right edge"
+`;
