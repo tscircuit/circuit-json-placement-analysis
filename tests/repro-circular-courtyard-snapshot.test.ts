@@ -86,7 +86,12 @@ test("repro: overlapping circular courtyards must appear in the placement report
   await expect(
     renderFixture(reportText, courtyardCollisions.length),
   ).toMatchSvgSnapshot(import.meta.path)
+})
 
-  // Intentionally red on the foundational PR, even when bad snapshots match.
-  expect(courtyardCollisions).toHaveLength(1)
+// Keep the known bug separate so snapshot mismatches cannot satisfy test.failing.
+test.failing("overlapping circular courtyards report one collision", () => {
+  const collisions = analyzeAllPlacements(fixture)
+    .getIssues()
+    .filter((issue) => issue.type === "courtyard_collision")
+  expect(collisions).toHaveLength(1)
 })
