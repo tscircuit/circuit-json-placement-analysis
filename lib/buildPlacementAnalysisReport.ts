@@ -1411,57 +1411,43 @@ type PcbPortIndexes = {
   sourceComponentIdBySourcePortId: Map<SourcePortId, SourceComponentId>
 }
 
-const buildDirectlyConnectedSourcePortIdsBySourcePortId = (
+const buildConnectedSourcePortIdsBySourcePortId = (
   circuitJson: CircuitElement[],
 ): Map<SourcePortId, Set<SourcePortId>> => {
-  const directlyConnectedSourcePortIdsBySourcePortId = new Map<
-    SourcePortId,
-    Set<SourcePortId>
-  >()
+  const connectionGroupById = new Map<string, Set<string>>()
+  const sourcePortIds = new Set<SourcePortId>()
 
   for (const element of circuitJson) {
     if (element.type !== "source_trace") continue
     if (!Array.isArray(element.connected_source_port_ids)) continue
 
-    const connectedSourcePortIds = element.connected_source_port_ids.filter(
-      (sourcePortId): sourcePortId is SourcePortId =>
-        typeof sourcePortId === "string",
+    const portIds = element.connected_source_port_ids.filter(
+      (id): id is SourcePortId => typeof id === "string",
     )
-    if (connectedSourcePortIds.length !== 2) continue
-
-    if (Array.isArray(element.connected_source_net_ids)) {
-      const connectedSourceNetIds = element.connected_source_net_ids.filter(
-        (sourceNetId) => typeof sourceNetId === "string",
-      )
-      if (connectedSourceNetIds.length !== 0) continue
-    }
-
-    const [firstSourcePortId, secondSourcePortId] = connectedSourcePortIds
-    if (!firstSourcePortId || !secondSourcePortId) continue
-
-    const connectedSourcePortPairs: [SourcePortId, SourcePortId][] = [
-      [firstSourcePortId, secondSourcePortId],
-      [secondSourcePortId, firstSourcePortId],
-    ]
-
-    for (const [
-      sourcePortId,
-      connectedSourcePortId,
-    ] of connectedSourcePortPairs) {
-      let directlyConnectedSourcePortIds =
-        directlyConnectedSourcePortIdsBySourcePortId.get(sourcePortId)
-      if (!directlyConnectedSourcePortIds) {
-        directlyConnectedSourcePortIds = new Set<SourcePortId>()
-        directlyConnectedSourcePortIdsBySourcePortId.set(
-          sourcePortId,
-          directlyConnectedSourcePortIds,
+    for (const id of portIds) sourcePortIds.add(id)
+    const netIds = Array.isArray(element.connected_source_net_ids)
+      ? element.connected_source_net_ids.filter(
+          (id): id is string => typeof id === "string",
         )
-      }
-      directlyConnectedSourcePortIds.add(connectedSourcePortId)
+      : []
+    const connectionIds = [...portIds, ...netIds]
+    const group = new Set(connectionIds)
+
+    // Merge traces through shared ports or named nets, regardless of trace order.
+    for (const id of connectionIds) {
+      const existingGroup = connectionGroupById.get(id)
+      if (!existingGroup) continue
+      for (const connectedId of existingGroup) group.add(connectedId)
     }
+    for (const id of group) connectionGroupById.set(id, group)
   }
 
-  return directlyConnectedSourcePortIdsBySourcePortId
+  const connectedPortIdsByPortId = new Map<SourcePortId, Set<SourcePortId>>()
+  for (const group of new Set(connectionGroupById.values())) {
+    const portIds = new Set([...group].filter((id) => sourcePortIds.has(id)))
+    for (const id of portIds) connectedPortIdsByPortId.set(id, portIds)
+  }
+  return connectedPortIdsByPortId
 }
 
 const buildPcbPortIndexes = (circuitJson: CircuitElement[]): PcbPortIndexes => {
@@ -1512,7 +1498,7 @@ const buildPcbPortIndexes = (circuitJson: CircuitElement[]): PcbPortIndexes => {
   }
 }
 
-const doesDirectConnectionCrossPadCenterline = ({
+const doesConnectionCrossPadCenterline = ({
   pcbPort,
   connectedPcbPort,
   firstComponentPcbPort,
@@ -1552,10 +1538,11 @@ const buildSuboptimalOrientationIssues = (
 ): PlacementIssue[] => {
   const issues: PlacementIssue[] = []
   const pcbPortIndexes = buildPcbPortIndexes(circuitJson)
-  const directlyConnectedSourcePortIdsBySourcePortId =
-    buildDirectlyConnectedSourcePortIdsBySourcePortId(circuitJson)
+  const connectedSourcePortIdsBySourcePortId =
+    buildConnectedSourcePortIdsBySourcePortId(circuitJson)
 
   for (const component of components) {
+    if (component.centerX === null || component.centerY === null) continue
     const componentPcbPorts = pcbPortIndexes.pcbPortsBySourceComponentId.get(
       component.sourceComponentId,
     )
@@ -1567,26 +1554,62 @@ const buildSuboptimalOrientationIssues = (
     let crossingConnectionCount = 0
 
     for (const pcbPort of componentPcbPorts) {
-      const directlyConnectedSourcePortIds =
-        directlyConnectedSourcePortIdsBySourcePortId.get(pcbPort.source_port_id)
-      if (!directlyConnectedSourcePortIds) break
-      if (directlyConnectedSourcePortIds.size !== 1) break
-
-      const [connectedSourcePortId] = directlyConnectedSourcePortIds
-      if (!connectedSourcePortId) break
-
-      const connectedPcbPort = pcbPortIndexes.pcbPortBySourcePortId.get(
-        connectedSourcePortId,
+      const connectedSourcePortIds = connectedSourcePortIdsBySourcePortId.get(
+        pcbPort.source_port_id,
       )
-      if (!connectedPcbPort) break
+      if (!connectedSourcePortIds) break
+      // Shorted component pins have no distinct routing channels to untangle.
+      if (
+        componentPcbPorts.every((port) =>
+          connectedSourcePortIds.has(port.source_port_id),
+        )
+      ) {
+        break
+      }
 
-      const connectedSourceComponentId =
-        pcbPortIndexes.sourceComponentIdBySourcePortId.get(
+      const rotatedPosition = {
+        x: 2 * component.centerX - pcbPort.x,
+        y: 2 * component.centerY - pcbPort.y,
+      }
+      let connectedPcbPort: PcbPort | undefined
+      let nearestDistance = Infinity
+      let rotatedNearestDistance = Infinity
+
+      for (const connectedSourcePortId of connectedSourcePortIds) {
+        const candidate = pcbPortIndexes.pcbPortBySourcePortId.get(
           connectedSourcePortId,
         )
-      if (connectedSourceComponentId === component.sourceComponentId) break
+        if (!candidate) continue
+        if (
+          pcbPortIndexes.sourceComponentIdBySourcePortId.get(
+            connectedSourcePortId,
+          ) === component.sourceComponentId
+        ) {
+          continue
+        }
+        if (!pcbPort.layers.some((layer) => candidate.layers.includes(layer))) {
+          continue
+        }
+        const distance = Math.hypot(
+          candidate.x - pcbPort.x,
+          candidate.y - pcbPort.y,
+        )
+        if (distance < nearestDistance) {
+          connectedPcbPort = candidate
+          nearestDistance = distance
+        }
+        rotatedNearestDistance = Math.min(
+          rotatedNearestDistance,
+          Math.hypot(
+            candidate.x - rotatedPosition.x,
+            candidate.y - rotatedPosition.y,
+          ),
+        )
+      }
+      if (!connectedPcbPort) break
+      if (rotatedNearestDistance >= nearestDistance - GEOMETRY_EPSILON) break
 
-      const crossesPadCenterline = doesDirectConnectionCrossPadCenterline({
+      const crossesPadCenterline = doesConnectionCrossPadCenterline({
         pcbPort,
         connectedPcbPort,
         firstComponentPcbPort,
@@ -1605,7 +1628,7 @@ const buildSuboptimalOrientationIssues = (
         componentA: component.name,
         clearance: 0,
         severity: SUBOPTIMAL_ORIENTATION_SEVERITY,
-        summary: `${component.name} direct traces cross the routing path between its pads`,
+        summary: `${component.name} connections cross the routing path between its pads`,
         suggested_move: `rotate ${component.name} 180 degrees`,
       }),
     )

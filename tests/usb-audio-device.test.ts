@@ -15,7 +15,7 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
   const analysis = analyzeAllPlacements(circuitJson)
 
   expect(analysis.getString()).toMatchInlineSnapshot(`
-    "placement summary: 5 courtyard collisions, 2 footprint intrusions
+    "placement summary: 5 courtyard collisions, 2 footprint intrusions, 2 suboptimal orientations
 
     worst issues:
     1. Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
@@ -84,6 +84,12 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
       - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
       - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
+    - R6
+      source placement: placement_mode=none
+      resolved placement: center=(9mm, 7.8mm) on top; bounds=(minX=8.22mm, maxX=9.78mm, minY=7.48mm, maxY=8.12mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
+      board edge status: 6.88mm inside bottom edge
+      issues:
+      - R6 connections cross the routing path between its pads. Suggested move: rotate R6 180 degrees.
     - Y1
       source placement: placement_mode=none
       resolved placement: center=(12.61mm, -9.31mm) on top; bounds=(minX=8mm, maxX=17.22mm, minY=-13.92mm, maxY=-4.7mm); size=(width=9.22mm, height=9.22mm); anchor_alignment="center"
@@ -96,6 +102,7 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       board edge status: 0.48mm inside top edge
       issues:
       - Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
+      - C7 connections cross the routing path between its pads. Suggested move: rotate C7 180 degrees.
     - U4
       source placement: placement_mode=none
       resolved placement: center=(-8.9mm, -8.6mm) on top; bounds=(minX=-12.35mm, maxX=-5.45mm, minY=-10.805mm, maxY=-6.395mm); size=(width=6.9mm, height=4.41mm); anchor_alignment="center"
