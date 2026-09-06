@@ -67,10 +67,13 @@ report.issues[0]
 // }
 ```
 
-For two-pin components with two direct pin-to-pin connections, the report can
-also emit a `suboptimal_orientation` issue when both connections cross the
-centerline between the component's pads and block that routing channel. Its
-suggested move recommends rotating the component 180 degrees.
+For two-pin components, the report can emit a `suboptimal_orientation` issue
+when the nearest external destination on each pin's net lies across the
+centerline between the pads and rotating 180 degrees shortens both nearest
+connection distances. Connectivity includes direct traces and shared named nets;
+destinations must share a copper layer with the pin. The suggested move
+recommends rotating the component 180 degrees. This is a placement heuristic,
+not a guarantee about the final routed trace length.
 
 The summary string returned by `getString()` now starts with:
 

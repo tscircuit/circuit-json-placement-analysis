@@ -114,14 +114,14 @@ test("warns that biscuit-board R_BTN2 should rotate 180 degrees", async () => {
     componentA: "R_BTN2",
     clearance: 0,
     severity: 100,
-    summary: "R_BTN2 direct traces cross the routing path between its pads",
+    summary: "R_BTN2 connections cross the routing path between its pads",
     suggested_move: "rotate R_BTN2 180 degrees",
   })
   expect(analysis.getString()).toMatchInlineSnapshot(`
     "placement summary: 1 suboptimal orientation
 
     worst issues:
-    1. R_BTN2 direct traces cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees.
+    1. R_BTN2 connections cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees.
 
     board top-layer utilization:
     - occupied: 15.881% (62.252mm^2 of 392mm^2)
@@ -141,7 +141,7 @@ test("warns that biscuit-board R_BTN2 should rotate 180 degrees", async () => {
       resolved placement: center=(0mm, 0mm) on top; bounds=(minX=-1.225mm, maxX=1.225mm, minY=-0.475mm, maxY=0.475mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 6.525mm inside top edge
       issues:
-      - R_BTN2 direct traces cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees."
+      - R_BTN2 connections cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees."
   `)
   await expect(
     convertCircuitJsonToPcbSvg(circuitJson, { shouldDrawErrors: true }),
