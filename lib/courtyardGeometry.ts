@@ -1,3 +1,8 @@
+import {
+  boundsAreaOverlap,
+  distance,
+  pointToBoundsDistance,
+} from "@tscircuit/math-utils"
 import type { PlacementAreaBounds } from "./types"
 
 export type CourtyardShape = {
@@ -14,28 +19,24 @@ export type CourtyardShape = {
 
 const GEOMETRY_EPSILON = 1e-6
 
-/**
- * Test positive-area intersection of validated shapes in millimetres.
- * Circle pairs and circle/rectangle pairs use their actual geometry. Shapes
- * without circle metadata retain the report's conservative bounds test.
- * Layer filtering and bounds-based clearance estimates belong to the caller.
- */
+const toBounds = (b: PlacementAreaBounds) => ({
+  minX: b.min_x,
+  maxX: b.max_x,
+  minY: b.min_y,
+  maxY: b.max_y,
+})
+
+// Require positive overlap; touching shapes are not collisions.
 export const shapesOverlap = (
   a: CourtyardShape,
   b: CourtyardShape,
 ): boolean => {
-  if (
-    Math.min(a.bounds.max_x, b.bounds.max_x) <=
-      Math.max(a.bounds.min_x, b.bounds.min_x) ||
-    Math.min(a.bounds.max_y, b.bounds.max_y) <=
-      Math.max(a.bounds.min_y, b.bounds.min_y)
-  ) {
+  if (boundsAreaOverlap(toBounds(a.bounds), toBounds(b.bounds)) === 0)
     return false
-  }
 
   if (a.circle && b.circle) {
     return (
-      Math.hypot(a.circle.x - b.circle.x, a.circle.y - b.circle.y) <
+      distance(a.circle, b.circle) <
       a.circle.radius + b.circle.radius - GEOMETRY_EPSILON
     )
   }
@@ -47,10 +48,7 @@ export const shapesOverlap = (
   const rect = other.orientedRect
   let x = circle.x
   let y = circle.y
-  let minX = other.bounds.min_x
-  let maxX = other.bounds.max_x
-  let minY = other.bounds.min_y
-  let maxY = other.bounds.max_y
+  let bounds = toBounds(other.bounds)
 
   if (rect) {
     // Undo the rectangle's world CCW rotation around its own center.
@@ -59,15 +57,15 @@ export const shapesOverlap = (
     const dy = circle.y - rect.y
     x = dx * Math.cos(angle) + dy * Math.sin(angle)
     y = -dx * Math.sin(angle) + dy * Math.cos(angle)
-    minX = -rect.width / 2
-    maxX = rect.width / 2
-    minY = -rect.height / 2
-    maxY = rect.height / 2
+    bounds = {
+      minX: -rect.width / 2,
+      maxX: rect.width / 2,
+      minY: -rect.height / 2,
+      maxY: rect.height / 2,
+    }
   }
 
-  const closestX = Math.max(minX, Math.min(x, maxX))
-  const closestY = Math.max(minY, Math.min(y, maxY))
   return (
-    Math.hypot(x - closestX, y - closestY) < circle.radius - GEOMETRY_EPSILON
+    pointToBoundsDistance({ x, y }, bounds) < circle.radius - GEOMETRY_EPSILON
   )
 }
