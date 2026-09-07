@@ -131,6 +131,17 @@ const getPadBounds = (
   return null
 }
 
+const getPadLayers = (element: CircuitElement): string[] => {
+  if (element.type === "pcb_smtpad") {
+    return typeof element.layer === "string" ? [element.layer] : []
+  }
+  return Array.isArray(element.layers)
+    ? element.layers.filter(
+        (layer): layer is string => typeof layer === "string",
+      )
+    : []
+}
+
 const getBoundsClearance = (
   a: { minX: number; maxX: number; minY: number; maxY: number },
   b: { minX: number; maxX: number; minY: number; maxY: number },
@@ -654,6 +665,7 @@ export const analyzeComponentPlacement = (
             if (!bounds) return null
             return {
               bounds,
+              layers: getPadLayers(pad),
               padName: getPadDisplayName(
                 pad,
                 componentName,
@@ -707,6 +719,7 @@ export const analyzeComponentPlacement = (
         if (!otherComponentName) return null
         return {
           bounds,
+          layers: getPadLayers(el),
           componentName: otherComponentName,
           padName: getPadDisplayName(
             el,
@@ -725,6 +738,14 @@ export const analyzeComponentPlacement = (
 
     for (const ownPad of componentPadBounds) {
       for (const otherPad of otherComponentPadBounds) {
+        // Copper on known disjoint layers cannot constrain pad clearance.
+        // Keep the previous comparison when a record has no layer data.
+        if (
+          ownPad.layers.length > 0 &&
+          otherPad.layers.length > 0 &&
+          !ownPad.layers.some((layer) => otherPad.layers.includes(layer))
+        )
+          continue
         const clearance = getBoundsClearance(ownPad.bounds, otherPad.bounds)
         if (!nearestPadClearance || clearance < nearestPadClearance.clearance) {
           nearestPadClearance = {
