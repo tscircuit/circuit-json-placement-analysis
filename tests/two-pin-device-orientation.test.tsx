@@ -53,24 +53,14 @@ const renderDevice = async (
   circuit.add(
     <board width="36mm" height="14mm" routingDisabled>
       {device}
-      <testpoint
-        name="TP_RIGHT"
-        footprintVariant="pad"
-        pcbX={11}
-        pcbY={2}
-      />
+      <testpoint name="TP_RIGHT" footprintVariant="pad" pcbX={11} pcbY={2} />
       <testpoint
         name="TP_RIGHT_ALT"
         footprintVariant="pad"
         pcbX={15}
         pcbY={2}
       />
-      <testpoint
-        name="TP_LEFT"
-        footprintVariant="pad"
-        pcbX={-11}
-        pcbY={-2}
-      />
+      <testpoint name="TP_LEFT" footprintVariant="pad" pcbX={-11} pcbY={-2} />
       <testpoint
         name="TP_LEFT_ALT"
         footprintVariant="pad"
