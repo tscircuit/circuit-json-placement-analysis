@@ -1,5 +1,10 @@
 import Flatbush from "flatbush"
 import RBush from "rbush"
+import {
+  getSmtPadCircle,
+  getCircleClearance,
+  type Circle,
+} from "./circularPadGeometry"
 import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
 import type {
   PlacementAreaBounds,
@@ -23,6 +28,7 @@ type Bounds = PlacementAreaBounds
 type PhysicalShape = {
   bounds: Bounds
   layers: LayerRef[]
+  circle?: Circle
 }
 
 type BoardSide = "top" | "bottom"
@@ -587,6 +593,23 @@ const buildComponentContexts = (
         el.pcb_component_id,
       )
       if (!context) continue
+
+      const circle = getSmtPadCircle(el)
+      if (circle) {
+        const layer = getLayer(el.layer)
+        if (layer)
+          context.pads.push({
+            bounds: getBoundsFromCenterAndSize(
+              circle.x,
+              circle.y,
+              circle.radius * 2,
+              circle.radius * 2,
+            ),
+            layers: [layer],
+            circle,
+          })
+        continue
+      }
 
       const x = toNumber(el.x)
       const y = toNumber(el.y)
@@ -1725,6 +1748,31 @@ const buildIssues = ({
           if (!layersIntersect(padA.layers, padB.layers)) continue
           const overlap = getOverlap(padA.bounds, padB.bounds)
           if (!overlap) continue
+          if (padA.circle || padB.circle) {
+            const roundPad = padA.circle ? padA : padB
+            const other = padA.circle ? padB : padA
+            const clearance = getCircleClearance(roundPad.circle!, {
+              minX: other.bounds.min_x,
+              maxX: other.bounds.max_x,
+              minY: other.bounds.min_y,
+              maxY: other.bounds.max_y,
+              circle: other.circle,
+            })
+            if (clearance >= -GEOMETRY_EPSILON) continue
+            overlap.clearance = clearance
+            // Keep move suggestions conservative, but include full containment.
+            const { mover, anchor } = chooseMover(a, b)
+            const moving = mover === a ? padA.bounds : padB.bounds
+            const fixed = mover === a ? padB.bounds : padA.bounds
+            overlap.overlapX =
+              (mover.centerX ?? 0) >= (anchor.centerX ?? 0)
+                ? fixed.max_x - moving.min_x
+                : moving.max_x - fixed.min_x
+            overlap.overlapY =
+              (mover.centerY ?? 0) >= (anchor.centerY ?? 0)
+                ? fixed.max_y - moving.min_y
+                : moving.max_y - fixed.min_y
+          }
           if (
             !strongestPadOverlap ||
             overlap.clearance < strongestPadOverlap.clearance
