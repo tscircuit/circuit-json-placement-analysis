@@ -1,3 +1,8 @@
+import {
+  getSmtPadCircle,
+  getCircleClearance,
+  type PadBounds,
+} from "./circularPadGeometry"
 import type {
   AnalysisLineItem,
   CardinalDirection,
@@ -90,10 +95,17 @@ const getComponentToBoardCalcString = (
   }
 }
 
-const getPadBounds = (
-  element: CircuitElement,
-): { minX: number; maxX: number; minY: number; maxY: number } | null => {
+const getPadBounds = (element: CircuitElement): PadBounds | null => {
   if (element.type === "pcb_smtpad") {
+    const circle = getSmtPadCircle(element)
+    if (circle)
+      return {
+        minX: circle.x - circle.radius,
+        maxX: circle.x + circle.radius,
+        minY: circle.y - circle.radius,
+        maxY: circle.y + circle.radius,
+        circle,
+      }
     const x = toNumber(element.x)
     const y = toNumber(element.y)
     const width = toNumber(element.width)
@@ -131,10 +143,9 @@ const getPadBounds = (
   return null
 }
 
-const getBoundsClearance = (
-  a: { minX: number; maxX: number; minY: number; maxY: number },
-  b: { minX: number; maxX: number; minY: number; maxY: number },
-): number => {
+const getBoundsClearance = (a: PadBounds, b: PadBounds): number => {
+  if (a.circle) return Math.max(0, getCircleClearance(a.circle, b))
+  if (b.circle) return Math.max(0, getCircleClearance(b.circle, a))
   const dx = Math.max(0, a.minX - b.maxX, b.minX - a.maxX)
   const dy = Math.max(0, a.minY - b.maxY, b.minY - a.maxY)
   return Math.hypot(dx, dy)
