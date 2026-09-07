@@ -6,7 +6,13 @@ import { stackSvgsVertically } from "stack-svgs"
 import { Circuit } from "tscircuit"
 import { analyzeAllPlacements } from "../lib/index"
 
-type DeviceKind = "resistor" | "capacitor" | "inductor" | "crystal" | "diode"
+type DeviceKind =
+  | "resistor"
+  | "capacitor"
+  | "inductor"
+  | "crystal"
+  | "diode"
+  | "chip"
 
 const renderDevice = async (
   kind: DeviceKind,
@@ -48,6 +54,14 @@ const renderDevice = async (
       />
     ),
     diode: <diode name="D1" footprint="sod123" pcbRotation={pcbRotation} />,
+    chip: (
+      <chip
+        name="U1"
+        footprint="0603"
+        pinLabels={{ pin1: "A", pin2: "B" }}
+        pcbRotation={pcbRotation}
+      />
+    ),
   }
   const device = devices[kind]
   circuit.add(
@@ -86,6 +100,7 @@ test("two-pin devices on shared nets warn before rotation and clear afterward", 
     inductor: "L1",
     crystal: "Y1",
     diode: "D1",
+    chip: "U1",
   }
   for (const kind of Object.keys(names) as DeviceKind[]) {
     const original = await renderDevice(kind, 0)
@@ -114,12 +129,8 @@ test("two-pin devices on shared nets warn before rotation and clear afterward", 
     ).toMatchSvgSnapshot(import.meta.path, kind)
     if (kind === "resistor") {
       // Use a non-connector designator to ensure type, not name, excludes
-      // pin headers, connectors, and legacy jumpers serialized as chips.
-      for (const ftype of [
-        "simple_pin_header",
-        "simple_connector",
-        "simple_chip",
-      ]) {
+      // pin headers and connectors.
+      for (const ftype of ["simple_pin_header", "simple_connector"]) {
         const interfaceJson = original.map((element) =>
           element.type === "source_component" && element.name === "R1"
             ? { ...element, ftype }

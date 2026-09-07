@@ -84,6 +84,7 @@ const ORIENTATION_ANALYSIS_COMPONENT_TYPES = new Set([
   "simple_inductor",
   "simple_crystal",
   "simple_diode",
+  "simple_chip",
 ])
 
 const ISSUE_TYPE_ORDER: PlacementIssueType[] = [
@@ -1549,8 +1550,7 @@ const buildSuboptimalOrientationIssues = (
     buildConnectedSourcePortIdsBySourcePortId(circuitJson)
 
   for (const component of components) {
-    // Board interfaces can have fixed pin ordering. Only analyze known two-pin
-    // device types; legacy jumpers may be represented as simple_chip.
+    // Board interfaces can have fixed pin ordering; analyze device types only.
     if (
       !ORIENTATION_ANALYSIS_COMPONENT_TYPES.has(
         String(component.sourceComponent.ftype),
