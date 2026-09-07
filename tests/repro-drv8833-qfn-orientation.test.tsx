@@ -47,6 +47,7 @@ const targets = [
 
 const renderDrv8833 = async (
   pcbRotation: number,
+  keepFirstPinAligned = false,
 ): Promise<AnyCircuitElement[]> => {
   const circuit = new Circuit()
   circuit.add(
@@ -70,8 +71,8 @@ const renderDrv8833 = async (
           key={name}
           name={`TP_${name}`}
           footprintVariant="pad"
-          pcbX={targets[i]!.x}
-          pcbY={targets[i]!.y}
+          pcbX={targets[i]!.x * (i === 0 && keepFirstPinAligned ? -1 : 1)}
+          pcbY={targets[i]!.y * (i === 0 && keepFirstPinAligned ? -1 : 1)}
         />
       ))}
       {pins.map((name) => (
@@ -86,8 +87,7 @@ const renderDrv8833 = async (
   return circuit.getCircuitJson()
 }
 
-// Remove .failing when orientation analysis supports multi-pin ICs.
-test.failing("DRV8833RTYR should report a beneficial 180-degree rotation", async () => {
+test("DRV8833RTYR should report a beneficial 180-degree rotation", async () => {
   const original = await renderDrv8833(0)
   const rotated = await renderDrv8833(180)
   const chip = original.find(
@@ -123,6 +123,12 @@ test.failing("DRV8833RTYR should report a beneficial 180-degree rotation", async
   }
   expect(
     analyzeAllPlacements(rotated)
+      .getIssues()
+      .filter((issue) => issue.type === "suboptimal_orientation"),
+  ).toEqual([])
+  const mixed = await renderDrv8833(0, true)
+  expect(
+    analyzeAllPlacements(mixed)
       .getIssues()
       .filter((issue) => issue.type === "suboptimal_orientation"),
   ).toEqual([])

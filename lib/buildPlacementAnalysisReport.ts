@@ -1514,8 +1514,8 @@ const doesConnectionCrossPadCenterline = ({
 }: {
   pcbPort: PcbPort
   connectedPcbPort: PcbPort
-  firstComponentPcbPort: PcbPort
-  secondComponentPcbPort: PcbPort
+  firstComponentPcbPort: Pick<PcbPort, "x" | "y">
+  secondComponentPcbPort: Pick<PcbPort, "x" | "y">
 }): boolean => {
   const padCenterlineX =
     (firstComponentPcbPort.x + secondComponentPcbPort.x) / 2
@@ -1562,14 +1562,24 @@ const buildSuboptimalOrientationIssues = (
     const componentPcbPorts = pcbPortIndexes.pcbPortsBySourceComponentId.get(
       component.sourceComponentId,
     )
-    if (!componentPcbPorts || componentPcbPorts.length !== 2) continue
+    if (!componentPcbPorts || componentPcbPorts.length < 2) continue
 
     const [firstComponentPcbPort, secondComponentPcbPort] = componentPcbPorts
     if (!firstComponentPcbPort || !secondComponentPcbPort) continue
 
+    const hasMultiplePins = componentPcbPorts.length > 2
+    const centerX = component.centerX
+    const centerY = component.centerY
+    // A centered exposed pad stays fixed during rotation and cannot improve.
+    const movingPcbPorts = componentPcbPorts.filter(
+      (port) =>
+        !hasMultiplePins ||
+        Math.hypot(port.x - centerX, port.y - centerY) > GEOMETRY_EPSILON,
+    )
+    if (movingPcbPorts.length < 2) continue
     let crossingConnectionCount = 0
 
-    for (const pcbPort of componentPcbPorts) {
+    for (const pcbPort of movingPcbPorts) {
       const connectedSourcePortIds = connectedSourcePortIdsBySourcePortId.get(
         pcbPort.source_port_id,
       )
@@ -1628,15 +1638,19 @@ const buildSuboptimalOrientationIssues = (
       const crossesPadCenterline = doesConnectionCrossPadCenterline({
         pcbPort,
         connectedPcbPort,
-        firstComponentPcbPort,
-        secondComponentPcbPort,
+        firstComponentPcbPort: hasMultiplePins
+          ? pcbPort
+          : firstComponentPcbPort,
+        secondComponentPcbPort: hasMultiplePins
+          ? rotatedPosition
+          : secondComponentPcbPort,
       })
       if (!crossesPadCenterline) break
 
       crossingConnectionCount += 1
     }
 
-    if (crossingConnectionCount !== 2) continue
+    if (crossingConnectionCount !== movingPcbPorts.length) continue
 
     issues.push(
       createIssue({
@@ -1644,7 +1658,9 @@ const buildSuboptimalOrientationIssues = (
         componentA: component.name,
         clearance: 0,
         severity: SUBOPTIMAL_ORIENTATION_SEVERITY,
-        summary: `${component.name} connections cross the routing path between its pads`,
+        summary: hasMultiplePins
+          ? `${component.name} connections favor the opposite orientation`
+          : `${component.name} connections cross the routing path between its pads`,
         suggested_move: `rotate ${component.name} 180 degrees`,
       }),
     )
