@@ -113,11 +113,12 @@ const getPadBounds = (
     const y = toNumber(element.y)
     const rectPadWidth = toNumber(element.rect_pad_width)
     const rectPadHeight = toNumber(element.rect_pad_height)
+    const outerDiameter = toNumber(element.outer_diameter)
     const holeDiameter = toNumber(element.hole_diameter)
     if (x === null || y === null) return null
 
-    const width = rectPadWidth ?? holeDiameter
-    const height = rectPadHeight ?? holeDiameter
+    const width = rectPadWidth ?? outerDiameter ?? holeDiameter
+    const height = rectPadHeight ?? outerDiameter ?? holeDiameter
     if (width === null || height === null) return null
 
     return {
