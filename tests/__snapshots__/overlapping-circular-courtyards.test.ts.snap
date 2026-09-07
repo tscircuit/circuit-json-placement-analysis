@@ -1,14 +1,32 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`repro: overlapping circular courtyards must appear in the placement report: actual placement report 1`] = `
-"placement summary: no placement issues
+"placement summary: 1 courtyard collision
+
+worst issues:
+1. R1 and R2 courtyard collision by 1mm. Suggested move: move R2 1mm right.
 
 board top-layer utilization:
-- occupied: 0% (0mm^2 of 96mm^2)
+- occupied: 29.167% (28mm^2 of 96mm^2)
 - empty spaces over 5% of board area:
-  - 100% (96mm^2); bounds=(minX=-6mm, maxX=6mm, minY=-4mm, maxY=4mm)
+  - 33.333% (32mm^2); bounds=(minX=-6mm, maxX=-2mm, minY=-4mm, maxY=4mm)
+  - 8.333% (8mm^2); bounds=(minX=5mm, maxX=6mm, minY=-4mm, maxY=4mm)
 
 board-edge status:
 - R1: 3.5mm inside top edge
-- R2: 2.5mm inside right edge"
+- R2: 2.5mm inside right edge
+
+flagged components:
+- R1
+  source placement: placement_mode=none
+  resolved placement: center=(0mm, 0mm) on top; bounds=(minX=-0.5mm, maxX=0.5mm, minY=-0.5mm, maxY=0.5mm); size=(width=1mm, height=1mm); anchor_alignment="center"
+  board edge status: 3.5mm inside top edge
+  issues:
+  - R1 and R2 courtyard collision by 1mm. Suggested move: move R2 1mm right.
+- R2
+  source placement: placement_mode=none
+  resolved placement: center=(3mm, 0mm) on top; bounds=(minX=2.5mm, maxX=3.5mm, minY=-0.5mm, maxY=0.5mm); size=(width=1mm, height=1mm); anchor_alignment="center"
+  board edge status: 2.5mm inside right edge
+  issues:
+  - R1 and R2 courtyard collision by 1mm. Suggested move: move R2 1mm right."
 `;
