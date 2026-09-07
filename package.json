@@ -13,6 +13,7 @@
     "format": "biome format --write ."
   },
   "devDependencies": {
+    "@tscircuit/math-utils": "^0.0.36",
     "@types/bun": "latest",
     "bun-match-svg": "^0.0.15",
     "circuit-json": "^0.0.465",
