@@ -3,6 +3,7 @@ import { expect, test } from "bun:test"
 import {
   ddrVisualFixture,
   groundVia,
+  layers,
   plane,
   rect,
   visualSnapshot,
@@ -19,10 +20,7 @@ test("a layer hop requires an existing via with both span and copper contact", a
   }
   const valid = {
     ...missing,
-    json: [
-      ...missing.json,
-      groundVia("return_via", 0, -0.8, missing.options.stackup!.copperLayers),
-    ],
+    json: [...missing.json, groundVia("return_via", 0, -0.8, layers)],
   }
   const insulated = {
     ...valid,

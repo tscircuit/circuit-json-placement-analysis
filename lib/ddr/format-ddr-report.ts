@@ -22,7 +22,7 @@ export const formatDdrPlacementReport = (
   const assumed = report.stackup?.provenance.kind === "assumed"
   const lines: string[] = assumed
     ? [
-        `**ASSUMED stackup:** ${escapeMarkdown(report.stackup!.provenance.source)}. Verify it against the board.`,
+        `**ASSUMED:** ${escapeMarkdown(report.stackup!.provenance.source)}; exported pours are treated as final fill.`,
         "",
       ]
     : []
@@ -49,7 +49,7 @@ export const formatDdrPlacementReport = (
         "",
       )
     }
-  } else if (report.status === "no_issues_in_evaluated_checks") {
+  } else if (report.checks.referenceSegments > 0) {
     const useful =
       report.findings.find(
         (f) =>
@@ -58,7 +58,7 @@ export const formatDdrPlacementReport = (
       ) ??
       report.findings.find((f) => f.code === "reference_centerline_covered")
     lines.push(
-      `**Looks good${assumed ? " for the assumed stackup" : ""}.** ${escapeMarkdown(useful?.summary ?? "No reference-copper problems were found in the evaluated checks.")}`,
+      `**${assumed ? "No problems found under these assumptions" : "No problems found in the evaluated checks"}.** ${escapeMarkdown(useful?.summary ?? "Reference-copper coverage was evaluated.")}`,
       useful ? where(useful) : "",
       useful
         ? escapeMarkdown(useful.repairHint)
@@ -68,12 +68,12 @@ export const formatDdrPlacementReport = (
   } else {
     lines.push(
       "**Unknown:** there is not enough reference data to check this layout.",
-      "Next: supply the final routes, reference assignments and filled copper.",
+      "Next: supply source-connected routes, ground/power roles and final filled copper, or review the reference choice manually.",
       "",
     )
   }
   lines.push(
-    "Reference-copper geometry only; impedance, timing and boot are not evaluated.",
+    "Signal candidates; DDR membership is unknown. Geometry screening only; impedance, timing and boot are not evaluated.",
     "",
   )
   return lines.filter((line, i) => line || lines[i - 1]).join("\n")

@@ -28,7 +28,7 @@ export interface DdrStackup {
   provenance: { kind: "declared" | "assumed"; source: string }
   /** Ordered copper layers, top to bottom. No electrical role is inferred from num_layers. */
   copperLayers: string[]
-  /** Include every assigned reference, including both sides of stripline. */
+  /** Reference candidates, including both neighboring layers when identifiable. */
   references: DdrReference[]
 }
 export interface DdrGroup {
@@ -42,24 +42,8 @@ export interface DdrPolicy {
   provenance: string
   preferGround?: boolean
   requireAdjacentReference?: boolean
-  /** Caller policy, never a universal DDR distance; omitted proximity is UNKNOWN. */
+  /** Advisory analyzer policy, never a universal DDR distance. */
   maxReturnViaDistanceMm?: number
-}
-export interface DdrAntipad {
-  pcbViaId: PcbViaId
-  pcbCopperPourId: PcbCopperPourId
-  innerRingIndex: number
-  /** Explicit clearance extent; only isolated bounded holes at this signal transition qualify. */
-  maxRadiusMm: number
-  provenance: string
-}
-export interface DdrPlacementOptions {
-  groups?: DdrGroup[]
-  stackup?: DdrStackup
-  /** Identify final solved fill, including all clearances/holes. Requested pour outlines are insufficient. */
-  filledCopper?: { pcbCopperPourIds: PcbCopperPourId[]; provenance: string }
-  policy?: DdrPolicy
-  signalViaAntipads?: DdrAntipad[]
 }
 export type DdrSeverity =
   | "error"
@@ -91,6 +75,9 @@ export interface DdrFinding {
   provenance: string[]
 }
 export interface DdrPlacementReport {
+  scope: "signal_candidates"
+  ddrMembership: "unknown"
+  assumptions: string[]
   status: "issues_found" | "incomplete" | "no_issues_in_evaluated_checks"
   stackup: DdrStackup | null
   policy: DdrPolicy

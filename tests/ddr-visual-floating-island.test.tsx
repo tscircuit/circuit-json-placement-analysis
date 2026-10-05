@@ -32,13 +32,6 @@ test("equal GND labels do not anchor a disconnected reference island", async () 
     plane("gnd1", "inner1", [], rect(-6, -3, 0, 3)),
     plane("island", "inner1", [], rect(0.5, -3, 6, 3)),
   )
-  floating.options = {
-    ...anchored.options,
-    filledCopper: {
-      pcbCopperPourIds: ["gnd1", "island"],
-      provenance: "Two separated final-fill regions labelled GND",
-    },
-  }
   await expect(
     visualSnapshot([
       { title: "Before: disconnected GND island", ...floating },

@@ -14,6 +14,11 @@ import {
   uncoveredIntervals,
 } from "./geometry"
 import {
+  ISOLATED_ANTIPAD_RADIUS_MM,
+  inferCircuitContext,
+  SCREENING_POLICY,
+} from "./infer-circuit-context"
+import {
   type DdrSegment,
   elementsOfType,
   type Plane,
@@ -26,65 +31,45 @@ import {
 import type {
   AnalyzeDdrPlacementResult,
   DdrLocation,
-  DdrPlacementOptions,
   DdrPlacementReport,
   DdrPoint,
-  DdrPolicy,
   DdrReference,
   DdrSeverity,
 } from "./types"
 
-const DEFAULT_POLICY: DdrPolicy = {
-  name: "strict_ground",
-  provenance:
-    "Analyzer conservative preference; no manufacturer profile or universal stitch distance",
-  preferGround: true,
-}
 const LIMITS = [
-  "Only identified final filled copper with solved holes/antipads is evaluated; requested pour outlines are insufficient.",
+  "Exported pour geometry is ASSUMED to be final filled copper with solved holes/antipads. Requested pour outlines cannot establish physical coverage.",
   "Straight polygon/BRep and rotated rectangles are supported. Curved fill, through_pad routes, pill pads, plated holes and separate thermal spokes are UNKNOWN when present in the reference model.",
   "Positive-area copper contacts are required. Via annulus overlap is radial against actual filled polygons; circular terminal pads use conservative 128-sided polygons. Marginal/touching contact is UNKNOWN, not hardware continuity proof.",
-  "All supplied reference assignments are examined, including both stripline sides. Missing assignments cannot be inferred.",
+  "Conventional layer order and adjacent ground/power reference candidates are ASSUMED. Both stripline-side candidates are examined; ambiguous roles/domains remain UNKNOWN. DDR membership remains unknown.",
   "NOT EVALUATED: endpoint component anchoring, capacitive return, dielectric/height margins, narrow necks/detours, package returns, manufacturer keepout/shielding, impedance, crosstalk, timing, EMI or boot qualification.",
 ]
 
 // Shared finding wording keeps rule evaluation focused on geometry and evidence.
 const MESSAGES: Record<string, readonly [summary: string, repair: string]> = {
   ddr_membership_unknown: [
-    "The DDR connections have not been selected.",
-    "Select the DDR nets or routes from the rendered layout.",
+    "No routed signal candidates could be identified.",
+    "Supply completed routes with source connectivity.",
   ],
   stackup_unknown: [
     "The stackup is unknown, so reference coverage cannot be checked.",
-    "Supply the reference-layer assignments, or explicitly choose an ASSUMED expected stackup.",
+    "Supply a consistent board layer count and layer geometry; material alone is not enough.",
   ],
   stackup_inconsistent: [
     "The stackup conflicts with the layer metadata.",
-    "Correct the layer order and reference assignments; label expectations ASSUMED.",
-  ],
-  policy_invalid: [
-    "The chosen checking policy has invalid values.",
-    "Provide a named policy with a finite, nonnegative distance limit.",
+    "Correct the board layer count and inconsistent layer geometry, or review the stackup manually.",
   ],
   filled_copper_unknown: [
     "The final copper fill has not been supplied.",
     "Export the solved reference copper, including holes and clearances.",
   ],
-  selected_trace_missing: [
-    "A selected DDR connection is missing from the layout.",
-    "Check the DDR selection against the rendered layout.",
-  ],
-  selected_net_missing: [
-    "A selected DDR net is missing from the layout.",
-    "Check the DDR selection against the rendered layout.",
-  ],
   ddr_route_missing: [
-    "A selected DDR connection has no finished PCB route.",
+    "A selected signal candidate connection has no finished PCB route.",
     "Render or import its completed route before checking coverage.",
   ],
   ddr_routes_unknown: [
-    "There are no finished DDR routes to check.",
-    "Select the DDR connections and supply their completed routes.",
+    "There are no finished signal candidate routes to check.",
+    "Supply completed signal routes with source connectivity.",
   ],
   reference_model_incomplete: [
     "Some reference copper or contacts cannot be read.",
@@ -95,19 +80,19 @@ const MESSAGES: Record<string, readonly [summary: string, repair: string]> = {
     "Separate the rails and refill the copper; never join power and ground with a via.",
   ],
   reference_assignment_unknown: [
-    "This signal layer has no assigned reference.",
-    "Declare the reference layers, including both sides of stripline.",
+    "This signal layer has no identifiable reference candidate.",
+    "Supply the appropriate source_net ground/power roles and adjacent reference-pour geometry, or review the reference choice manually.",
   ],
   reference_fill_unknown: [
     "Copper for an assigned reference layer is missing.",
     "Supply the final filled copper for that reference.",
   ],
   signal_net_unknown: [
-    "The DDR route has missing or ambiguous net membership.",
+    "The signal candidate route has missing or ambiguous net membership.",
     "Supply an unambiguous connection to its source net.",
   ],
   route_geometry_unknown: [
-    "Part of the DDR route cannot be checked.",
+    "Part of the signal candidate route cannot be checked.",
     "Correct the missing or unsupported route geometry.",
   ],
   reference_not_adjacent: [
@@ -127,7 +112,7 @@ const MESSAGES: Record<string, readonly [summary: string, repair: string]> = {
     "Preserve this required insulation.",
   ],
   reference_coverage_gap: [
-    "A gap in reference copper lies under the DDR route.",
+    "A gap in reference copper lies under the signal candidate route.",
     "Move the route over continuous copper, or repair the cut without filling required via clearances.",
   ],
   reference_centerline_covered: [
@@ -167,8 +152,16 @@ const MESSAGES: Record<string, readonly [summary: string, repair: string]> = {
     "Keep it; another stitching via is not needed here.",
   ],
   return_connection_missing: [
-    "No return via passes the chosen span, contact and distance checks.",
-    "Use a nearby same-net via that reaches and contacts both reference planes.",
+    "No same-net return via reaches and contacts both reference islands.",
+    "Use or add a same-net via that contacts both references; review its distance for the intended interface.",
+  ],
+  return_connection_distance: [
+    "An existing return connection is outside the advisory distance.",
+    "Review the distance for the intended interface before moving or adding any via.",
+  ],
+  reference_assignment_ambiguous: [
+    "Multiple reference nets share an adjacent layer; its reference choice is uncertain.",
+    "Review the local copper and intended reference; coverage against every net is not required.",
   ],
 }
 const ORDER: Record<DdrSeverity, number> = {
@@ -191,14 +184,17 @@ const locationHash = (location: DdrLocation) => {
 /** Analyze rendered Circuit JSON. Geometry is board-world mm, +X right/+Y up; no TSX source parsing or routing is performed. */
 export const analyzeDdrPlacement = (
   circuitJson: readonly AnyCircuitElement[],
-  options: DdrPlacementOptions = {},
 ): AnalyzeDdrPlacementResult => {
-  const policy = options.policy ?? DEFAULT_POLICY
+  const context = inferCircuitContext(circuitJson)
+  const policy = SCREENING_POLICY
   const report: DdrPlacementReport = {
+    scope: "signal_candidates",
+    ddrMembership: "unknown",
+    assumptions: context.assumptions,
     status: "incomplete",
-    stackup: options.stackup ?? null,
+    stackup: context.stackup ?? null,
     policy,
-    groups: options.groups ?? [],
+    groups: context.groups ?? [],
     netNames: Object.fromEntries(
       elementsOfType(circuitJson, "source_net").map((n) => [
         n.source_net_id,
@@ -210,16 +206,14 @@ export const analyzeDdrPlacement = (
     limits: [...LIMITS],
   }
   const provenance = [
-    options.stackup
-      ? `${options.stackup.provenance.kind.toUpperCase()} stackup: ${options.stackup.provenance.source}`
+    context.stackup
+      ? `${context.stackup.provenance.kind.toUpperCase()} stackup: ${context.stackup.provenance.source}`
       : "UNKNOWN stackup",
     `Policy: ${policy.name}; ${policy.provenance}`,
-    ...(options.groups ?? []).map(
-      (group) => `DDR membership ${group.name}: ${group.provenance}`,
+    ...(context.groups ?? []).map(
+      (group) => `Candidate selection ${group.name}: ${group.provenance}`,
     ),
-    ...(options.filledCopper
-      ? [`DECLARED final fill: ${options.filledCopper.provenance}`]
-      : []),
+    ...(context.filledCopper ? [context.filledCopper.provenance] : []),
   ]
   const add = (
     code: string,
@@ -241,7 +235,12 @@ export const analyzeDdrPlacement = (
     report.findings.push({
       id,
       code,
-      severity,
+      severity:
+        severity === "error" &&
+        report.stackup?.provenance.kind === "assumed" &&
+        ["reference_coverage_gap", "reference_island_unanchored"].includes(code)
+          ? "warning"
+          : severity,
       summary: wording?.summary ?? MESSAGES[code]![0],
       location: canonical,
       evidence,
@@ -262,7 +261,8 @@ export const analyzeDdrPlacement = (
     )
       ? "issues_found"
       : report.findings.some((f) => f.severity === "unknown") ||
-          !report.checks.referenceSegments
+          !report.checks.referenceSegments ||
+          report.stackup?.provenance.kind === "assumed"
         ? "incomplete"
         : "no_issues_in_evaluated_checks"
     return {
@@ -271,24 +271,48 @@ export const analyzeDdrPlacement = (
       getIssues: () => report.findings.filter((f) => f.severity !== "info"),
     }
   }
+  for (const trace of context.unmappedTraces)
+    add("signal_net_unknown", "unknown", { pcbTraceId: trace.pcb_trace_id }, [
+      "No matching source connection for this rendered route.",
+    ])
+  for (const ref of context.ambiguousReferences)
+    if (
+      elementsOfType(circuitJson, "pcb_trace").some(
+        (trace) =>
+          context.groups.some((g) =>
+            g.sourceTraceIds?.includes(trace.source_trace_id ?? ""),
+          ) &&
+          trace.route.some(
+            (p) => p.route_type === "wire" && p.layer === ref.signalLayer,
+          ),
+      )
+    )
+      add(
+        "reference_assignment_ambiguous",
+        "unknown",
+        { layers: [ref.signalLayer, ref.referenceLayer] },
+        [
+          `Candidate net IDs: ${ref.sourceNetIds.join(", ")}; no global assignment inferred.`,
+        ],
+      )
   if (
-    !options.groups?.length ||
-    options.groups.some(
+    !context.groups?.length ||
+    context.groups.some(
       (g) =>
         !g.provenance.trim() ||
         !(g.sourceNetIds?.length || g.sourceTraceIds?.length),
     )
   )
     add("ddr_membership_unknown", "unknown", {}, [
-      "No complete explicit group selection; names and TSX text are not used to infer DDR.",
+      "No routed source-connected signal candidate; names and TSX text are not used to infer DDR.",
     ])
-  if (!options.stackup) {
+  if (!context.stackup) {
     add("stackup_unknown", "unknown", {}, [
-      "pcb_board num_layers/thickness/material do not define electrical reference roles or dielectric spacing.",
+      "A single owning board needs a consistent 2–10 copper-layer count and matching layer labels. Material does not establish stackup or dielectric spacing.",
     ])
     return finish()
   }
-  const stackup = options.stackup
+  const stackup = context.stackup
   const boards = elementsOfType(circuitJson, "pcb_board").filter(
     (e) => !e.is_subcircuit,
   )
@@ -317,20 +341,8 @@ export const analyzeDdrPlacement = (
     return finish()
   }
   if (
-    !policy.name.trim() ||
-    !policy.provenance.trim() ||
-    (policy.maxReturnViaDistanceMm !== undefined &&
-      (!Number.isFinite(policy.maxReturnViaDistanceMm) ||
-        policy.maxReturnViaDistanceMm < 0))
-  ) {
-    add("policy_invalid", "unknown", {}, [
-      "The distance threshold must be finite nonnegative mm, with named provenance.",
-    ])
-    return finish()
-  }
-  if (
-    !options.filledCopper?.provenance.trim() ||
-    !options.filledCopper.pcbCopperPourIds.length
+    !context.filledCopper?.provenance.trim() ||
+    !context.filledCopper.pcbCopperPourIds.length
   ) {
     add("filled_copper_unknown", "unknown", {}, [
       "A requested pour outline does not establish copper after clearance/antipad solving.",
@@ -340,36 +352,12 @@ export const analyzeDdrPlacement = (
   const sourceConnectivity = new SourceConnectivity(circuitJson)
   const sourceTraces = elementsOfType(circuitJson, "source_trace")
   const selectedSources = sourceTraces.filter((trace) =>
-    options.groups?.some(
+    context.groups?.some(
       (group) =>
         group.sourceTraceIds?.includes(trace.source_trace_id) ||
         group.sourceNetIds?.includes(sourceConnectivity.traceNet(trace) ?? ""),
     ),
   )
-  for (const group of options.groups ?? [])
-    for (const id of group.sourceTraceIds ?? [])
-      if (!sourceTraces.some((t) => t.source_trace_id === id))
-        add(
-          "selected_trace_missing",
-          "unknown",
-          { sourceTraceId: id },
-          [`Selection: ${group.name}`],
-          [group.provenance],
-        )
-  for (const group of options.groups ?? [])
-    for (const id of group.sourceNetIds ?? [])
-      if (
-        !circuitJson.some(
-          (e) => e.type === "source_net" && e.source_net_id === id,
-        )
-      )
-        add(
-          "selected_net_missing",
-          "unknown",
-          { sourceNetId: id },
-          [`Selection: ${group.name}`],
-          [group.provenance],
-        )
   const traces = circuitJson
     .filter(
       (e): e is Extract<AnyCircuitElement, { type: "pcb_trace" }> =>
@@ -393,14 +381,14 @@ export const analyzeDdrPlacement = (
   }
   const model = new ReferenceCopperModel(
     circuitJson,
-    options.filledCopper.pcbCopperPourIds,
+    context.filledCopper.pcbCopperPourIds,
     stackup,
     sourceConnectivity,
   )
   if (model.unsupported.length) {
     const curved = elementsOfType(circuitJson, "pcb_copper_pour").some(
       (p) =>
-        options.filledCopper!.pcbCopperPourIds.includes(p.pcb_copper_pour_id) &&
+        context.filledCopper!.pcbCopperPourIds.includes(p.pcb_copper_pour_id) &&
         p.shape === "brep" &&
         [p.brep_shape.outer_ring, ...p.brep_shape.inner_rings].some((r) =>
           r.vertices.some((v) => (v.bulge ?? 0) !== 0),
@@ -474,7 +462,29 @@ export const analyzeDdrPlacement = (
     end: number,
   ) => {
     const transitions = routeGeometry(trace).transitions
-    for (const metadata of options.signalViaAntipads ?? []) {
+    const signalNet = sourceConnectivity.traceNet(trace.source_trace_id ?? "")
+    const inferredAntipads = plane.pours.flatMap((pour) =>
+      pour.shape !== "brep"
+        ? []
+        : model.vias
+            .filter(
+              (contact) =>
+                contact.net !== undefined &&
+                contact.net === signalNet &&
+                contact.layers?.includes(segment.layer),
+            )
+            .flatMap((contact) =>
+              pour.brep_shape.inner_rings.map((_, innerRingIndex) => ({
+                pcbViaId: contact.via.pcb_via_id,
+                pcbCopperPourId: pour.pcb_copper_pour_id,
+                innerRingIndex,
+                maxRadiusMm: ISOLATED_ANTIPAD_RADIUS_MM,
+                provenance:
+                  "ASSUMED isolated signal clearance inferred from the actual transition/hole under advisory 0.5 mm radius policy",
+              })),
+            ),
+    )
+    for (const metadata of inferredAntipads) {
       if (
         !metadata.provenance.trim() ||
         !Number.isFinite(metadata.maxRadiusMm) ||
@@ -575,7 +585,8 @@ export const analyzeDdrPlacement = (
       (t) => t.source_trace_id === trace.source_trace_id,
     )!
     const net = sourceConnectivity.traceNet(sourceTrace)
-    const signal = (net && report.netNames?.[net]) || "The selected DDR route"
+    const signal =
+      (net && report.netNames?.[net]) || "the unnamed signal candidate"
     const base: DdrLocation = {
       pcbTraceId: trace.pcb_trace_id,
       sourceTraceId: trace.source_trace_id,
@@ -916,15 +927,36 @@ export const analyzeDdrPlacement = (
                   ...nearby.map((c) => c.via.pcb_via_id),
                 ],
               },
-              [`Chosen maximum distance ${maxDistance} mm.`, ...evidence],
+              [`Advisory distance ${maxDistance} mm.`, ...evidence],
               [],
               {
-                summary: `An existing return via ${Number(Math.min(...nearby.map((c) => distance(c.via, transition.point))).toPrecision(3))} mm from ${signal} already contacts ${from.layer} and ${to.layer} within the chosen ${maxDistance} mm limit.`,
+                summary: `An existing return via ${Number(Math.min(...nearby.map((c) => distance(c.via, transition.point))).toPrecision(3))} mm from ${signal} already contacts ${from.layer} and ${to.layer} within the advisory ${maxDistance} mm screen.`,
                 repairHint:
                   "Keep it; another stitching via is not needed here.",
               },
             )
-          else {
+          else if (qualifying.length) {
+            const closest = qualifying
+              .slice()
+              .sort(
+                (a, b) =>
+                  distance(a.via, transition.point) -
+                  distance(b.via, transition.point),
+              )[0]!
+            add(
+              "return_connection_distance",
+              "warning",
+              {
+                ...pairLoc,
+                pcbViaIds: [...pairLoc.pcbViaIds, closest.via.pcb_via_id],
+              },
+              evidence,
+              [],
+              {
+                summary: `An existing return via ${Number(distance(closest.via, transition.point).toPrecision(3))} mm from ${signal} contacts both references, outside the advisory ${maxDistance} mm screen.`,
+              },
+            )
+          } else {
             const knownNearby = candidates
               .filter(
                 (c) =>
@@ -974,7 +1006,7 @@ export const analyzeDdrPlacement = (
                   ? `${signal}’s nearby return via is separated from the required copper on ${separated.map((p) => p.layer).join(" and ")}.`
                   : missingContact.length
                     ? `${signal}’s nearby return via contacts a different reference island on ${missingContact.map((p) => p.layer).join(" and ")}.`
-                    : `${signal} changes from ${from.layer} to ${to.layer} without a usable return via within the chosen ${maxDistance} mm limit.`
+                    : `${signal} changes from ${from.layer} to ${to.layer} without a usable same-net return connection.`
             add(
               "return_connection_missing",
               uncertain ? "unknown" : "policy_violation",
@@ -986,7 +1018,7 @@ export const analyzeDdrPlacement = (
                 ],
               },
               [
-                `Chosen maximum distance ${maxDistance} mm; no universal SI threshold is implied.`,
+                `Advisory distance ${maxDistance} mm; no universal SI threshold is implied.`,
                 ...evidence,
               ],
               [],
@@ -996,7 +1028,7 @@ export const analyzeDdrPlacement = (
                   ? "Supply the missing span/contact data before choosing a fix."
                   : missingSpan.length
                     ? `Use a same-net return via whose barrel reaches both ${from.layer} and ${to.layer}.`
-                    : `Place a same-net return via within the chosen ${maxDistance} mm limit where it actually contacts both reference islands.`,
+                    : "Use or add a same-net return via that contacts both reference islands; review its distance for the intended interface.",
               },
             )
           }

@@ -3,6 +3,7 @@ import { expect, test } from "bun:test"
 import {
   ddrVisualFixture,
   groundVia,
+  layers,
   plane,
   rect,
   visualSnapshot,
@@ -32,7 +33,7 @@ test("intact reference, a slit, and an edge-open signal clearance", async () => 
             )
           : e,
       ),
-      groundVia("return_via", 0, -0.8, hop.options.stackup!.copperLayers),
+      groundVia("return_via", 0, -0.8, layers),
     ],
   }
   await expect(

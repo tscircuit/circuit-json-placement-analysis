@@ -1,10 +1,5 @@
 import { type AnyCircuitElement, any_circuit_element } from "circuit-json"
-import {
-  analyzeDdrPlacement,
-  type DdrFinding,
-  type DdrPlacementOptions,
-  type DdrPoint,
-} from "../../lib"
+import { analyzeDdrPlacement, type DdrFinding, type DdrPoint } from "../../lib"
 import {
   annulusContact,
   pointInCopper,
@@ -48,7 +43,7 @@ export const groundVia = (id: string, x: number, y: number, layers: string[]) =>
     outer_diameter: 0.6,
     hole_diameter: 0.25,
   })
-const layers = ["top", "inner1", "inner2", "inner3", "inner4", "bottom"]
+export const layers = ["top", "inner1", "inner2", "inner3", "inner4", "bottom"]
 const terminal = (
   id: string,
   x: number,
@@ -174,50 +169,7 @@ export const ddrVisualFixture = (layerHop = false) => {
         ]
       : []),
   ]
-  const options: DdrPlacementOptions = {
-    groups: [
-      {
-        name: "DQ",
-        sourceTraceIds: ["dq_source"],
-        provenance: "Original generic DQ0 fixture",
-      },
-    ],
-    stackup: {
-      provenance: { kind: "declared", source: "Generic six-layer design" },
-      copperLayers: layers,
-      references: [
-        { signalLayer: "top", referenceLayer: "inner1", sourceNetId: "gnd" },
-        ...(layerHop
-          ? [
-              {
-                signalLayer: "bottom",
-                referenceLayer: "inner4",
-                sourceNetId: "gnd",
-              },
-            ]
-          : []),
-      ],
-    },
-    filledCopper: {
-      pcbCopperPourIds: layerHop ? ["gnd1", "gnd4"] : ["gnd1"],
-      provenance: "Final generic fill with explicit voids",
-    },
-    signalViaAntipads: layerHop
-      ? ["gnd1", "gnd4"].map((pcbCopperPourId) => ({
-          pcbViaId: "signal_via",
-          pcbCopperPourId,
-          innerRingIndex: 0,
-          maxRadiusMm: 0.45,
-          provenance: "Isolated solved signal clearance",
-        }))
-      : [],
-    policy: {
-      name: "fixture_policy",
-      provenance: "Illustrative chosen policy, not SI signoff",
-      maxReturnViaDistanceMm: 1,
-    },
-  }
-  return { json, options }
+  return { json }
 }
 
 type Fixture = ReturnType<typeof ddrVisualFixture>
@@ -233,8 +185,8 @@ const finite = (p: DdrPoint) => Number.isFinite(p.x) && Number.isFinite(p.y)
 // Exploded geometry; the transition views crop around the real signal via, with exaggerated layer spacing.
 export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
   let scopeLine = ""
-  const panels = cases.map(({ title, json, options }, panelIndex) => {
-    const analysis = analyzeDdrPlacement(json, options)
+  const panels = cases.map(({ title, json }, panelIndex) => {
+    const analysis = analyzeDdrPlacement(json)
     const report = analysis.getReport()
     const board = json.find((e) => e.type === "pcb_board")!
     if (
@@ -439,7 +391,7 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
       if (f.severity === "info" && f.code !== "existing_return_connection")
         continue
       if (f.code === "return_connection_missing" && loc.start) {
-        const references = options.stackup!.references.filter((r) =>
+        const references = report.stackup!.references.filter((r) =>
           loc.layers?.includes(r.referenceLayer),
         )
         const candidate = json.find(
@@ -513,7 +465,7 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
       }
       const affectedLayers = (loc.layers ?? [])
         .filter((l) =>
-          options.stackup?.references.some((r) => r.referenceLayer === l),
+          report.stackup?.references.some((r) => r.referenceLayer === l),
         )
         .slice(0, 1)
       if (
@@ -544,7 +496,7 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
         for (const layer of loc.layers ?? [])
           if (
             shownLayers.includes(layer) &&
-            options.stackup?.references.some((r) => r.referenceLayer === layer)
+            report.stackup?.references.some((r) => r.referenceLayer === layer)
           ) {
             const [x, y] = project(via, layer)
             geometry.push(
@@ -556,9 +508,10 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
     const state =
       report.status === "issues_found"
         ? "ISSUE"
-        : report.status === "incomplete"
+        : report.findings.some((f) => f.severity === "unknown") ||
+            !report.checks.referenceSegments
           ? "UNKNOWN"
-          : "CLEAR"
+          : "CONDITIONAL"
     const tone =
       state === "ISSUE"
         ? "#c92f45"
@@ -576,6 +529,7 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
         s
           .replace(/^#+\s*/, "")
           .replaceAll("**", "")
+          .replace(/\\([_[\]*`])/g, "$1")
           .match(/.{1,82}(?:\s|$)|.{1,82}/g) ?? [""],
     )
     const reportY = zoom ? 700 : 500

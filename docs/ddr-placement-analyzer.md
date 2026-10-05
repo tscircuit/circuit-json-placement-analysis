@@ -1,34 +1,24 @@
-# DDR reference checks
-
-`analyzeDdrPlacement(circuitJson, options)` accepts final rendered/imported Circuit JSON using existing `Circuit.getCircuitJson()` workflows. `getString()` gives a short Markdown report: what needs attention, its physical location, and one next step. Healthy, unknown and assumed results stay distinct. `getReport()` retains stable findings, full geometry, evidence, provenance and limits; `getIssues()` returns non-informational findings. The analyzer never parses TSX or runs a router.
+# DDR reference screening
 
 ```ts
-const analysis = analyzeDdrPlacement(circuit.getCircuitJson(), {
-  groups: [{ name: "DQ", sourceNetIds: ["ddr_dq0"], provenance: "Design DDR group" }],
-  stackup: {
-    provenance: { kind: "assumed", source: "Caller-selected expected stack" },
-    copperLayers: ["top", "inner1", "inner2", "bottom"],
-    references: [
-      { signalLayer: "top", referenceLayer: "inner1", sourceNetId: "ground" },
-      { signalLayer: "bottom", referenceLayer: "inner2", sourceNetId: "ground" },
-    ],
-  },
-  filledCopper: { pcbCopperPourIds: ["filled_inner1", "filled_inner2"], provenance: "Final solved fill export" },
-  policy: { name: "project_review", provenance: "Reviewed for this design", maxReturnViaDistanceMm: 1 },
-})
+const analysis = analyzeDdrPlacement(circuit.getCircuitJson())
 console.log(analysis.getString())
 ```
 
-Replace illustrative IDs and distance with actual IDs and reviewed policy. `num_layers`, thickness, material, net names and equal net labels do not establish electrical references or physical grounding. Supply ordered layers and **every** assigned reference (both stripline sides when applicable). Missing/inconsistent stackup blocks reference conclusions; caller-selected expected stackups remain **ASSUMED** in every finding. DECLARED is supplied design metadata, not fabricated-hardware observation.
+The single input is rendered/imported Circuit JSON. `getString()` gives short Markdown: what needs attention, its physical location, and one next step. `getReport()` retains stable findings, full geometry, evidence, assumptions and limits; `getIssues()` returns non-informational findings. The analyzer never parses TSX or runs a router.
 
-Coverage partitions straight routes at every boundary of the union of identified final filled copper, retaining holes and splits. Island grounding traverses positive-area pad/trace contacts and physical via annuli to declared source/PCB-port-linked reference terminals. A known disconnected terminal path is an error; missing grounding geometry is UNKNOWN. Return transitions, including final entry/exit vias, require an existing same-net via with known physical span and contact to both required reference islands. Sharing one connected reference needs no redundant stitch. Logical route `from_layer`/`to_layer` never substitutes for drill span. No universal proximity distance is supplied.
+This version screens **signal candidates**: rendered source-connected routes excluding nets explicitly marked ground/power. It cannot identify DDR protocol membership from names. Missing or ambiguous connectivity remains UNKNOWN.
 
-`signalViaAntipads` declares `{pcbViaId, pcbCopperPourId, innerRingIndex, maxRadiusMm, provenance}`. Only bounded closed BRep holes at an actual signal transition containing exactly one represented via center are exempt. Merged barriers, ordinary segment holes and oversized clearances remain coverage gaps. Preserve insulation rather than filling required antipads.
+A consistent owning-board count of 2–10 copper layers permits an **ASSUMED** conventional order (`top`, `inner1`…`bottom`). Both immediate neighboring layers are examined for reference candidates using actual `source_net.is_ground`/`is_power` roles and pours. Ground is preferred; a distant power pour on the same layer is not another required reference. Multiple ground domains, contradictory/missing roles, inconsistent layer counts or missing copper remain UNKNOWN. Material, thickness and net names establish neither reference assignments nor dielectric spacing/Er. Electrical reference choices and the assumption that exported pours contain the final solved fill remain visible in the report; a healthy screen is conditional and has structured status `incomplete`.
 
-The default policy prefers ground and direct adjacency. Reviewed power-reference policy can set `preferGround: false`; unlike-net transitions remain UNKNOWN because capacitive return is **NOT EVALUATED**. Never bridge power and ground with a via. Straight polygons/BRep and rotated rectangles are supported; curved fill, through-pad routes, pill pads, plated holes, separate thermal spokes, marginal contacts and invalid numbers remain UNKNOWN where relevant. Input fill must already include solved holes, antipads and thermal clearances.
+Coverage partitions straight routes across actual polygon/BRep boundaries, preserving holes and splits. Reference-island connectivity uses positive-area pad/trace contacts and physical via annuli to declared source/PCB-port-linked reference terminals. Equal net labels do not connect islands. Missing terminal/contact data remains UNKNOWN; a disconnected island under an assumed reference produces a warning. Actual overlapping different-net reference copper is an error.
 
-Errors describe supported topology/coverage; policy violations describe chosen preferences; unknowns retain missing evidence. No score or SI/EMI/timing/boot signoff is produced. **NOT EVALUATED:** endpoint component anchoring, capacitor/AC qualification, dielectric/height margins, narrow neck/detour behavior, package returns, manufacturer keepout/shielding or electrical qualification.
+Layer changes, including final entry/exit vias, check for an **existing** same-net bridge with a known physical span and contact to both required islands. Sharing one connected reference needs no extra stitch. Logical route `from_layer`/`to_layer` does not replace drill-span metadata. The internal **1 mm advisory screen** is not an electrical limit: a qualified farther bridge produces only a distance warning, not a missing-bridge finding. Power references trigger a ground-preference policy finding; unlike-net transitions stay UNKNOWN because capacitive return is not evaluated. Never bridge power and ground with a via.
 
-Five [visual snapshot fixtures](../tests/fixtures/ddr-visual.ts) compare actual Circuit JSON and analyzer reports: reference slit, existing return bridge, floating island, stackup provenance and invalid geometry. The SVGs are deterministic isometric schematics, not current or EM simulation. Run `bun test tests/ddr-visual-*.test.tsx`; package validation uses `bun test`, `bunx tsc --noEmit`, `bun run build` and `bun run format:check`.
+The internal **0.5 mm advisory radius** allows a small isolated BRep hole only at an actual signal-via transition. It must be closed, strictly interior, separated from other holes, and contain exactly one represented via center. Edge-open, touching/merged or oversized clearances remain coverage gaps. Preserve required insulation.
 
-[TI AM335x SPRS717L Rev L](https://www.ti.com/lit/ds/symlink/am3352.pdf), Table 7-62 printed p175, specifies adjacent references and zero crossings over reference cuts for that device; GND is preferred but VDDS_DDR references with bypass accommodation exist. DDR keepout p177 and bypass p178 are device-specific and not implemented. [TI SPRAAR7J](https://www.ti.com/lit/an/spraar7j/spraar7j.pdf), §2.4, discusses ground continuity and stitch placement; its 200 mil guidance is not a universal DDR threshold or an implemented manufacturer qualification profile.
+Straight polygons/BRep and rotated rectangles are supported. Curved fill, through-pad routes, pill pads, plated holes, separate thermal spokes, marginal contacts and invalid numbers remain UNKNOWN where relevant. **NOT EVALUATED:** endpoint component anchoring, capacitor/AC qualification, dielectric/height margins, narrow necks/detours, package returns, manufacturer keepout/shielding, impedance, crosstalk, timing, EMI or boot qualification. There is no score or hardware signoff.
+
+Five [visual fixtures](../tests/fixtures/ddr-visual.ts) compare actual Circuit JSON and analyzer reports: reference slit, existing return bridge, floating island, inferred stackup/roles and invalid geometry. Their SVGs are deterministic physical schematics, not current or EM simulation. Run `bun test tests/ddr-visual-*.test.tsx`; package checks use `bun test`, `bunx tsc --noEmit`, `bun run build` and `bun run format:check`.
+
+[TI AM335x SPRS717L Rev L](https://www.ti.com/lit/ds/symlink/am3352.pdf), Table 7-62 printed p175, specifies adjacent references and zero crossings over reference cuts for that device; GND is preferred but VDDS_DDR references with bypass accommodation exist. Its keepout/bypass requirements are not implemented. [TI SPRAAR7J](https://www.ti.com/lit/an/spraar7j/spraar7j.pdf), §2.4, discusses ground continuity and stitch placement; its 200 mil guidance is not a universal threshold or an implemented qualification profile.

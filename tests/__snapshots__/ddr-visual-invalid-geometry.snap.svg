@@ -1,10 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1311" font-family="Arial, sans-serif"><rect width="1480" height="1311" fill="#fff"/><text x="26" y="29" font-size="18" fill="#617481">Purple: signal copper · gold: ground vias · red: needs attention · green rings: qualified ground contact</text><g transform="translate(0,65)"><desc>**Unknown: DQ0 has a missing or non-finite route coordinate.**
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1399" font-family="Arial, sans-serif"><rect width="1480" height="1399" fill="#fff"/><text x="26" y="29" font-size="18" fill="#617481">Purple: signal copper · gold: ground vias · red: needs attention · green rings: qualified ground contact</text><g transform="translate(0,65)"><desc>**ASSUMED:** Conventional 6-layer order; adjacent copper with declared ground/power roles is a reference candidate; exported pours are treated as final fill.
+
+**Unknown: DQ0 has a missing or non-finite route coordinate.**
 
 Next: Correct the route data, then run the check again.
 
-Reference-copper geometry only; impedance, timing and boot are not evaluated.
+Signal candidates; DDR membership is unknown. Geometry screening only; impedance, timing and boot are not evaluated.
 
-[{"id":"route_geometry_unknown_43cb6d5a9581726d","code":"route_geometry_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq"}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Invalid coordinate: x = Infinity</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · DECLARED stackup</text><clipPath id="crop_0_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
+[{"id":"route_geometry_unknown_43cb6d5a9581726d","code":"route_geometry_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq"}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Invalid coordinate: x = Infinity</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · ASSUMED stackup</text><clipPath id="crop_0_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
 <path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
 <path d="M169,427.5 L673,351.9 L541,292.5 L37,368.1 Z" clip-path="url(#crop_0_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
 <text x="558" y="379.9" fill="#276b52" font-size="20">inner1 · GND</text>
@@ -21,15 +23,19 @@ Reference-copper geometry only; impedance, timing and boot are not evaluated.
 <g transform="matrix(42 -6.3 22 9.9 123 381.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
 <path d="M543,153.6 L543,318.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
 <g transform="matrix(42 -6.3 22 9.9 543 153.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">Unknown: DQ0 has a missing or non-finite route coordinate.</text>
-<text x="26" y="522" fill="#263747" font-size="17">Next: Correct the route data, then run the check again.</text></g>
-<g transform="translate(740,65)"><desc>**Unknown: DQ0 has a missing or invalid trace width.**
+<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">ASSUMED: Conventional 6-layer order; adjacent copper with declared ground/power </text>
+<text x="26" y="522" fill="#263747" font-size="17">roles is a reference candidate; exported pours are treated as final fill.</text>
+<text x="26" y="544" fill="#263747" font-size="17">Unknown: DQ0 has a missing or non-finite route coordinate.</text>
+<text x="26" y="566" fill="#263747" font-size="17">Next: Correct the route data, then run the check again.</text></g>
+<g transform="translate(740,65)"><desc>**ASSUMED:** Conventional 6-layer order; adjacent copper with declared ground/power roles is a reference candidate; exported pours are treated as final fill.
+
+**Unknown: DQ0 has a missing or invalid trace width.**
 
 Next: Correct the route data, then run the check again.
 
-Reference-copper geometry only; impedance, timing and boot are not evaluated.
+Signal candidates; DDR membership is unknown. Geometry screening only; impedance, timing and boot are not evaluated.
 
-[{"id":"route_geometry_unknown_43cb6d5a9581726d","code":"route_geometry_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq"}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Invalid width: NaN</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · DECLARED stackup</text><clipPath id="crop_1_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
+[{"id":"route_geometry_unknown_43cb6d5a9581726d","code":"route_geometry_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq"}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Invalid width: NaN</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · ASSUMED stackup</text><clipPath id="crop_1_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
 <path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
 <path d="M169,427.5 L673,351.9 L541,292.5 L37,368.1 Z" clip-path="url(#crop_1_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
 <text x="558" y="379.9" fill="#276b52" font-size="20">inner1 · GND</text>
@@ -46,15 +52,19 @@ Reference-copper geometry only; impedance, timing and boot are not evaluated.
 <g transform="matrix(42 -6.3 22 9.9 123 381.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
 <path d="M543,153.6 L543,318.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
 <g transform="matrix(42 -6.3 22 9.9 543 153.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">Unknown: DQ0 has a missing or invalid trace width.</text>
-<text x="26" y="522" fill="#263747" font-size="17">Next: Correct the route data, then run the check again.</text></g>
-<g transform="translate(0,663)"><desc>**Unknown: Curved reference-copper boundaries are not supported yet.**
+<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">ASSUMED: Conventional 6-layer order; adjacent copper with declared ground/power </text>
+<text x="26" y="522" fill="#263747" font-size="17">roles is a reference candidate; exported pours are treated as final fill.</text>
+<text x="26" y="544" fill="#263747" font-size="17">Unknown: DQ0 has a missing or invalid trace width.</text>
+<text x="26" y="566" fill="#263747" font-size="17">Next: Correct the route data, then run the check again.</text></g>
+<g transform="translate(0,707)"><desc>**ASSUMED:** Conventional 6-layer order; adjacent copper with declared ground/power roles is a reference candidate; exported pours are treated as final fill.
+
+**Unknown: Curved reference-copper boundaries are not supported yet.**
 
 Next: Provide supported final-fill geometry or review this region manually.
 
-Reference-copper geometry only; impedance, timing and boot are not evaluated.
+Signal candidates; DDR membership is unknown. Geometry screening only; impedance, timing and boot are not evaluated.
 
-[{"id":"reference_fill_unknown_68b977c3ca2e6950","code":"reference_fill_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":0,"layers":["inner1","top"]}},{"id":"reference_model_incomplete_08f44b07b5901a25","code":"reference_model_incomplete","location":{}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Unsupported curve</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · DECLARED stackup</text><clipPath id="crop_2_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
+[{"id":"reference_fill_unknown_68b977c3ca2e6950","code":"reference_fill_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":0,"layers":["inner1","top"]}},{"id":"reference_model_incomplete_08f44b07b5901a25","code":"reference_model_incomplete","location":{}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Unsupported curve</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · ASSUMED stackup</text><clipPath id="crop_2_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
 <path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
 <path d="M169,427.5 L673,351.9 L541,292.5 L37,368.1 Z" clip-path="url(#crop_2_inner1)" fill="#f6eddb" fill-rule="evenodd" stroke="#bb812b" stroke-width="2" stroke-dasharray="8 5"/>
 <text x="180" y="345" fill="#98641b" font-size="19">curved edge — chord shown</text>
@@ -72,6 +82,8 @@ Reference-copper geometry only; impedance, timing and boot are not evaluated.
 <g transform="matrix(42 -6.3 22 9.9 123 381.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
 <path d="M543,153.6 L543,318.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
 <g transform="matrix(42 -6.3 22 9.9 543 153.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">Unknown: Curved reference-copper boundaries are not supported yet.</text>
-<text x="26" y="522" fill="#263747" font-size="17">Next: Provide supported final-fill geometry or review this region manually.</text></g>
-<text x="26" y="1261" fill="#617481" font-size="16">Reference-copper geometry only; impedance, timing and boot are not evaluated.</text><text x="26" y="1285" fill="#617481" font-size="16">Geometry illustration · layers separated for clarity · broad GND copper is the return reference · no electromagnetic simulation</text></svg>
+<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">ASSUMED: Conventional 6-layer order; adjacent copper with declared ground/power </text>
+<text x="26" y="522" fill="#263747" font-size="17">roles is a reference candidate; exported pours are treated as final fill.</text>
+<text x="26" y="544" fill="#263747" font-size="17">Unknown: Curved reference-copper boundaries are not supported yet.</text>
+<text x="26" y="566" fill="#263747" font-size="17">Next: Provide supported final-fill geometry or review this region manually.</text></g>
+<text x="26" y="1349" fill="#617481" font-size="16">Signal candidates; DDR membership is unknown. Geometry screening only; impedance, timing and boot are not evaluated.</text><text x="26" y="1373" fill="#617481" font-size="16">Geometry illustration · layers separated for clarity · broad GND copper is the return reference · no electromagnetic simulation</text></svg>
