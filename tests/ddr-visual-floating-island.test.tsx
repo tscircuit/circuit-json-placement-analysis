@@ -41,8 +41,8 @@ test("equal GND labels do not anchor a disconnected reference island", async () 
   }
   await expect(
     visualSnapshot([
-      { title: "Continuous copper reaches GND terminals", ...anchored },
-      { title: "Covered route on a floating GND island", ...floating },
+      { title: "Before: disconnected GND island", ...floating },
+      { title: "After: copper connects to ground", ...anchored },
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
 })

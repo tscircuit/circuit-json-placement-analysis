@@ -95,6 +95,8 @@ export interface DdrPlacementReport {
   stackup: DdrStackup | null
   policy: DdrPolicy
   groups: DdrGroup[]
+  /** Display labels only; never used to infer membership, roles or physical contact. */
+  netNames?: Record<SourceNetId, string>
   checks: {
     referenceSegments: number
     referenceTransitions: number

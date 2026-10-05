@@ -5,6 +5,12 @@ import {
   type DdrPlacementOptions,
   type DdrPoint,
 } from "../../lib"
+import {
+  annulusContact,
+  pointInCopper,
+  polygon,
+  pourGeometry,
+} from "../../lib/ddr/geometry"
 
 const element = (raw: object): AnyCircuitElement =>
   ({ ...raw, ...any_circuit_element.parse(raw) }) as AnyCircuitElement
@@ -224,15 +230,12 @@ const color = (finding: DdrFinding) =>
       ? "#a36200"
       : "#c92f45"
 const finite = (p: DdrPoint) => Number.isFinite(p.x) && Number.isFinite(p.y)
-// Exploded board-world geometry only; vertical spacing is exaggerated, not an EM/current-density model.
+// Exploded geometry; the transition views crop around the real signal via, with exaggerated layer spacing.
 export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
-  const panels = cases.map(({ title, json, options }) => {
+  let scopeLine = ""
+  const panels = cases.map(({ title, json, options }, panelIndex) => {
     const analysis = analyzeDdrPlacement(json, options)
     const report = analysis.getReport()
-    const apiHeader = analysis
-      .getString()
-      .split("\n")
-      .filter((s) => /^(Status:|Stackup:|Evaluated:)/.test(s))
     const board = json.find((e) => e.type === "pcb_board")!
     if (
       board.type !== "pcb_board" ||
@@ -240,22 +243,31 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
       board.height === undefined
     )
       throw new Error("Fixture board dimensions missing")
-    const bounds = rect(
-      board.center.x - board.width / 2,
-      board.center.y - board.height / 2,
-      board.center.x + board.width / 2,
-      board.center.y + board.height / 2,
-    )
-    const shownLayers = [
-      "top",
-      "inner1",
-      ...(json.some((e) => e.type === "pcb_copper_pour" && e.layer === "inner4")
-        ? ["inner4", "bottom"]
-        : []),
-    ]
+    const transition = json
+      .flatMap((e) => (e.type === "pcb_trace" ? e.route : []))
+      .find((p) => p.route_type === "via")
+    const zoom = transition?.route_type === "via"
+    const center = zoom
+      ? { x: transition.x, y: transition.y - 0.5 }
+      : board.center
+    const frame = zoom
+      ? rect(center.x - 1.8, center.y - 1.3, center.x + 1.8, center.y + 1.3)
+      : rect(
+          board.center.x - board.width / 2,
+          board.center.y - board.height / 2,
+          board.center.x + board.width / 2,
+          board.center.y + board.height / 2,
+        )
+    const shownLayers = ["top", "inner1", ...(zoom ? ["inner4", "bottom"] : [])]
+    const sx = zoom ? 90 : 42
+    const sy = zoom ? 95 : 22
+    const step = zoom ? 125 : 165
     const project = (p: DdrPoint, layer: string): [number, number] => [
-      250 + p.x * 27 + p.y * 13,
-      150 - p.x * 4 + p.y * 9 + Math.max(0, shownLayers.indexOf(layer)) * 52,
+      355 + (p.x - center.x) * sx + (p.y - center.y) * sy,
+      195 -
+        (p.x - center.x) * sx * 0.15 +
+        (p.y - center.y) * sy * 0.45 +
+        Math.max(0, shownLayers.indexOf(layer)) * step,
     ]
     const path = (points: DdrPoint[], layer: string) =>
       `${points
@@ -266,8 +278,8 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
       s: string,
       x: number,
       y: number,
-      fill = "#293645",
-      size = 13,
+      fill = "#263747",
+      size = 17,
     ) =>
       `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}">${xml(s)}</text>`
     const line = (
@@ -275,13 +287,17 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
       b: DdrPoint,
       layer: string,
       stroke: string,
-      width = 3,
+      width = 6,
     ) =>
-      `<path d="M${project(a, layer).join(",")} L${project(b, layer).join(",")}" stroke="${stroke}" stroke-width="${width}" fill="none" stroke-linecap="round"/>`
+      `<path d="M${project(a, layer)} L${project(b, layer)}" stroke="${stroke}" stroke-width="${width}" fill="none" stroke-linecap="round"/>`
     const geometry: string[] = []
     for (const layer of shownLayers.slice().reverse()) {
+      const clipId = `crop_${panelIndex}_${layer}`
       geometry.push(
-        `<path d="${path(bounds, layer)}" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>`,
+        `<clipPath id="${clipId}"><path d="${path(frame, layer)}"/></clipPath>`,
+      )
+      geometry.push(
+        `<path d="${path(frame, layer)}" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>`,
       )
       for (const e of json)
         if (
@@ -290,177 +306,296 @@ export const visualSnapshot = (cases: (Fixture & { title: string })[]) => {
           e.shape === "brep"
         ) {
           const rings = [e.brep_shape.outer_ring, ...e.brep_shape.inner_rings]
-          geometry.push(
-            `<path d="${rings.map((r) => path(r.vertices, layer)).join(" ")}" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>`,
+          const curved = rings.some((r) =>
+            r.vertices.some((p) => (p.bulge ?? 0) !== 0),
           )
+          const shape = pourGeometry(e)
+          const floating =
+            shape &&
+            report.findings.some(
+              (f) =>
+                f.code === "reference_island_unanchored" &&
+                f.location.layers?.includes(layer) &&
+                f.location.start &&
+                f.location.end &&
+                pointInCopper(
+                  {
+                    x: (f.location.start.x + f.location.end.x) / 2,
+                    y: (f.location.start.y + f.location.end.y) / 2,
+                  },
+                  shape,
+                ),
+            )
+          geometry.push(
+            `<path d="${rings.map((r) => path(r.vertices, layer)).join(" ")}" clip-path="url(#${clipId})" fill="${curved ? "#f6eddb" : floating ? "#f5c4c8" : !report.stackup ? "#e1e7ec" : "#a8d7c2"}" fill-rule="evenodd" stroke="${curved ? "#bb812b" : "#3d856a"}" stroke-width="2" ${curved ? 'stroke-dasharray="8 5"' : ""}/>`,
+          )
+          if (curved)
+            geometry.push(
+              text("curved edge — chord shown", 180, 345, "#98641b", 19),
+            )
         }
-      const [x, y] = project(bounds[2]!, layer)
-      geometry.push(text(layer, x + 9, y + 5, "#5d6d7d", 12))
+      const [x, y] = project(frame[2]!, layer)
+      const copper = json.some(
+        (e) => e.type === "pcb_copper_pour" && e.layer === layer,
+      )
+      geometry.push(
+        text(
+          copper ? `${layer} · GND` : layer,
+          x - (zoom ? 30 : 115),
+          y + 28,
+          copper ? "#276b52" : "#6549bb",
+          20,
+        ),
+      )
     }
     for (const e of json) {
       if (e.type === "pcb_smtpad" && e.shape === "circle") {
+        const [x, y] = project(e, e.layer)
         const port = json.find(
           (p) => p.type === "pcb_port" && p.pcb_port_id === e.pcb_port_id,
         )
-        const net =
-          port?.type === "pcb_port"
-            ? json.find(
-                (t) =>
-                  t.type === "source_trace" &&
-                  t.connected_source_port_ids.includes(port.source_port_id),
-              )
-            : undefined
-        const ground =
-          net?.type === "source_trace" &&
-          net.connected_source_net_ids.includes("gnd")
-        const [x, y] = project(e, e.layer)
-        geometry.push(
-          `<circle transform="matrix(27 -4 13 9 ${x} ${y})" r="${e.radius}" fill="${ground ? "#edca8d" : "#d6cbec"}"/>`,
+        const ground = json.some(
+          (t) =>
+            t.type === "source_trace" &&
+            port?.type === "pcb_port" &&
+            t.connected_source_port_ids.includes(port.source_port_id) &&
+            t.connected_source_net_ids.includes("gnd"),
         )
-        if (ground)
-          geometry.push(text("GND pad", x - 20, y - 15, "#966020", 10))
+        geometry.push(
+          `<g clip-path="url(#crop_${panelIndex}_${e.layer})"><circle transform="matrix(${sx} ${-sx * 0.15} ${sy} ${sy * 0.45} ${x} ${y})" r="${e.radius}" fill="${ground ? "#dba24b" : "#bba8e1"}"/></g>`,
+        )
       }
       if (e.type === "pcb_trace")
         for (let i = 0; i < e.route.length - 1; i++) {
           const a = e.route[i]!
           const b = e.route[i + 1]!
-          if (
-            a.route_type === "through_pad" ||
-            b.route_type === "through_pad" ||
-            !finite(a) ||
-            !finite(b) ||
-            (a.route_type === "wire" &&
-              (!Number.isFinite(a.width) || a.width <= 0)) ||
-            (b.route_type === "wire" &&
-              (!Number.isFinite(b.width) || b.width <= 0))
-          )
+          if (a.route_type === "through_pad" || b.route_type === "through_pad")
             continue
+          const invalid = [a, b].find(
+            (p) =>
+              !finite(p) ||
+              (p.route_type === "wire" &&
+                (!Number.isFinite(p.width) || p.width <= 0)),
+          )
+          if (invalid) {
+            if (i === 0)
+              geometry.push(
+                text(
+                  !finite(invalid)
+                    ? `Cannot draw route: x = ${invalid.x}`
+                    : `Cannot draw route: width = ${invalid.route_type === "wire" ? invalid.width : "unknown"}`,
+                  150,
+                  235,
+                  "#98641b",
+                  22,
+                ),
+              )
+            continue
+          }
           const layer = a.route_type === "wire" ? a.layer : a.to_layer
           if (layer === (b.route_type === "wire" ? b.layer : b.from_layer))
-            geometry.push(line(a, b, layer, "#6549bb", 4))
+            geometry.push(
+              `<g clip-path="url(#crop_${panelIndex}_${layer})">${line(a, b, layer, "#7042bc", 8)}</g>`,
+            )
         }
       if (e.type === "pcb_via" && finite(e)) {
+        if (
+          zoom &&
+          (Math.abs(e.x - center.x) > 1.8 || Math.abs(e.y - center.y) > 1.3)
+        )
+          continue
         const span = shownLayers.filter((l) =>
           (e.layers as string[]).includes(l),
         )
         if (!span.length) continue
         const a = project(e, span[0]!)
         const b = project(e, span[span.length - 1]!)
-        const stroke = e.source_net_id === "gnd" ? "#bd7b2e" : "#6549bb"
+        const ground = e.source_net_id === "gnd"
+        const stroke = ground ? "#c78932" : "#7042bc"
         geometry.push(
-          `<path d="M${a} L${b}" stroke="${stroke}" stroke-width="5"/>`,
+          `<path d="M${a} L${b}" stroke="${stroke}" stroke-width="${Math.max(7, e.outer_diameter * sx * 0.65)}" stroke-opacity=".8"/>`,
         )
         for (const layer of span) {
           const [x, y] = project(e, layer)
           geometry.push(
-            `<g transform="matrix(27 -4 13 9 ${x} ${y})"><circle r="${e.outer_diameter / 2}" fill="${stroke}"/><circle r="${e.hole_diameter / 2}" fill="white"/></g>`,
+            `<g transform="matrix(${sx} ${-sx * 0.15} ${sy} ${sy * 0.45} ${x} ${y})"><circle r="${e.outer_diameter / 2}" fill="${stroke}"/><circle r="${e.hole_diameter / 2}" fill="white"/></g>`,
           )
         }
-        if (e.pcb_via_id === "signal_via" || e.pcb_via_id === "return_via")
+        if (zoom)
           geometry.push(
             text(
-              e.pcb_via_id,
-              a[0] + (e.source_net_id === "gnd" ? -90 : 10),
-              a[1] + (e.source_net_id === "gnd" ? -20 : -12),
+              ground ? "GND via" : "signal via",
+              a[0] + (ground ? -90 : 18),
+              a[1] - 38,
               stroke,
-              11,
+              20,
             ),
           )
       }
     }
-    // No synthetic findings: every highlight uses a reported point/layer or actual reported via ID.
+    // Highlights come only from findings; accepted via contacts exclude signal-net IDs.
     for (const f of report.findings.slice().reverse()) {
       const loc = f.location
+      if (f.severity === "info" && f.code !== "existing_return_connection")
+        continue
+      if (f.code === "return_connection_missing" && loc.start) {
+        const references = options.stackup!.references.filter((r) =>
+          loc.layers?.includes(r.referenceLayer),
+        )
+        const candidate = json.find(
+          (e) =>
+            e.type === "pcb_via" &&
+            loc.pcbViaIds?.includes(e.pcb_via_id) &&
+            references.some((r) => r.sourceNetId === e.source_net_id),
+        )
+        if (candidate?.type === "pcb_via") {
+          const span = shownLayers.filter((l) =>
+            (candidate.layers as string[]).includes(l),
+          )
+          const short = references.some(
+            (r) => !(candidate.layers as string[]).includes(r.referenceLayer),
+          )
+          const clearance = json.find((e) => {
+            if (
+              e.type !== "pcb_copper_pour" ||
+              e.shape !== "brep" ||
+              !references.some((r) => r.referenceLayer === e.layer)
+            )
+              return false
+            const shape = pourGeometry(e)
+            return (
+              shape &&
+              annulusContact(
+                candidate,
+                candidate.outer_diameter / 2,
+                candidate.hole_diameter / 2,
+                shape,
+              ) === false
+            )
+          })
+          let target = project(candidate, span[span.length - 1]!)
+          let label = `Ends at ${span[span.length - 1]}`
+          if (
+            !short &&
+            clearance?.type === "pcb_copper_pour" &&
+            clearance.shape === "brep"
+          ) {
+            const hole = clearance.brep_shape.inner_rings.find((r) =>
+              pointInCopper(candidate, polygon(r.vertices)),
+            )
+            if (hole) {
+              geometry.push(
+                `<path d="${path(hole.vertices, clearance.layer)}" fill="none" stroke="${color(f)}" stroke-width="3"/>`,
+              )
+              target = project(hole.vertices[1]!, clearance.layer)
+              label = `Copper clearance on ${clearance.layer}`
+            }
+          }
+          geometry.push(
+            `<path d="M${target} L${target[0] + 70},${target[1] + 60} H650" fill="none" stroke="${color(f)}" stroke-width="3"/>`,
+            text(label, target[0] + 75, target[1] + 87, color(f), 19),
+          )
+        } else if (references.length === 2) {
+          const a = project(loc.start, references[0]!.referenceLayer)
+          const b = project(loc.start, references[1]!.referenceLayer)
+          const x = a[0] + 160
+          geometry.push(
+            `<path d="M${x - 12},${a[1]} H${x} V${b[1]} H${x - 12}" fill="none" stroke="${color(f)}" stroke-width="3"/>`,
+            text(
+              `${report.netNames?.[references[0]!.sourceNetId] ?? "Reference"}: ${references.map((r) => r.referenceLayer).join(" ↔ ")}`,
+              410,
+              b[1] + 42,
+              color(f),
+              19,
+            ),
+          )
+        }
+      }
+      const affectedLayers = (loc.layers ?? [])
+        .filter((l) =>
+          options.stackup?.references.some((r) => r.referenceLayer === l),
+        )
+        .slice(0, 1)
       if (
         loc.start &&
         finite(loc.start) &&
-        f.code !== "existing_return_connection"
+        ![
+          "existing_return_connection",
+          "reference_island_unanchored",
+          "return_connection_missing",
+        ].includes(f.code)
       )
-        for (const layer of loc.layers ?? []) {
-          if (
-            !shownLayers.includes(layer) ||
-            (f.code === "reference_centerline_covered" &&
-              !options.stackup?.references.some((r) => r.signalLayer === layer))
-          )
-            continue
-          if (loc.end && finite(loc.end))
-            geometry.push(
-              line(
-                loc.start,
-                loc.end,
-                layer,
-                color(f),
-                f.severity === "info" ? 2 : 7,
-              ),
-            )
+        for (const layer of affectedLayers) {
+          if (!shownLayers.includes(layer)) continue
           const [x, y] = project(loc.start, layer)
+          if (loc.end && finite(loc.end))
+            geometry.push(line(loc.start, loc.end, layer, color(f), 11))
           geometry.push(
-            `<circle cx="${x}" cy="${y}" r="6" stroke="${color(f)}" stroke-width="2" fill="white"/>`,
+            `<circle cx="${x}" cy="${y}" r="16" stroke="${color(f)}" stroke-width="4" fill="none"/>`,
           )
         }
-      for (const id of loc.pcbViaIds ?? []) {
+      for (const id of f.code === "existing_return_connection"
+        ? (loc.pcbViaIds ?? [])
+        : []) {
         const via = json.find(
           (e) => e.type === "pcb_via" && e.pcb_via_id === id,
         )
-        if (
-          via?.type !== "pcb_via" ||
-          (f.code === "existing_return_connection" &&
-            via.source_net_id !== "gnd")
-        )
-          continue
+        if (via?.type !== "pcb_via" || via.source_net_id !== "gnd") continue
         for (const layer of loc.layers ?? [])
-          if (shownLayers.includes(layer)) {
+          if (
+            shownLayers.includes(layer) &&
+            options.stackup?.references.some((r) => r.referenceLayer === layer)
+          ) {
             const [x, y] = project(via, layer)
             geometry.push(
-              `<ellipse cx="${x}" cy="${y}" rx="12" ry="6" stroke="${color(f)}" stroke-width="2" fill="none"/>`,
+              `<ellipse cx="${x}" cy="${y}" rx="${via.outer_diameter * sx * 0.8}" ry="${via.outer_diameter * sy * 0.4}" stroke="${color(f)}" stroke-width="4" fill="none"/>`,
             )
           }
       }
     }
-    const markdown = [
-      `# ${title}`,
-      ...apiHeader,
-      `DDR group: ${report.groups.map((g) => `${g.name} (${g.provenance})`).join("; ")}`,
-      `Final fill: DECLARED — ${options.filledCopper?.provenance}`,
-      ...report.findings.flatMap((f) => [
-        `- ${f.severity.toUpperCase()} ${f.code}`,
-        `  ${f.id}`,
-        `  ${f.summary}`,
-        ...(f.severity !== "info" || f.code === "existing_return_connection"
-          ? f.evidence.map((e) => `  Evidence: ${e}`)
-          : []),
-        ...(f.severity !== "info" ? [`  Repair: ${f.repairHint}`] : []),
-      ]),
-    ].join("\n")
-    const lines = markdown
-      .split("\n")
-      .flatMap((s) => s.match(/.{1,70}(?:\s|$)|.{1,70}/g) ?? [""])
-    const reportY = shownLayers.length === 4 ? 410 : 290
+    const state =
+      report.status === "issues_found"
+        ? "ISSUE"
+        : report.status === "incomplete"
+          ? "UNKNOWN"
+          : "CLEAR"
+    const tone =
+      state === "ISSUE"
+        ? "#c92f45"
+        : state === "UNKNOWN"
+          ? "#a36200"
+          : "#16715c"
+    const label = report.stackup
+      ? `${state} · ${report.stackup.provenance.kind.toUpperCase()} stackup`
+      : "UNKNOWN stackup"
+    const rawMarkdown = analysis.getString()
+    const markdownLines = rawMarkdown.split("\n").filter(Boolean)
+    scopeLine = markdownLines.pop()!
+    const reportLines = markdownLines.flatMap(
+      (s) =>
+        s
+          .replace(/^#+\s*/, "")
+          .replaceAll("**", "")
+          .match(/.{1,82}(?:\s|$)|.{1,82}/g) ?? [""],
+    )
+    const reportY = zoom ? 700 : 500
     return {
-      height: reportY + 24 + lines.length * 18,
-      scope: report.limits.filter((l) => l.startsWith("NOT EVALUATED:")),
-      svg: `<desc>${xml(markdown)}</desc>${text(title, 24, 30, "#172639", 18)}${text("DQ0 signal · GND filled copper · plated vias", 24, 54, "#5d6d7d", 12)}${geometry.join("\n")}${lines.map((s, i) => text(s, 24, reportY + i * 18, "#293645", 12)).join("\n")}`,
+      height: reportY + 30 + reportLines.length * 22,
+      svg: `<desc>${xml(rawMarkdown)}\n${xml(JSON.stringify(report.findings.map((f) => ({ id: f.id, code: f.code, location: f.location }))))}</desc>${text(title, 26, 44, "#172d3b", 25)}${text(label, 26, 76, tone, 18)}${geometry.join("\n")}${reportLines.map((s, i) => text(s, 26, reportY + i * 22, "#263747", 17)).join("\n")}`,
     }
   })
-  let y = 92
+  let y = 65
   const rows = []
   for (let i = 0; i < panels.length; i += 2) {
     for (let j = i; j < Math.min(i + 2, panels.length); j++)
       rows.push(
-        `<g transform="translate(${(j % 2) * 570},${y})">${panels[j]!.svg}</g>`,
+        `<g transform="translate(${(j % 2) * 740},${y})">${panels[j]!.svg}</g>`,
       )
     y += Math.max(...panels.slice(i, i + 2).map((p) => p.height)) + 24
   }
-  const scope = Array.from(new Set(panels.flatMap((p) => p.scope))).join(" ")
-  const footer = scope.match(/.{1,145}(?:\s|$)|.{1,145}/g) ?? []
   rows.push(
-    footer
-      .map(
-        (s, i) =>
-          `<text x="24" y="${y + i * 18}" font-size="12" fill="#5d6d7d">${xml(s)}</text>`,
-      )
-      .join("\n"),
+    `<text x="26" y="${y}" fill="#617481" font-size="16">${xml(scopeLine)}</text><text x="26" y="${y + 24}" fill="#617481" font-size="16">Geometry illustration · layers separated for clarity · broad GND copper is the return reference · no electromagnetic simulation</text>`,
   )
-  y += footer.length * 18 + 18
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="${y}" font-family="Arial, sans-serif"><rect width="1140" height="${y}" fill="#fff"/><text x="24" y="27" font-size="17" fill="#172639">DDR reference geometry + actual analyzer findings</text><text x="24" y="50" font-size="13" fill="#5d6d7d">Isometric geometry illustration; exploded layers. Return reference is broad plane copper, not a second etched trace.</text><text x="24" y="72" font-size="12" fill="#5d6d7d">Green = analyzer info · red = error/policy · amber = unknown. No current-density or electromagnetic simulation.</text>${rows.join("\n")}</svg>`
+  y += 50
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="${y}" font-family="Arial, sans-serif"><rect width="1480" height="${y}" fill="#fff"/><text x="26" y="29" font-size="18" fill="#617481">Purple: signal copper · gold: ground vias · red: needs attention · green rings: qualified ground contact</text>${rows.join("\n")}</svg>`
 }

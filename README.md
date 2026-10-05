@@ -82,8 +82,9 @@ The summary string returned by `getString()` now starts with:
 
 DDR placement/reference-path analysis is available through
 `analyzeDdrPlacement(circuitJson, options)`, with the same `getString()`,
-`getReport()` and `getIssues()` result style. It produces Markdown with stable
-localized findings, explicit DECLARED/ASSUMED stackup provenance, and UNKNOWN
-results for unsupported or missing evidence. See the
+`getReport()` and `getIssues()` result style. Its short Markdown tells you what
+needs attention, where it is, and what to do next. Healthy, unknown and assumed
+results remain distinct; `getReport()` retains stable IDs, geometry and evidence.
+See the
 [API, geometric checks and limits](docs/ddr-placement-analyzer.md) and
 [visual fixtures](tests/fixtures/ddr-visual.ts). This is not SI/hardware signoff.

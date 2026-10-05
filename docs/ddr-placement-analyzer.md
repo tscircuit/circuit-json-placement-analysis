@@ -1,6 +1,6 @@
 # DDR reference checks
 
-`analyzeDdrPlacement(circuitJson, options)` accepts final rendered/imported Circuit JSON using existing `Circuit.getCircuitJson()` workflows. It returns `getString()` (Markdown), `getReport()` (stable localized findings, provenance, counts and limits), and `getIssues()` (non-informational findings). It never parses TSX or runs a router.
+`analyzeDdrPlacement(circuitJson, options)` accepts final rendered/imported Circuit JSON using existing `Circuit.getCircuitJson()` workflows. `getString()` gives a short Markdown report: what needs attention, its physical location, and one next step. Healthy, unknown and assumed results stay distinct. `getReport()` retains stable findings, full geometry, evidence, provenance and limits; `getIssues()` returns non-informational findings. The analyzer never parses TSX or runs a router.
 
 ```ts
 const analysis = analyzeDdrPlacement(circuit.getCircuitJson(), {

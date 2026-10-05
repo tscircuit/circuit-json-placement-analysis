@@ -37,9 +37,9 @@ test("intact reference, a slit, and an edge-open signal clearance", async () => 
   }
   await expect(
     visualSnapshot([
-      { title: "Intact broad GND plane", ...intact },
-      { title: "DQ0 crosses a 0.6 mm copper slit", ...gap },
-      { title: "Signal clearance opens to reference edge", ...edgeOpen },
+      { title: "Before: slit under the signal", ...gap },
+      { title: "After: continuous GND copper", ...intact },
+      { title: "Edge case: clearance opens to plane edge", ...edgeOpen },
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
 })

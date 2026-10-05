@@ -1,137 +1,77 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="1470" font-family="Arial, sans-serif"><rect width="1140" height="1470" fill="#fff"/><text x="24" y="27" font-size="17" fill="#172639">DDR reference geometry + actual analyzer findings</text><text x="24" y="50" font-size="13" fill="#5d6d7d">Isometric geometry illustration; exploded layers. Return reference is broad plane copper, not a second etched trace.</text><text x="24" y="72" font-size="12" fill="#5d6d7d">Green = analyzer info · red = error/policy · amber = unknown. No current-density or electromagnetic simulation.</text><g transform="translate(0,92)"><desc># Non-finite signal point omitted from view
-Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 1 unknown, 0 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 0 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- UNKNOWN route_geometry_unknown
-  route_geometry_unknown_43cb6d5a9581726d
-  DDR route is incomplete or contains unsupported geometry.
-  Evidence: route[1] has invalid geometry
-  Repair: Supply supported complete wire/via route geometry.</desc><text x="24" y="30" fill="#172639" font-size="18">Non-finite signal point omitted from view</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
-<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,121 L372,173" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 121)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 173)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g><text x="24" y="290" fill="#293645" font-size="12"># Non-finite signal point omitted from view</text>
-<text x="24" y="308" fill="#293645" font-size="12">Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 1 </text>
-<text x="24" y="326" fill="#293645" font-size="12">unknown, 0 info).</text>
-<text x="24" y="344" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="362" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="380" fill="#293645" font-size="12">Evaluated: 0 reference segments, 0 transition pairs. Coordinates: </text>
-<text x="24" y="398" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="416" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="434" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="452" fill="#293645" font-size="12">- UNKNOWN route_geometry_unknown</text>
-<text x="24" y="470" fill="#293645" font-size="12">  route_geometry_unknown_43cb6d5a9581726d</text>
-<text x="24" y="488" fill="#293645" font-size="12">  DDR route is incomplete or contains unsupported geometry.</text>
-<text x="24" y="506" fill="#293645" font-size="12">  Evidence: route[1] has invalid geometry</text>
-<text x="24" y="524" fill="#293645" font-size="12">  Repair: Supply supported complete wire/via route geometry.</text></g>
-<g transform="translate(570,92)"><desc># Invalid width (NaN): trace not drawable
-Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 1 unknown, 0 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 0 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- UNKNOWN route_geometry_unknown
-  route_geometry_unknown_43cb6d5a9581726d
-  DDR route is incomplete or contains unsupported geometry.
-  Evidence: route[0] has invalid geometry
-  Evidence: route[1] has invalid geometry
-  Repair: Supply supported complete wire/via route geometry.</desc><text x="24" y="30" fill="#172639" font-size="18">Invalid width (NaN): trace not drawable</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
-<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,121 L372,173" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 121)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 173)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g><text x="24" y="290" fill="#293645" font-size="12"># Invalid width (NaN): trace not drawable</text>
-<text x="24" y="308" fill="#293645" font-size="12">Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 1 </text>
-<text x="24" y="326" fill="#293645" font-size="12">unknown, 0 info).</text>
-<text x="24" y="344" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="362" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="380" fill="#293645" font-size="12">Evaluated: 0 reference segments, 0 transition pairs. Coordinates: </text>
-<text x="24" y="398" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="416" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="434" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="452" fill="#293645" font-size="12">- UNKNOWN route_geometry_unknown</text>
-<text x="24" y="470" fill="#293645" font-size="12">  route_geometry_unknown_43cb6d5a9581726d</text>
-<text x="24" y="488" fill="#293645" font-size="12">  DDR route is incomplete or contains unsupported geometry.</text>
-<text x="24" y="506" fill="#293645" font-size="12">  Evidence: route[0] has invalid geometry</text>
-<text x="24" y="524" fill="#293645" font-size="12">  Evidence: route[1] has invalid geometry</text>
-<text x="24" y="542" fill="#293645" font-size="12">  Repair: Supply supported complete wire/via route geometry.</text></g>
-<g transform="translate(0,700)"><desc># Unsupported curved fill (chord outline only)
-Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 2 unknown, 0 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 0 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- UNKNOWN reference_fill_unknown
-  reference_fill_unknown_68b977c3ca2e6950
-  Assigned reference has no supported identified final fill.
-  Evidence: Reference net: gnd.
-  Repair: Include supported final fill for the assigned reference.
-- UNKNOWN reference_model_incomplete
-  reference_model_incomplete_08f44b07b5901a25
-  Reference connectivity/fill model contains unsupported or missing geometry.
-  Evidence: gnd1: unsupported/invalid fill (including curved bulges)
-  Repair: Provide supported solved geometry; absence of contacts cannot be proved from this incomplete model.</desc><text x="24" y="30" fill="#172639" font-size="18">Unsupported curved fill (chord outline only)</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
-<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
-<path d="M115,170 L385,130" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,121 L372,173" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 121)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 173)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g><text x="24" y="290" fill="#293645" font-size="12"># Unsupported curved fill (chord outline only)</text>
-<text x="24" y="308" fill="#293645" font-size="12">Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 2 </text>
-<text x="24" y="326" fill="#293645" font-size="12">unknown, 0 info).</text>
-<text x="24" y="344" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="362" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="380" fill="#293645" font-size="12">Evaluated: 0 reference segments, 0 transition pairs. Coordinates: </text>
-<text x="24" y="398" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="416" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="434" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="452" fill="#293645" font-size="12">- UNKNOWN reference_fill_unknown</text>
-<text x="24" y="470" fill="#293645" font-size="12">  reference_fill_unknown_68b977c3ca2e6950</text>
-<text x="24" y="488" fill="#293645" font-size="12">  Assigned reference has no supported identified final fill.</text>
-<text x="24" y="506" fill="#293645" font-size="12">  Evidence: Reference net: gnd.</text>
-<text x="24" y="524" fill="#293645" font-size="12">  Repair: Include supported final fill for the assigned reference.</text>
-<text x="24" y="542" fill="#293645" font-size="12">- UNKNOWN reference_model_incomplete</text>
-<text x="24" y="560" fill="#293645" font-size="12">  reference_model_incomplete_08f44b07b5901a25</text>
-<text x="24" y="578" fill="#293645" font-size="12">  Reference connectivity/fill model contains unsupported or missing </text>
-<text x="24" y="596" fill="#293645" font-size="12">geometry.</text>
-<text x="24" y="614" fill="#293645" font-size="12">  Evidence: gnd1: unsupported/invalid fill (including curved bulges)</text>
-<text x="24" y="632" fill="#293645" font-size="12">  Repair: Provide supported solved geometry; absence of contacts </text>
-<text x="24" y="650" fill="#293645" font-size="12">cannot be proved from this incomplete model.</text></g>
-<text x="24" y="1416" font-size="12" fill="#5d6d7d">NOT EVALUATED: endpoint component anchoring, capacitive return, dielectric/height margins, narrow necks/detours, package returns, manufacturer </text>
-<text x="24" y="1434" font-size="12" fill="#5d6d7d">keepout/shielding, impedance, crosstalk, timing, EMI or boot qualification.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1311" font-family="Arial, sans-serif"><rect width="1480" height="1311" fill="#fff"/><text x="26" y="29" font-size="18" fill="#617481">Purple: signal copper · gold: ground vias · red: needs attention · green rings: qualified ground contact</text><g transform="translate(0,65)"><desc>**Unknown: DQ0 has a missing or non-finite route coordinate.**
+
+Next: Correct the route data, then run the check again.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"route_geometry_unknown_43cb6d5a9581726d","code":"route_geometry_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq"}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Invalid coordinate: x = Infinity</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · DECLARED stackup</text><clipPath id="crop_0_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
+<path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M169,427.5 L673,351.9 L541,292.5 L37,368.1 Z" clip-path="url(#crop_0_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="558" y="379.9" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_0_top"><path d="M37,203.10000000000002 L541,127.49999999999999 L673,186.89999999999998 L169,262.5 Z"/></clipPath>
+<path d="M37,203.10000000000002 L541,127.49999999999999 L673,186.89999999999998 L169,262.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="558" y="214.89999999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_0_top)"><circle transform="matrix(42 -6.3 22 9.9 145 226.5)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_0_top)"><circle transform="matrix(42 -6.3 22 9.9 565 163.5)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_0_top)"><circle transform="matrix(42 -6.3 22 9.9 123 216.6)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_0_top)"><circle transform="matrix(42 -6.3 22 9.9 543 153.6)" r="0.35" fill="#dba24b"/></g>
+<text x="150" y="235" fill="#98641b" font-size="22">Cannot draw route: x = Infinity</text>
+<path d="M123,216.6 L123,381.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
+<g transform="matrix(42 -6.3 22 9.9 123 216.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(42 -6.3 22 9.9 123 381.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<path d="M543,153.6 L543,318.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
+<g transform="matrix(42 -6.3 22 9.9 543 153.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">Unknown: DQ0 has a missing or non-finite route coordinate.</text>
+<text x="26" y="522" fill="#263747" font-size="17">Next: Correct the route data, then run the check again.</text></g>
+<g transform="translate(740,65)"><desc>**Unknown: DQ0 has a missing or invalid trace width.**
+
+Next: Correct the route data, then run the check again.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"route_geometry_unknown_43cb6d5a9581726d","code":"route_geometry_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq"}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Invalid width: NaN</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · DECLARED stackup</text><clipPath id="crop_1_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
+<path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M169,427.5 L673,351.9 L541,292.5 L37,368.1 Z" clip-path="url(#crop_1_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="558" y="379.9" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_1_top"><path d="M37,203.10000000000002 L541,127.49999999999999 L673,186.89999999999998 L169,262.5 Z"/></clipPath>
+<path d="M37,203.10000000000002 L541,127.49999999999999 L673,186.89999999999998 L169,262.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="558" y="214.89999999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_1_top)"><circle transform="matrix(42 -6.3 22 9.9 145 226.5)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_1_top)"><circle transform="matrix(42 -6.3 22 9.9 565 163.5)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_1_top)"><circle transform="matrix(42 -6.3 22 9.9 123 216.6)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_1_top)"><circle transform="matrix(42 -6.3 22 9.9 543 153.6)" r="0.35" fill="#dba24b"/></g>
+<text x="150" y="235" fill="#98641b" font-size="22">Cannot draw route: width = NaN</text>
+<path d="M123,216.6 L123,381.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
+<g transform="matrix(42 -6.3 22 9.9 123 216.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(42 -6.3 22 9.9 123 381.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<path d="M543,153.6 L543,318.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
+<g transform="matrix(42 -6.3 22 9.9 543 153.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">Unknown: DQ0 has a missing or invalid trace width.</text>
+<text x="26" y="522" fill="#263747" font-size="17">Next: Correct the route data, then run the check again.</text></g>
+<g transform="translate(0,663)"><desc>**Unknown: Curved reference-copper boundaries are not supported yet.**
+
+Next: Provide supported final-fill geometry or review this region manually.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"reference_fill_unknown_68b977c3ca2e6950","code":"reference_fill_unknown","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":0,"layers":["inner1","top"]}},{"id":"reference_model_incomplete_08f44b07b5901a25","code":"reference_model_incomplete","location":{}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Unsupported curve</text><text x="26" y="76" fill="#a36200" font-size="18">UNKNOWN · DECLARED stackup</text><clipPath id="crop_2_inner1"><path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z"/></clipPath>
+<path d="M37,368.1 L541,292.5 L673,351.9 L169,427.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M169,427.5 L673,351.9 L541,292.5 L37,368.1 Z" clip-path="url(#crop_2_inner1)" fill="#f6eddb" fill-rule="evenodd" stroke="#bb812b" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="180" y="345" fill="#98641b" font-size="19">curved edge — chord shown</text>
+<text x="558" y="379.9" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_2_top"><path d="M37,203.10000000000002 L541,127.49999999999999 L673,186.89999999999998 L169,262.5 Z"/></clipPath>
+<path d="M37,203.10000000000002 L541,127.49999999999999 L673,186.89999999999998 L169,262.5 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="558" y="214.89999999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_2_top)"><circle transform="matrix(42 -6.3 22 9.9 145 226.5)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_2_top)"><circle transform="matrix(42 -6.3 22 9.9 565 163.5)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_2_top)"><circle transform="matrix(42 -6.3 22 9.9 123 216.6)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_2_top)"><circle transform="matrix(42 -6.3 22 9.9 543 153.6)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_2_top)"><path d="M145,226.5 L565,163.5" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<path d="M123,216.6 L123,381.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
+<g transform="matrix(42 -6.3 22 9.9 123 216.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(42 -6.3 22 9.9 123 381.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<path d="M543,153.6 L543,318.6" stroke="#c78932" stroke-width="16.38" stroke-opacity=".8"/>
+<g transform="matrix(42 -6.3 22 9.9 543 153.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(42 -6.3 22 9.9 543 318.6)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g><text x="26" y="500" fill="#263747" font-size="17">Unknown: Curved reference-copper boundaries are not supported yet.</text>
+<text x="26" y="522" fill="#263747" font-size="17">Next: Provide supported final-fill geometry or review this region manually.</text></g>
+<text x="26" y="1261" fill="#617481" font-size="16">Reference-copper geometry only; impedance, timing and boot are not evaluated.</text><text x="26" y="1285" fill="#617481" font-size="16">Geometry illustration · layers separated for clarity · broad GND copper is the return reference · no electromagnetic simulation</text></svg>

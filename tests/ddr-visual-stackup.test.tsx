@@ -23,8 +23,8 @@ test("unknown stackup blocks checks; caller-selected stackup stays assumed", asy
   }
   await expect(
     visualSnapshot([
-      { title: "Layer count alone: reference UNKNOWN", ...unknown },
-      { title: "Conditional checks: ASSUMED references", ...assumed },
+      { title: "Unknown reference assignment", ...unknown },
+      { title: "Assumed reference assignment", ...assumed },
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
 })

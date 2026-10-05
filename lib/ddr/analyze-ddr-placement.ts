@@ -51,124 +51,124 @@ const LIMITS = [
 // Shared finding wording keeps rule evaluation focused on geometry and evidence.
 const MESSAGES: Record<string, readonly [summary: string, repair: string]> = {
   ddr_membership_unknown: [
-    "DDR membership is not established.",
-    "Select source net/trace IDs from rendered Circuit JSON and provide provenance.",
+    "The DDR connections have not been selected.",
+    "Select the DDR nets or routes from the rendered layout.",
   ],
   stackup_unknown: [
-    "Electrical stackup and reference assignments are unknown; physical reference checks are NOT EVALUATED.",
-    "Supply the declared design stackup or explicitly select an ASSUMED expected stackup.",
+    "The stackup is unknown, so reference coverage cannot be checked.",
+    "Supply the reference-layer assignments, or explicitly choose an ASSUMED expected stackup.",
   ],
   stackup_inconsistent: [
-    "Stackup metadata is inconsistent or ambiguous; reference checks are NOT EVALUATED.",
-    "Correct the supplied stackup; layer counts are never silently reindexed.",
+    "The stackup conflicts with the layer metadata.",
+    "Correct the layer order and reference assignments; label expectations ASSUMED.",
   ],
   policy_invalid: [
-    "Invalid policy values; reference checks are NOT EVALUATED.",
-    "Correct the chosen policy.",
+    "The chosen checking policy has invalid values.",
+    "Provide a named policy with a finite, nonnegative distance limit.",
   ],
   filled_copper_unknown: [
-    "Final solved reference copper is not identified; coverage/contact checks are NOT EVALUATED.",
-    "Provide final filled pour IDs and their render/import provenance.",
+    "The final copper fill has not been supplied.",
+    "Export the solved reference copper, including holes and clearances.",
   ],
   selected_trace_missing: [
-    "Selected DDR source trace is absent.",
-    "Restore the rendered source trace or correct group membership.",
+    "A selected DDR connection is missing from the layout.",
+    "Check the DDR selection against the rendered layout.",
   ],
   selected_net_missing: [
-    "Selected DDR net is absent.",
-    "Restore the rendered source net or correct group membership.",
+    "A selected DDR net is missing from the layout.",
+    "Check the DDR selection against the rendered layout.",
   ],
   ddr_route_missing: [
-    "DDR source trace has no rendered PCB route.",
-    "Render/import the final route before evaluation.",
+    "A selected DDR connection has no finished PCB route.",
+    "Render or import its completed route before checking coverage.",
   ],
   ddr_routes_unknown: [
-    "No routed DDR traces were selected; no physical checks were evaluated.",
-    "Supply explicit DDR membership and rendered routes.",
+    "There are no finished DDR routes to check.",
+    "Select the DDR connections and supply their completed routes.",
   ],
   reference_model_incomplete: [
-    "Reference connectivity/fill model contains unsupported or missing geometry.",
-    "Provide supported solved geometry; absence of contacts cannot be proved from this incomplete model.",
+    "Some reference copper or contacts cannot be read.",
+    "Provide supported final copper/contact data, or review these areas manually.",
   ],
   reference_copper_short: [
-    "Unlike reference nets physically overlap on one layer.",
-    "Separate unlike rails and refill copper; never bridge power and ground with a via.",
+    "Two different reference nets overlap in the same copper layer.",
+    "Separate the rails and refill the copper; never join power and ground with a via.",
   ],
   reference_assignment_unknown: [
-    "Signal layer has no explicit reference assignment.",
-    "Declare all assigned references, including both stripline sides.",
+    "This signal layer has no assigned reference.",
+    "Declare the reference layers, including both sides of stripline.",
   ],
   reference_fill_unknown: [
-    "Assigned reference has no supported identified final fill.",
-    "Include supported final fill for the assigned reference.",
+    "Copper for an assigned reference layer is missing.",
+    "Supply the final filled copper for that reference.",
   ],
   signal_net_unknown: [
-    "DDR source trace net is absent or ambiguous.",
-    "Supply unambiguous source traces/net membership.",
+    "The DDR route has missing or ambiguous net membership.",
+    "Supply an unambiguous connection to its source net.",
   ],
   route_geometry_unknown: [
-    "DDR route is incomplete or contains unsupported geometry.",
-    "Supply supported complete wire/via route geometry.",
+    "Part of the DDR route cannot be checked.",
+    "Correct the missing or unsupported route geometry.",
   ],
   reference_not_adjacent: [
-    "Assigned reference is not directly adjacent to this signal layer.",
-    "Review the assignment or route on a directly adjacent layer.",
+    "The signal layer is not next to its chosen reference.",
+    "Move the route next to reference copper, or review the layer assignment.",
   ],
   reference_net_role_unknown: [
-    "Reference net ground/power role is missing or contradictory.",
-    "Provide source_net is_ground/is_power metadata from the design.",
+    "The reference net's ground/power role is unclear.",
+    "Declare its electrical role; labels alone are not evidence.",
   ],
   power_reference_policy: [
-    "Power reference requires an explicit reviewed policy in this strict-ground analysis.",
-    "Prefer ground, or select an explicitly reviewed power-reference policy; capacitive return is NOT EVALUATED.",
+    "This route uses a power reference under a ground-preference policy.",
+    "Prefer ground, or explicitly review the power-reference choice.",
   ],
   isolated_signal_antipad: [
-    "Bounded isolated clearance at the signal via is explicitly accounted for.",
-    "Keep this local clearance; separately review surrounding coverage and return transition.",
+    "The small clearance around this signal via is accounted for.",
+    "Preserve this required insulation.",
   ],
   reference_coverage_gap: [
-    "DDR route crosses missing reference copper (hole, split, merged void, or plane edge).",
-    "Reroute over continuous reference copper or repair/refill the reference region; preserve required antipads.",
+    "A gap in reference copper lies under the DDR route.",
+    "Move the route over continuous copper, or repair the cut without filling required via clearances.",
   ],
   reference_centerline_covered: [
-    "Continuous centerline coverage is established for this assigned reference.",
-    "Retain continuous copper; this check does not establish SI qualification.",
+    "The signal stays over reference copper.",
+    "Keep this coverage.",
   ],
   reference_island_unanchored: [
-    "Reference island has no modeled physical copper path to a declared reference terminal.",
-    "Connect the island to actual same-net reference terminals; include missing contact geometry before drawing hardware conclusions.",
+    "No reference-terminal connection was found for the copper under this route.",
+    "Connect the island with same-net copper or a contacting via; supply missing terminal data.",
   ],
   reference_boundary_contact_unknown: [
-    "Route touches a zero-margin reference boundary; robust finite-width coverage is not established.",
-    "Route inside a finite-width reference corridor or review the touching geometry.",
+    "The route sits on a copper edge; usable coverage is unverified.",
+    "Move it inside the plane, or review the touching geometry.",
   ],
   signal_via_span_unknown: [
-    "Signal transition physical via span is absent or inconsistent.",
-    "Supply the physical pcb_via record and consistent drill span; route from/to is insufficient.",
+    "The signal via's physical span is missing or inconsistent.",
+    "Supply its real drill span; routing from/to layers are not enough.",
   ],
   transition_reference_contact_unknown: [
-    "Reference copper at one side of the transition cannot be established.",
-    "Restore/reference the entry and exit geometry, including final BGA fanout.",
+    "Reference copper on one side of the layer change is unverified.",
+    "Supply the entry/exit copper, including the final fanout.",
   ],
   same_reference_transition: [
-    "Both routing layers use the same physically connected reference; no additional stitching via is required by this check.",
-    "Preserve the existing reference continuity.",
+    "Both routing layers share one connected reference.",
+    "No extra stitching via is needed for this transition.",
   ],
   capacitive_return_unknown: [
-    "Unlike-net capacitive return is NOT EVALUATED.",
-    "Review a suitable bypass return path; never bridge power and ground with a via.",
+    "The signal changes between different reference nets; capacitive return is not checked.",
+    "Review the bypass return path separately; never short power and ground with a via.",
   ],
   return_proximity_unknown: [
-    "Reference changes, but no reviewed proximity policy is specified.",
-    "Select a justified return-via distance policy; no universal stitch distance is assumed.",
+    "The reference changes, but no reviewed distance limit is set.",
+    "Choose a justified return-via distance before judging nearby connections.",
   ],
   existing_return_connection: [
-    "An existing nearby same-net via physically contacts both required reference planes.",
-    "Retain the existing qualifying return connection; a redundant new stitch is unnecessary.",
+    "A nearby existing via connects both reference planes.",
+    "Keep it; another stitching via is not needed here.",
   ],
   return_connection_missing: [
-    "No existing return via qualifies under the chosen physical-contact/span/proximity policy.",
-    "Move an existing same-net return via or provide a qualifying connection that spans and physically contacts both reference islands; verify clearance before adding copper.",
+    "No return via passes the chosen span, contact and distance checks.",
+    "Use a nearby same-net via that reaches and contacts both reference planes.",
   ],
 }
 const ORDER: Record<DdrSeverity, number> = {
@@ -199,6 +199,12 @@ export const analyzeDdrPlacement = (
     stackup: options.stackup ?? null,
     policy,
     groups: options.groups ?? [],
+    netNames: Object.fromEntries(
+      elementsOfType(circuitJson, "source_net").map((n) => [
+        n.source_net_id,
+        n.name,
+      ]),
+    ),
     checks: { referenceSegments: 0, referenceTransitions: 0 },
     findings: [],
     limits: [...LIMITS],
@@ -221,6 +227,7 @@ export const analyzeDdrPlacement = (
     location: DdrLocation,
     evidence: string[],
     extraProvenance: string[] = [],
+    wording?: { summary: string; repairHint?: string },
   ) => {
     const canonical = {
       ...location,
@@ -235,10 +242,10 @@ export const analyzeDdrPlacement = (
       id,
       code,
       severity,
-      summary: MESSAGES[code]![0],
+      summary: wording?.summary ?? MESSAGES[code]![0],
       location: canonical,
       evidence,
-      repairHint: MESSAGES[code]![1],
+      repairHint: wording?.repairHint ?? MESSAGES[code]![1],
       provenance: [...provenance, ...extraProvenance],
     })
   }
@@ -390,13 +397,31 @@ export const analyzeDdrPlacement = (
     stackup,
     sourceConnectivity,
   )
-  if (model.unsupported.length)
+  if (model.unsupported.length) {
+    const curved = elementsOfType(circuitJson, "pcb_copper_pour").some(
+      (p) =>
+        options.filledCopper!.pcbCopperPourIds.includes(p.pcb_copper_pour_id) &&
+        p.shape === "brep" &&
+        [p.brep_shape.outer_ring, ...p.brep_shape.inner_rings].some((r) =>
+          r.vertices.some((v) => (v.bulge ?? 0) !== 0),
+        ),
+    )
     add(
       "reference_model_incomplete",
       "unknown",
       {},
       model.unsupported.slice().sort(),
+      [],
+      curved
+        ? {
+            summary:
+              "Curved reference-copper boundaries are not supported yet.",
+            repairHint:
+              "Provide supported final-fill geometry or review this region manually.",
+          }
+        : undefined,
     )
+  }
   for (const short of model.shorts)
     add(
       "reference_copper_short",
@@ -550,6 +575,7 @@ export const analyzeDdrPlacement = (
       (t) => t.source_trace_id === trace.source_trace_id,
     )!
     const net = sourceConnectivity.traceNet(sourceTrace)
+    const signal = (net && report.netNames?.[net]) || "The selected DDR route"
     const base: DdrLocation = {
       pcbTraceId: trace.pcb_trace_id,
       sourceTraceId: trace.source_trace_id,
@@ -568,6 +594,23 @@ export const analyzeDdrPlacement = (
         route.unsupported.length
           ? route.unsupported
           : ["No nonzero wire segments."],
+        [],
+        {
+          summary: trace.route.some(
+            (p) =>
+              p.route_type !== "through_pad" &&
+              (!Number.isFinite(p.x) || !Number.isFinite(p.y)),
+          )
+            ? `${signal} has a missing or non-finite route coordinate.`
+            : trace.route.some(
+                  (p) =>
+                    p.route_type === "wire" &&
+                    (!Number.isFinite(p.width) || p.width <= 0),
+                )
+              ? `${signal} has a missing or invalid trace width.`
+              : `${signal} has incomplete or unsupported route geometry.`,
+          repairHint: "Correct the route data, then run the check again.",
+        },
       )
     for (const segment of route.segments)
       for (const ref of referenceFor(segment.layer, {
@@ -641,6 +684,16 @@ export const analyzeDdrPlacement = (
                   ]),
             ],
             antipad ? [antipad.provenance] : [],
+            antipad
+              ? undefined
+              : {
+                  summary: model.unsupported.length
+                    ? `Reference coverage under ${signal} on ${ref.referenceLayer} is uncertain because some copper data is missing or unsupported.`
+                    : `${signal} crosses a ${Number((distance(segment.start, segment.end) * (end - start)).toPrecision(3))} mm gap in reference copper on ${ref.referenceLayer}.`,
+                  repairHint: model.unsupported.length
+                    ? "Complete the reference data before deciding whether to move the route."
+                    : "Move this segment over continuous reference copper, or repair the cut while preserving required via clearances.",
+                },
           )
         }
         for (const poly of plane.geometry)
@@ -650,13 +703,14 @@ export const analyzeDdrPlacement = (
             [poly],
           )) {
             const point = pointAt(segment.start, segment.end, (start + end) / 2)
-            if (!model.anchors(plane, point).length)
+            if (!model.anchors(plane, point).length) {
+              const unknown = Boolean(
+                model.unsupported.length ||
+                  !model.terminals(ref.sourceNetId).length,
+              )
               add(
                 "reference_island_unanchored",
-                model.unsupported.length ||
-                  !model.terminals(ref.sourceNetId).length
-                  ? "unknown"
-                  : "error",
+                unknown ? "unknown" : "error",
                 {
                   ...loc,
                   start: pointAt(segment.start, segment.end, start),
@@ -665,12 +719,32 @@ export const analyzeDdrPlacement = (
                 [
                   "Actual reference pads, traces and contacting via spans were traversed; equal net labels do not connect islands.",
                 ],
+                [],
+                {
+                  summary: unknown
+                    ? `We cannot verify that the copper under ${signal} on ${ref.referenceLayer} reaches a reference terminal.`
+                    : `${signal} runs over a floating reference island on ${ref.referenceLayer}.`,
+                  repairHint: unknown
+                    ? "Supply the missing reference terminal/contact geometry, then run the check again."
+                    : "Connect this island to a same-net reference terminal with copper or a contacting via.",
+                },
               )
+            }
           }
         if (!gaps.length) {
-          add("reference_centerline_covered", "info", loc, [
-            "All straight polygon/hole boundary intervals covered by the union of supported final fill.",
-          ])
+          add(
+            "reference_centerline_covered",
+            "info",
+            loc,
+            [
+              "All straight polygon/hole boundary intervals covered by the union of supported final fill.",
+            ],
+            [],
+            {
+              summary: `${signal} stays over reference copper on ${ref.referenceLayer}.`,
+              repairHint: "Keep this reference coverage.",
+            },
+          )
           const clearance = segmentCopperClearance(
             segment.start,
             segment.end,
@@ -768,9 +842,18 @@ export const analyzeDdrPlacement = (
                   .some((b) => model.connected(a, b)),
               )
           ) {
-            add("same_reference_transition", "info", pairLoc, [
-              "Same actual reference copper component/path on both sides.",
-            ])
+            add(
+              "same_reference_transition",
+              "info",
+              pairLoc,
+              ["Same actual reference copper component/path on both sides."],
+              [],
+              {
+                summary: `${signal} uses the same connected ${from.layer} reference before and after the layer change.`,
+                repairHint:
+                  "No extra stitching via is needed for this transition.",
+              },
+            )
             continue
           }
           if (before.sourceNetId !== after.sourceNetId) {
@@ -834,24 +917,89 @@ export const analyzeDdrPlacement = (
                 ],
               },
               [`Chosen maximum distance ${maxDistance} mm.`, ...evidence],
+              [],
+              {
+                summary: `An existing return via ${Number(Math.min(...nearby.map((c) => distance(c.via, transition.point))).toPrecision(3))} mm from ${signal} already contacts ${from.layer} and ${to.layer} within the chosen ${maxDistance} mm limit.`,
+                repairHint:
+                  "Keep it; another stitching via is not needed here.",
+              },
             )
-          else
-            add(
-              "return_connection_missing",
+          else {
+            const knownNearby = candidates
+              .filter(
+                (c) =>
+                  c.net === before.sourceNetId &&
+                  distance(c.via, transition.point) <= maxDistance,
+              )
+              .sort(
+                (a, b) =>
+                  distance(a.via, transition.point) -
+                    distance(b.via, transition.point) ||
+                  a.via.pcb_via_id.localeCompare(b.via.pcb_via_id),
+              )
+            const closest = knownNearby[0]
+            const uncertain = Boolean(
               model.unsupported.length ||
                 candidates.some(
                   (c) =>
                     c.reason &&
                     distance(c.via, transition.point) <= maxDistance,
+                ),
+            )
+            const missingSpan = closest
+              ? [from.layer, to.layer].filter(
+                  (layer) => !closest.layers?.includes(layer),
                 )
-                ? "unknown"
-                : "policy_violation",
-              pairLoc,
+              : []
+            const missingContact = closest
+              ? [from, to].filter(
+                  (plane) =>
+                    !touches(
+                      closest,
+                      plane,
+                      plane === from ? fromPoint : toPoint,
+                    ),
+                )
+              : []
+            const separated = closest
+              ? missingContact.filter(
+                  (plane) => !closest.conductors.some((c) => c.plane === plane),
+                )
+              : []
+            const summary = uncertain
+              ? `The return connection at ${signal}'s layer change cannot be verified from the supplied data.`
+              : missingSpan.length
+                ? `The nearby return via does not reach ${missingSpan.join(" and ")}; ${signal} needs a connection to both ${from.layer} and ${to.layer}.`
+                : separated.length
+                  ? `${signal}’s nearby return via is separated from the required copper on ${separated.map((p) => p.layer).join(" and ")}.`
+                  : missingContact.length
+                    ? `${signal}’s nearby return via contacts a different reference island on ${missingContact.map((p) => p.layer).join(" and ")}.`
+                    : `${signal} changes from ${from.layer} to ${to.layer} without a usable return via within the chosen ${maxDistance} mm limit.`
+            add(
+              "return_connection_missing",
+              uncertain ? "unknown" : "policy_violation",
+              {
+                ...pairLoc,
+                pcbViaIds: [
+                  ...pairLoc.pcbViaIds,
+                  ...knownNearby.map((c) => c.via.pcb_via_id),
+                ],
+              },
               [
                 `Chosen maximum distance ${maxDistance} mm; no universal SI threshold is implied.`,
                 ...evidence,
               ],
+              [],
+              {
+                summary,
+                repairHint: uncertain
+                  ? "Supply the missing span/contact data before choosing a fix."
+                  : missingSpan.length
+                    ? `Use a same-net return via whose barrel reaches both ${from.layer} and ${to.layer}.`
+                    : `Place a same-net return via within the chosen ${maxDistance} mm limit where it actually contacts both reference islands.`,
+              },
             )
+          }
         }
     }
   }

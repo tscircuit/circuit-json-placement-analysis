@@ -50,9 +50,9 @@ test("invalid coordinates and unsupported curved fill remain unknown", async () 
   }
   await expect(
     visualSnapshot([
-      { title: "Non-finite signal point omitted from view", ...invalid },
-      { title: "Invalid width (NaN): trace not drawable", ...invalidWidth },
-      { title: "Unsupported curved fill (chord outline only)", ...curved },
+      { title: "Invalid coordinate: x = Infinity", ...invalid },
+      { title: "Invalid width: NaN", ...invalidWidth },
+      { title: "Unsupported curve", ...curved },
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
 })

@@ -1,416 +1,176 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="2232" font-family="Arial, sans-serif"><rect width="1140" height="2232" fill="#fff"/><text x="24" y="27" font-size="17" fill="#172639">DDR reference geometry + actual analyzer findings</text><text x="24" y="50" font-size="13" fill="#5d6d7d">Isometric geometry illustration; exploded layers. Return reference is broad plane copper, not a second etched trace.</text><text x="24" y="72" font-size="12" fill="#5d6d7d">Green = analyzer info · red = error/policy · amber = unknown. No current-density or electromagnetic simulation.</text><g transform="translate(0,92)"><desc># No ground bridge at the signal hop
-Status: **ISSUES_FOUND** (0 error, 1 policy_violation, 0 warning, 0 unknown, 2 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 2 reference segments, 1 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- POLICY_VIOLATION return_connection_missing
-  return_connection_missing_b7f0e5b9bf7162f5
-  No existing return via qualifies under the chosen physical-contact/span/proximity policy.
-  Evidence: Chosen maximum distance 1 mm; no universal SI threshold is implied.
-  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required islands true/false
-  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts required islands false/true
-  Repair: Move an existing same-net return via or provide a qualifying connection that spans and physically contacts both reference islands; verify clearance before adding copper.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_8b0b4fd6f987e3fb
-  Bounded isolated clearance at the signal via is explicitly accounted for.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_ae386270120dd36e
-  Bounded isolated clearance at the signal via is explicitly accounted for.</desc><text x="24" y="30" fill="#172639" font-size="18">No ground bridge at the signal hop</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,303 L373,255 L451,309 L127,357 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="314" fill="#5d6d7d" font-size="12">bottom</text>
-<path d="M49,251 L373,203 L451,257 L127,305 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,305 L451,257 L373,203 L49,251 Z M238,252.5 L254.20000000000002,250.10000000000002 L262,255.5 L245.8,257.9 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="262" fill="#5d6d7d" font-size="12">inner4</text>
-<path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z M238,200.5 L254.20000000000002,198.10000000000002 L262,203.5 L245.8,205.89999999999998 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 286)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 277)" r="0.35" fill="#edca8d"/>
-<text x="352" y="262" fill="#966020" font-size="10">GND pad</text>
-<path d="M115,170 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,150 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L250,306" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L385,286" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,225 L372,277" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 225)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 277)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M250,150 L250,306" stroke="#6549bb" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 250 150)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 202)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 254)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 306)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<text x="260" y="138" fill="#6549bb" font-size="11">signal_via</text>
-<path d="M241.89999999999998,203.2 L250,202" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="203.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M241.89999999999998,151.2 L250,150" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="151.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<path d="M250,306 L258.1,304.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="306" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M250,254 L258.1,252.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="254" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<circle cx="250" cy="306" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="202" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="254" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="150" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/><text x="24" y="410" fill="#293645" font-size="12"># No ground bridge at the signal hop</text>
-<text x="24" y="428" fill="#293645" font-size="12">Status: **ISSUES_FOUND** (0 error, 1 policy_violation, 0 warning, 0 </text>
-<text x="24" y="446" fill="#293645" font-size="12">unknown, 2 info).</text>
-<text x="24" y="464" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="482" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="500" fill="#293645" font-size="12">Evaluated: 2 reference segments, 1 transition pairs. Coordinates: </text>
-<text x="24" y="518" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="536" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="554" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="572" fill="#293645" font-size="12">- POLICY_VIOLATION return_connection_missing</text>
-<text x="24" y="590" fill="#293645" font-size="12">  return_connection_missing_b7f0e5b9bf7162f5</text>
-<text x="24" y="608" fill="#293645" font-size="12">  No existing return via qualifies under the chosen </text>
-<text x="24" y="626" fill="#293645" font-size="12">physical-contact/span/proximity policy.</text>
-<text x="24" y="644" fill="#293645" font-size="12">  Evidence: Chosen maximum distance 1 mm; no universal SI threshold is </text>
-<text x="24" y="662" fill="#293645" font-size="12">implied.</text>
-<text x="24" y="680" fill="#293645" font-size="12">  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required </text>
-<text x="24" y="698" fill="#293645" font-size="12">islands true/false</text>
-<text x="24" y="716" fill="#293645" font-size="12">  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts </text>
-<text x="24" y="734" fill="#293645" font-size="12">required islands false/true</text>
-<text x="24" y="752" fill="#293645" font-size="12">  Repair: Move an existing same-net return via or provide a qualifying </text>
-<text x="24" y="770" fill="#293645" font-size="12">connection that spans and physically contacts both reference islands; </text>
-<text x="24" y="788" fill="#293645" font-size="12">verify clearance before adding copper.</text>
-<text x="24" y="806" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="824" fill="#293645" font-size="12">  isolated_signal_antipad_8b0b4fd6f987e3fb</text>
-<text x="24" y="842" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="860" fill="#293645" font-size="12">for.</text>
-<text x="24" y="878" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="896" fill="#293645" font-size="12">  isolated_signal_antipad_ae386270120dd36e</text>
-<text x="24" y="914" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="932" fill="#293645" font-size="12">for.</text></g>
-<g transform="translate(570,92)"><desc># Ground via stops before inner4
-Status: **ISSUES_FOUND** (0 error, 1 policy_violation, 0 warning, 0 unknown, 2 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 2 reference segments, 1 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- POLICY_VIOLATION return_connection_missing
-  return_connection_missing_b7f0e5b9bf7162f5
-  No existing return via qualifies under the chosen physical-contact/span/proximity policy.
-  Evidence: Chosen maximum distance 1 mm; no universal SI threshold is implied.
-  Evidence: return_via: 0.8 mm; span top/inner1; contacts required islands true/false
-  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required islands true/false
-  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts required islands false/true
-  Repair: Move an existing same-net return via or provide a qualifying connection that spans and physically contacts both reference islands; verify clearance before adding copper.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_8b0b4fd6f987e3fb
-  Bounded isolated clearance at the signal via is explicitly accounted for.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_ae386270120dd36e
-  Bounded isolated clearance at the signal via is explicitly accounted for.</desc><text x="24" y="30" fill="#172639" font-size="18">Ground via stops before inner4</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,303 L373,255 L451,309 L127,357 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="314" fill="#5d6d7d" font-size="12">bottom</text>
-<path d="M49,251 L373,203 L451,257 L127,305 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,305 L451,257 L373,203 L49,251 Z M238,252.5 L254.20000000000002,250.10000000000002 L262,255.5 L245.8,257.9 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="262" fill="#5d6d7d" font-size="12">inner4</text>
-<path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z M238,200.5 L254.20000000000002,198.10000000000002 L262,203.5 L245.8,205.89999999999998 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 286)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 277)" r="0.35" fill="#edca8d"/>
-<text x="352" y="262" fill="#966020" font-size="10">GND pad</text>
-<path d="M115,170 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,150 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L250,306" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L385,286" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,225 L372,277" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 225)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 277)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M250,150 L250,306" stroke="#6549bb" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 250 150)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 202)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 254)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 306)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<text x="260" y="138" fill="#6549bb" font-size="11">signal_via</text>
-<path d="M239.6,142.8 L239.6,194.8" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 239.6 142.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 194.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<text x="149.6" y="122.80000000000001" fill="#bd7b2e" font-size="11">return_via</text>
-<path d="M241.89999999999998,203.2 L250,202" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="203.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M241.89999999999998,151.2 L250,150" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="151.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<path d="M250,306 L258.1,304.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="306" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M250,254 L258.1,252.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="254" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<circle cx="250" cy="306" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="202" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="254" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="150" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/><text x="24" y="410" fill="#293645" font-size="12"># Ground via stops before inner4</text>
-<text x="24" y="428" fill="#293645" font-size="12">Status: **ISSUES_FOUND** (0 error, 1 policy_violation, 0 warning, 0 </text>
-<text x="24" y="446" fill="#293645" font-size="12">unknown, 2 info).</text>
-<text x="24" y="464" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="482" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="500" fill="#293645" font-size="12">Evaluated: 2 reference segments, 1 transition pairs. Coordinates: </text>
-<text x="24" y="518" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="536" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="554" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="572" fill="#293645" font-size="12">- POLICY_VIOLATION return_connection_missing</text>
-<text x="24" y="590" fill="#293645" font-size="12">  return_connection_missing_b7f0e5b9bf7162f5</text>
-<text x="24" y="608" fill="#293645" font-size="12">  No existing return via qualifies under the chosen </text>
-<text x="24" y="626" fill="#293645" font-size="12">physical-contact/span/proximity policy.</text>
-<text x="24" y="644" fill="#293645" font-size="12">  Evidence: Chosen maximum distance 1 mm; no universal SI threshold is </text>
-<text x="24" y="662" fill="#293645" font-size="12">implied.</text>
-<text x="24" y="680" fill="#293645" font-size="12">  Evidence: return_via: 0.8 mm; span top/inner1; contacts required </text>
-<text x="24" y="698" fill="#293645" font-size="12">islands true/false</text>
-<text x="24" y="716" fill="#293645" font-size="12">  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required </text>
-<text x="24" y="734" fill="#293645" font-size="12">islands true/false</text>
-<text x="24" y="752" fill="#293645" font-size="12">  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts </text>
-<text x="24" y="770" fill="#293645" font-size="12">required islands false/true</text>
-<text x="24" y="788" fill="#293645" font-size="12">  Repair: Move an existing same-net return via or provide a qualifying </text>
-<text x="24" y="806" fill="#293645" font-size="12">connection that spans and physically contacts both reference islands; </text>
-<text x="24" y="824" fill="#293645" font-size="12">verify clearance before adding copper.</text>
-<text x="24" y="842" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="860" fill="#293645" font-size="12">  isolated_signal_antipad_8b0b4fd6f987e3fb</text>
-<text x="24" y="878" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="896" fill="#293645" font-size="12">for.</text>
-<text x="24" y="914" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="932" fill="#293645" font-size="12">  isolated_signal_antipad_ae386270120dd36e</text>
-<text x="24" y="950" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="968" fill="#293645" font-size="12">for.</text></g>
-<g transform="translate(0,1126)"><desc># Full-span via insulated from inner4
-Status: **ISSUES_FOUND** (0 error, 1 policy_violation, 0 warning, 0 unknown, 2 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 2 reference segments, 1 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- POLICY_VIOLATION return_connection_missing
-  return_connection_missing_b7f0e5b9bf7162f5
-  No existing return via qualifies under the chosen physical-contact/span/proximity policy.
-  Evidence: Chosen maximum distance 1 mm; no universal SI threshold is implied.
-  Evidence: return_via: 0.8 mm; span top/inner1/inner2/inner3/inner4/bottom; contacts required islands true/false
-  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required islands true/false
-  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts required islands false/true
-  Repair: Move an existing same-net return via or provide a qualifying connection that spans and physically contacts both reference islands; verify clearance before adding copper.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_8b0b4fd6f987e3fb
-  Bounded isolated clearance at the signal via is explicitly accounted for.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_ae386270120dd36e
-  Bounded isolated clearance at the signal via is explicitly accounted for.</desc><text x="24" y="30" fill="#172639" font-size="18">Full-span via insulated from inner4</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,303 L373,255 L451,309 L127,357 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="314" fill="#5d6d7d" font-size="12">bottom</text>
-<path d="M49,251 L373,203 L451,257 L127,305 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,305 L451,257 L373,203 L49,251 Z M238,252.5 L254.20000000000002,250.10000000000002 L262,255.5 L245.8,257.9 Z M219.6,244.3 L246.6,240.3 L258.3,248.4 L231.3,252.4 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="262" fill="#5d6d7d" font-size="12">inner4</text>
-<path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z M238,200.5 L254.20000000000002,198.10000000000002 L262,203.5 L245.8,205.89999999999998 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 286)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 277)" r="0.35" fill="#edca8d"/>
-<text x="352" y="262" fill="#966020" font-size="10">GND pad</text>
-<path d="M115,170 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,150 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L250,306" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L385,286" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,225 L372,277" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 225)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 277)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M250,150 L250,306" stroke="#6549bb" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 250 150)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 202)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 254)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 306)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<text x="260" y="138" fill="#6549bb" font-size="11">signal_via</text>
-<path d="M239.6,142.8 L239.6,298.8" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 239.6 142.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 194.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 246.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 298.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<text x="149.6" y="122.80000000000001" fill="#bd7b2e" font-size="11">return_via</text>
-<path d="M241.89999999999998,203.2 L250,202" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="203.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M241.89999999999998,151.2 L250,150" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="151.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<path d="M250,306 L258.1,304.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="306" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M250,254 L258.1,252.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="254" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<circle cx="250" cy="306" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="202" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="254" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<circle cx="250" cy="150" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#c92f45" stroke-width="2" fill="none"/><text x="24" y="410" fill="#293645" font-size="12"># Full-span via insulated from inner4</text>
-<text x="24" y="428" fill="#293645" font-size="12">Status: **ISSUES_FOUND** (0 error, 1 policy_violation, 0 warning, 0 </text>
-<text x="24" y="446" fill="#293645" font-size="12">unknown, 2 info).</text>
-<text x="24" y="464" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="482" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="500" fill="#293645" font-size="12">Evaluated: 2 reference segments, 1 transition pairs. Coordinates: </text>
-<text x="24" y="518" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="536" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="554" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="572" fill="#293645" font-size="12">- POLICY_VIOLATION return_connection_missing</text>
-<text x="24" y="590" fill="#293645" font-size="12">  return_connection_missing_b7f0e5b9bf7162f5</text>
-<text x="24" y="608" fill="#293645" font-size="12">  No existing return via qualifies under the chosen </text>
-<text x="24" y="626" fill="#293645" font-size="12">physical-contact/span/proximity policy.</text>
-<text x="24" y="644" fill="#293645" font-size="12">  Evidence: Chosen maximum distance 1 mm; no universal SI threshold is </text>
-<text x="24" y="662" fill="#293645" font-size="12">implied.</text>
-<text x="24" y="680" fill="#293645" font-size="12">  Evidence: return_via: 0.8 mm; span </text>
-<text x="24" y="698" fill="#293645" font-size="12">top/inner1/inner2/inner3/inner4/bottom; contacts required islands </text>
-<text x="24" y="716" fill="#293645" font-size="12">true/false</text>
-<text x="24" y="734" fill="#293645" font-size="12">  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required </text>
-<text x="24" y="752" fill="#293645" font-size="12">islands true/false</text>
-<text x="24" y="770" fill="#293645" font-size="12">  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts </text>
-<text x="24" y="788" fill="#293645" font-size="12">required islands false/true</text>
-<text x="24" y="806" fill="#293645" font-size="12">  Repair: Move an existing same-net return via or provide a qualifying </text>
-<text x="24" y="824" fill="#293645" font-size="12">connection that spans and physically contacts both reference islands; </text>
-<text x="24" y="842" fill="#293645" font-size="12">verify clearance before adding copper.</text>
-<text x="24" y="860" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="878" fill="#293645" font-size="12">  isolated_signal_antipad_8b0b4fd6f987e3fb</text>
-<text x="24" y="896" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="914" fill="#293645" font-size="12">for.</text>
-<text x="24" y="932" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="950" fill="#293645" font-size="12">  isolated_signal_antipad_ae386270120dd36e</text>
-<text x="24" y="968" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="986" fill="#293645" font-size="12">for.</text></g>
-<g transform="translate(570,1126)"><desc># Existing via contacts both GND planes
-Status: **NO_ISSUES_IN_EVALUATED_CHECKS** (0 error, 0 policy_violation, 0 warning, 0 unknown, 3 info).
-Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
-Evaluated: 2 reference segments, 1 transition pairs. Coordinates: board-world mm (+X right, +Y up).
-DDR group: DQ (Original generic DQ0 fixture)
-Final fill: DECLARED — Final generic fill with explicit voids
-- INFO existing_return_connection
-  existing_return_connection_cfee2287df7c1f40
-  An existing nearby same-net via physically contacts both required reference planes.
-  Evidence: Chosen maximum distance 1 mm.
-  Evidence: return_via: 0.8 mm; span top/inner1/inner2/inner3/inner4/bottom; contacts required islands true/true
-  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required islands true/false
-  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts required islands false/true
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_8b0b4fd6f987e3fb
-  Bounded isolated clearance at the signal via is explicitly accounted for.
-- INFO isolated_signal_antipad
-  isolated_signal_antipad_ae386270120dd36e
-  Bounded isolated clearance at the signal via is explicitly accounted for.</desc><text x="24" y="30" fill="#172639" font-size="18">Existing via contacts both GND planes</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,303 L373,255 L451,309 L127,357 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="314" fill="#5d6d7d" font-size="12">bottom</text>
-<path d="M49,251 L373,203 L451,257 L127,305 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,305 L451,257 L373,203 L49,251 Z M238,252.5 L254.20000000000002,250.10000000000002 L262,255.5 L245.8,257.9 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="262" fill="#5d6d7d" font-size="12">inner4</text>
-<path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<path d="M127,253 L451,205 L373,151 L49,199 Z M238,200.5 L254.20000000000002,198.10000000000002 L262,203.5 L245.8,205.89999999999998 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
-<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
-<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
-<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
-<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 385 286)" r="0.35" fill="#d6cbec"/>
-<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
-<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
-<circle transform="matrix(27 -4 13 9 372 277)" r="0.35" fill="#edca8d"/>
-<text x="352" y="262" fill="#966020" font-size="10">GND pad</text>
-<path d="M115,170 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,150 L250,150" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L250,306" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M250,306 L385,286" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M372,225 L372,277" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 372 225)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 372 277)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<path d="M250,150 L250,306" stroke="#6549bb" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 250 150)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 202)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 254)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 250 306)"><circle r="0.2" fill="#6549bb"/><circle r="0.1" fill="white"/></g>
-<text x="260" y="138" fill="#6549bb" font-size="11">signal_via</text>
-<path d="M239.6,142.8 L239.6,298.8" stroke="#bd7b2e" stroke-width="5"/>
-<g transform="matrix(27 -4 13 9 239.6 142.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 194.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 246.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<g transform="matrix(27 -4 13 9 239.6 298.8)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
-<text x="149.6" y="122.80000000000001" fill="#bd7b2e" font-size="11">return_via</text>
-<path d="M241.89999999999998,203.2 L250,202" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="203.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M241.89999999999998,151.2 L250,150" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="241.89999999999998" cy="151.2" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="202" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="150" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<path d="M250,306 L258.1,304.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="306" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<path d="M250,254 L258.1,252.8" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="250" cy="254" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
-<ellipse cx="250" cy="306" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="250" cy="254" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="239.6" cy="298.8" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="239.6" cy="194.8" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="239.6" cy="246.8" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/>
-<ellipse cx="239.6" cy="142.8" rx="12" ry="6" stroke="#16715c" stroke-width="2" fill="none"/><text x="24" y="410" fill="#293645" font-size="12"># Existing via contacts both GND planes</text>
-<text x="24" y="428" fill="#293645" font-size="12">Status: **NO_ISSUES_IN_EVALUATED_CHECKS** (0 error, 0 </text>
-<text x="24" y="446" fill="#293645" font-size="12">policy_violation, 0 warning, 0 unknown, 3 info).</text>
-<text x="24" y="464" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
-<text x="24" y="482" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
-<text x="24" y="500" fill="#293645" font-size="12">Evaluated: 2 reference segments, 1 transition pairs. Coordinates: </text>
-<text x="24" y="518" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
-<text x="24" y="536" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
-<text x="24" y="554" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
-<text x="24" y="572" fill="#293645" font-size="12">- INFO existing_return_connection</text>
-<text x="24" y="590" fill="#293645" font-size="12">  existing_return_connection_cfee2287df7c1f40</text>
-<text x="24" y="608" fill="#293645" font-size="12">  An existing nearby same-net via physically contacts both required </text>
-<text x="24" y="626" fill="#293645" font-size="12">reference planes.</text>
-<text x="24" y="644" fill="#293645" font-size="12">  Evidence: Chosen maximum distance 1 mm.</text>
-<text x="24" y="662" fill="#293645" font-size="12">  Evidence: return_via: 0.8 mm; span </text>
-<text x="24" y="680" fill="#293645" font-size="12">top/inner1/inner2/inner3/inner4/bottom; contacts required islands </text>
-<text x="24" y="698" fill="#293645" font-size="12">true/true</text>
-<text x="24" y="716" fill="#293645" font-size="12">  Evidence: anchor_a: 5.09902 mm; span top/inner1; contacts required </text>
-<text x="24" y="734" fill="#293645" font-size="12">islands true/false</text>
-<text x="24" y="752" fill="#293645" font-size="12">  Evidence: anchor_b: 5.09902 mm; span inner4/bottom; contacts </text>
-<text x="24" y="770" fill="#293645" font-size="12">required islands false/true</text>
-<text x="24" y="788" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="806" fill="#293645" font-size="12">  isolated_signal_antipad_8b0b4fd6f987e3fb</text>
-<text x="24" y="824" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="842" fill="#293645" font-size="12">for.</text>
-<text x="24" y="860" fill="#293645" font-size="12">- INFO isolated_signal_antipad</text>
-<text x="24" y="878" fill="#293645" font-size="12">  isolated_signal_antipad_ae386270120dd36e</text>
-<text x="24" y="896" fill="#293645" font-size="12">  Bounded isolated clearance at the signal via is explicitly accounted </text>
-<text x="24" y="914" fill="#293645" font-size="12">for.</text></g>
-<text x="24" y="2178" font-size="12" fill="#5d6d7d">NOT EVALUATED: endpoint component anchoring, capacitive return, dielectric/height margins, narrow necks/detours, package returns, manufacturer </text>
-<text x="24" y="2196" font-size="12" fill="#5d6d7d">keepout/shielding, impedance, crosstalk, timing, EMI or boot qualification.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1843" font-family="Arial, sans-serif"><rect width="1480" height="1843" fill="#fff"/><text x="26" y="29" font-size="18" fill="#617481">Purple: signal copper · gold: ground vias · red: needs attention · green rings: qualified ground contact</text><g transform="translate(0,65)"><desc>**Policy check: DQ0 changes from inner1 to inner4 without a usable return via within the chosen 1 mm limit.**
+Near (0, 0) mm.
+Next: Place a same-net return via within the chosen 1 mm limit where it actually contacts both reference islands.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"return_connection_missing_b7f0e5b9bf7162f5","code":"return_connection_missing","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":2,"start":{"x":0,"y":0},"layers":["bottom","inner1","inner4","top"],"pcbCopperPourIds":["gnd1","gnd4"],"pcbViaIds":["signal_via"]}},{"id":"isolated_signal_antipad_8b0b4fd6f987e3fb","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["bottom","inner4"],"pcbCopperPourIds":["gnd4"],"segmentIndex":3,"start":{"x":0,"y":0},"end":{"x":0.3,"y":0},"pcbViaIds":["signal_via"]}},{"id":"isolated_signal_antipad_ae386270120dd36e","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["inner1","top"],"pcbCopperPourIds":["gnd1"],"segmentIndex":0,"start":{"x":-0.3000000000000007,"y":0},"end":{"x":0,"y":0},"pcbViaIds":["signal_via"]}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Before: no ground bridge</text><text x="26" y="76" fill="#c92f45" font-size="18">ISSUE · DECLARED stackup</text><clipPath id="crop_0_bottom"><path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z"/></clipPath>
+<path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="629.275" fill="#6549bb" font-size="20">bottom</text>
+<clipPath id="crop_0_inner4"><path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z"/></clipPath>
+<path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,675.625 L1227.5,513.625 L657.5,257.125 L-422.5,419.125 Z M347,457.6 L401,449.5 L458,475.15 L404,483.25 Z" clip-path="url(#crop_0_inner4)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="504.275" fill="#276b52" font-size="20">inner4 · GND</text>
+<clipPath id="crop_0_inner1"><path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z"/></clipPath>
+<path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,550.625 L1227.5,388.625 L657.5,132.125 L-422.5,294.125 Z M347,332.6 L401,324.5 L458,350.15 L404,358.25 Z" clip-path="url(#crop_0_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="379.275" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_0_top"><path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z"/></clipPath>
+<path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="254.27499999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_0_top)"><circle transform="matrix(90 -13.5 95 42.75 -47.5 283.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_0_bottom)"><circle transform="matrix(90 -13.5 95 42.75 852.5 523.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_0_top)"><circle transform="matrix(90 -13.5 95 42.75 -142.5 241.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_0_bottom)"><circle transform="matrix(90 -13.5 95 42.75 757.5 481.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_0_top)"><path d="M-47.5,283.875 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_0_top)"><path d="M402.5,216.375 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_0_bottom)"><path d="M402.5,591.375 L402.5,591.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_0_bottom)"><path d="M402.5,591.375 L852.5,523.875" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<path d="M402.5,216.375 L402.5,591.375" stroke="#7042bc" stroke-width="23.400000000000002" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 402.5 216.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 341.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 466.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 591.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<text x="420.5" y="178.375" fill="#7042bc" font-size="20">signal via</text>
+<path d="M550.5,341.375 H562.5 V466.375 H550.5" fill="none" stroke="#c92f45" stroke-width="3"/>
+<text x="410" y="508.375" fill="#c92f45" font-size="19">GND: inner1 ↔ inner4</text><text x="26" y="700" fill="#263747" font-size="17">Policy check: DQ0 changes from inner1 to inner4 without a usable return via within </text>
+<text x="26" y="722" fill="#263747" font-size="17">the chosen 1 mm limit.</text>
+<text x="26" y="744" fill="#263747" font-size="17">Near (0, 0) mm.</text>
+<text x="26" y="766" fill="#263747" font-size="17">Next: Place a same-net return via within the chosen 1 mm limit where it actually </text>
+<text x="26" y="788" fill="#263747" font-size="17">contacts both reference islands.</text></g>
+<g transform="translate(740,65)"><desc>**Policy check: The nearby return via does not reach inner4; DQ0 needs a connection to both inner1 and inner4.**
+Near (0, 0) mm.
+Next: Use a same-net return via whose barrel reaches both inner1 and inner4.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"return_connection_missing_cfee2287df7c1f40","code":"return_connection_missing","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":2,"start":{"x":0,"y":0},"layers":["bottom","inner1","inner4","top"],"pcbCopperPourIds":["gnd1","gnd4"],"pcbViaIds":["return_via","signal_via"]}},{"id":"isolated_signal_antipad_8b0b4fd6f987e3fb","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["bottom","inner4"],"pcbCopperPourIds":["gnd4"],"segmentIndex":3,"start":{"x":0,"y":0},"end":{"x":0.3,"y":0},"pcbViaIds":["signal_via"]}},{"id":"isolated_signal_antipad_ae386270120dd36e","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["inner1","top"],"pcbCopperPourIds":["gnd1"],"segmentIndex":0,"start":{"x":-0.3000000000000007,"y":0},"end":{"x":0,"y":0},"pcbViaIds":["signal_via"]}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">GND via stops at inner1</text><text x="26" y="76" fill="#c92f45" font-size="18">ISSUE · DECLARED stackup</text><clipPath id="crop_1_bottom"><path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z"/></clipPath>
+<path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="629.275" fill="#6549bb" font-size="20">bottom</text>
+<clipPath id="crop_1_inner4"><path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z"/></clipPath>
+<path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,675.625 L1227.5,513.625 L657.5,257.125 L-422.5,419.125 Z M347,457.6 L401,449.5 L458,475.15 L404,483.25 Z" clip-path="url(#crop_1_inner4)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="504.275" fill="#276b52" font-size="20">inner4 · GND</text>
+<clipPath id="crop_1_inner1"><path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z"/></clipPath>
+<path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,550.625 L1227.5,388.625 L657.5,132.125 L-422.5,294.125 Z M347,332.6 L401,324.5 L458,350.15 L404,358.25 Z" clip-path="url(#crop_1_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="379.275" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_1_top"><path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z"/></clipPath>
+<path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="254.27499999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_1_top)"><circle transform="matrix(90 -13.5 95 42.75 -47.5 283.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_1_bottom)"><circle transform="matrix(90 -13.5 95 42.75 852.5 523.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_1_top)"><circle transform="matrix(90 -13.5 95 42.75 -142.5 241.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_1_bottom)"><circle transform="matrix(90 -13.5 95 42.75 757.5 481.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_1_top)"><path d="M-47.5,283.875 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_1_top)"><path d="M402.5,216.375 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_1_bottom)"><path d="M402.5,591.375 L402.5,591.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_1_bottom)"><path d="M402.5,591.375 L852.5,523.875" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<path d="M402.5,216.375 L402.5,591.375" stroke="#7042bc" stroke-width="23.400000000000002" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 402.5 216.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 341.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 466.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 591.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<text x="420.5" y="178.375" fill="#7042bc" font-size="20">signal via</text>
+<path d="M326.5,182.175 L326.5,307.175" stroke="#c78932" stroke-width="35.1" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 326.5 182.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 307.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<text x="236.5" y="144.175" fill="#c78932" font-size="20">GND via</text>
+<path d="M326.5,307.175 L396.5,367.175 H650" fill="none" stroke="#c92f45" stroke-width="3"/>
+<text x="401.5" y="394.175" fill="#c92f45" font-size="19">Ends at inner1</text><text x="26" y="700" fill="#263747" font-size="17">Policy check: The nearby return via does not reach inner4; DQ0 needs a connection </text>
+<text x="26" y="722" fill="#263747" font-size="17">to both inner1 and inner4.</text>
+<text x="26" y="744" fill="#263747" font-size="17">Near (0, 0) mm.</text>
+<text x="26" y="766" fill="#263747" font-size="17">Next: Use a same-net return via whose barrel reaches both inner1 and inner4.</text></g>
+<g transform="translate(0,929)"><desc>**Policy check: DQ0’s nearby return via is separated from the required copper on inner4.**
+Near (0, 0) mm.
+Next: Place a same-net return via within the chosen 1 mm limit where it actually contacts both reference islands.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"return_connection_missing_cfee2287df7c1f40","code":"return_connection_missing","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":2,"start":{"x":0,"y":0},"layers":["bottom","inner1","inner4","top"],"pcbCopperPourIds":["gnd1","gnd4"],"pcbViaIds":["return_via","signal_via"]}},{"id":"isolated_signal_antipad_8b0b4fd6f987e3fb","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["bottom","inner4"],"pcbCopperPourIds":["gnd4"],"segmentIndex":3,"start":{"x":0,"y":0},"end":{"x":0.3,"y":0},"pcbViaIds":["signal_via"]}},{"id":"isolated_signal_antipad_ae386270120dd36e","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["inner1","top"],"pcbCopperPourIds":["gnd1"],"segmentIndex":0,"start":{"x":-0.3000000000000007,"y":0},"end":{"x":0,"y":0},"pcbViaIds":["signal_via"]}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">Hole insulates the GND via</text><text x="26" y="76" fill="#c92f45" font-size="18">ISSUE · DECLARED stackup</text><clipPath id="crop_2_bottom"><path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z"/></clipPath>
+<path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="629.275" fill="#6549bb" font-size="20">bottom</text>
+<clipPath id="crop_2_inner4"><path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z"/></clipPath>
+<path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,675.625 L1227.5,513.625 L657.5,257.125 L-422.5,419.125 Z M347,457.6 L401,449.5 L458,475.15 L404,483.25 Z M234,417.55 L324,404.05 L409.5,442.525 L319.5,456.025 Z" clip-path="url(#crop_2_inner4)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="504.275" fill="#276b52" font-size="20">inner4 · GND</text>
+<clipPath id="crop_2_inner1"><path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z"/></clipPath>
+<path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,550.625 L1227.5,388.625 L657.5,132.125 L-422.5,294.125 Z M347,332.6 L401,324.5 L458,350.15 L404,358.25 Z" clip-path="url(#crop_2_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="379.275" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_2_top"><path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z"/></clipPath>
+<path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="254.27499999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_2_top)"><circle transform="matrix(90 -13.5 95 42.75 -47.5 283.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_2_bottom)"><circle transform="matrix(90 -13.5 95 42.75 852.5 523.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_2_top)"><circle transform="matrix(90 -13.5 95 42.75 -142.5 241.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_2_bottom)"><circle transform="matrix(90 -13.5 95 42.75 757.5 481.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_2_top)"><path d="M-47.5,283.875 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_2_top)"><path d="M402.5,216.375 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_2_bottom)"><path d="M402.5,591.375 L402.5,591.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_2_bottom)"><path d="M402.5,591.375 L852.5,523.875" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<path d="M402.5,216.375 L402.5,591.375" stroke="#7042bc" stroke-width="23.400000000000002" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 402.5 216.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 341.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 466.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 591.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<text x="420.5" y="178.375" fill="#7042bc" font-size="20">signal via</text>
+<path d="M326.5,182.175 L326.5,557.175" stroke="#c78932" stroke-width="35.1" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 326.5 182.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 307.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 432.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 557.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<text x="236.5" y="144.175" fill="#c78932" font-size="20">GND via</text>
+<path d="M234,417.55 L324,404.05 L409.5,442.525 L319.5,456.025 Z" fill="none" stroke="#c92f45" stroke-width="3"/>
+<path d="M324,404.05 L394,464.05 H650" fill="none" stroke="#c92f45" stroke-width="3"/>
+<text x="399" y="491.05" fill="#c92f45" font-size="19">Copper clearance on inner4</text><text x="26" y="700" fill="#263747" font-size="17">Policy check: DQ0’s nearby return via is separated from the required copper on </text>
+<text x="26" y="722" fill="#263747" font-size="17">inner4.</text>
+<text x="26" y="744" fill="#263747" font-size="17">Near (0, 0) mm.</text>
+<text x="26" y="766" fill="#263747" font-size="17">Next: Place a same-net return via within the chosen 1 mm limit where it actually </text>
+<text x="26" y="788" fill="#263747" font-size="17">contacts both reference islands.</text></g>
+<g transform="translate(740,929)"><desc>**Looks good.** An existing return via 0.8 mm from DQ0 already contacts inner1 and inner4 within the chosen 1 mm limit.
+Near (0, 0) mm.
+Keep it; another stitching via is not needed here.
+
+Reference-copper geometry only; impedance, timing and boot are not evaluated.
+
+[{"id":"existing_return_connection_cfee2287df7c1f40","code":"existing_return_connection","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","segmentIndex":2,"start":{"x":0,"y":0},"layers":["bottom","inner1","inner4","top"],"pcbCopperPourIds":["gnd1","gnd4"],"pcbViaIds":["return_via","signal_via"]}},{"id":"isolated_signal_antipad_8b0b4fd6f987e3fb","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["bottom","inner4"],"pcbCopperPourIds":["gnd4"],"segmentIndex":3,"start":{"x":0,"y":0},"end":{"x":0.3,"y":0},"pcbViaIds":["signal_via"]}},{"id":"isolated_signal_antipad_ae386270120dd36e","code":"isolated_signal_antipad","location":{"pcbTraceId":"dq_route","sourceTraceId":"dq_source","sourceNetId":"dq","layers":["inner1","top"],"pcbCopperPourIds":["gnd1"],"segmentIndex":0,"start":{"x":-0.3000000000000007,"y":0},"end":{"x":0,"y":0},"pcbViaIds":["signal_via"]}}]</desc><text x="26" y="44" fill="#172d3b" font-size="25">After: existing GND bridge</text><text x="26" y="76" fill="#16715c" font-size="18">CLEAR · DECLARED stackup</text><clipPath id="crop_3_bottom"><path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z"/></clipPath>
+<path d="M69.5,538.725 L393.5,490.125 L640.5,601.275 L316.5,649.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="629.275" fill="#6549bb" font-size="20">bottom</text>
+<clipPath id="crop_3_inner4"><path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z"/></clipPath>
+<path d="M69.5,413.725 L393.5,365.125 L640.5,476.275 L316.5,524.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,675.625 L1227.5,513.625 L657.5,257.125 L-422.5,419.125 Z M347,457.6 L401,449.5 L458,475.15 L404,483.25 Z" clip-path="url(#crop_3_inner4)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="504.275" fill="#276b52" font-size="20">inner4 · GND</text>
+<clipPath id="crop_3_inner1"><path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z"/></clipPath>
+<path d="M69.5,288.725 L393.5,240.125 L640.5,351.275 L316.5,399.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<path d="M147.5,550.625 L1227.5,388.625 L657.5,132.125 L-422.5,294.125 Z M347,332.6 L401,324.5 L458,350.15 L404,358.25 Z" clip-path="url(#crop_3_inner1)" fill="#a8d7c2" fill-rule="evenodd" stroke="#3d856a" stroke-width="2" />
+<text x="610.5" y="379.275" fill="#276b52" font-size="20">inner1 · GND</text>
+<clipPath id="crop_3_top"><path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z"/></clipPath>
+<path d="M69.5,163.72500000000002 L393.5,115.12499999999999 L640.5,226.27499999999998 L316.5,274.875 Z" fill="none" stroke="#c3cfda" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text x="610.5" y="254.27499999999998" fill="#6549bb" font-size="20">top</text>
+<g clip-path="url(#crop_3_top)"><circle transform="matrix(90 -13.5 95 42.75 -47.5 283.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_3_bottom)"><circle transform="matrix(90 -13.5 95 42.75 852.5 523.875)" r="0.35" fill="#bba8e1"/></g>
+<g clip-path="url(#crop_3_top)"><circle transform="matrix(90 -13.5 95 42.75 -142.5 241.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_3_bottom)"><circle transform="matrix(90 -13.5 95 42.75 757.5 481.125)" r="0.35" fill="#dba24b"/></g>
+<g clip-path="url(#crop_3_top)"><path d="M-47.5,283.875 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_3_top)"><path d="M402.5,216.375 L402.5,216.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_3_bottom)"><path d="M402.5,591.375 L402.5,591.375" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<g clip-path="url(#crop_3_bottom)"><path d="M402.5,591.375 L852.5,523.875" stroke="#7042bc" stroke-width="8" fill="none" stroke-linecap="round"/></g>
+<path d="M402.5,216.375 L402.5,591.375" stroke="#7042bc" stroke-width="23.400000000000002" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 402.5 216.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 341.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 466.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 402.5 591.375)"><circle r="0.2" fill="#7042bc"/><circle r="0.1" fill="white"/></g>
+<text x="420.5" y="178.375" fill="#7042bc" font-size="20">signal via</text>
+<path d="M326.5,182.175 L326.5,557.175" stroke="#c78932" stroke-width="35.1" stroke-opacity=".8"/>
+<g transform="matrix(90 -13.5 95 42.75 326.5 182.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 307.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 432.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(90 -13.5 95 42.75 326.5 557.175)"><circle r="0.3" fill="#c78932"/><circle r="0.125" fill="white"/></g>
+<text x="236.5" y="144.175" fill="#c78932" font-size="20">GND via</text>
+<ellipse cx="326.5" cy="307.175" rx="43.2" ry="22.8" stroke="#16715c" stroke-width="4" fill="none"/>
+<ellipse cx="326.5" cy="432.175" rx="43.2" ry="22.8" stroke="#16715c" stroke-width="4" fill="none"/><text x="26" y="700" fill="#263747" font-size="17">Looks good. An existing return via 0.8 mm from DQ0 already contacts inner1 and </text>
+<text x="26" y="722" fill="#263747" font-size="17">inner4 within the chosen 1 mm limit.</text>
+<text x="26" y="744" fill="#263747" font-size="17">Near (0, 0) mm.</text>
+<text x="26" y="766" fill="#263747" font-size="17">Keep it; another stitching via is not needed here.</text></g>
+<text x="26" y="1793" fill="#617481" font-size="16">Reference-copper geometry only; impedance, timing and boot are not evaluated.</text><text x="26" y="1817" fill="#617481" font-size="16">Geometry illustration · layers separated for clarity · broad GND copper is the return reference · no electromagnetic simulation</text></svg>

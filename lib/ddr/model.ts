@@ -163,6 +163,7 @@ interface Conductor {
   terminal?: { pcbPort: PcbPort; sourcePort: SourcePort }
 }
 export interface ViaContact {
+  net?: SourceNetId
   via: PcbVia
   layers?: string[]
   conductors: Conductor[]
@@ -406,6 +407,7 @@ export class ReferenceCopperModel {
             `${via.pcb_via_id}: possible reference contact has unknown net/span/annulus; disconnected-path conclusions are UNKNOWN`,
           )
         this.vias.push({
+          net,
           via,
           layers,
           conductors: [],
@@ -446,7 +448,7 @@ export class ReferenceCopperModel {
         )
       for (const contact of contacts)
         this.connectivity.join(`via:${via.pcb_via_id}`, contact.id)
-      this.vias.push({ via, layers, conductors: contacts })
+      this.vias.push({ net, via, layers, conductors: contacts })
     }
     if (
       circuitJson.some(

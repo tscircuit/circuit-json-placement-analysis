@@ -37,10 +37,10 @@ test("a layer hop requires an existing via with both span and copper contact", a
   }
   await expect(
     visualSnapshot([
-      { title: "No ground bridge at the signal hop", ...missing },
-      { title: "Ground via stops before inner4", ...wrongSpan },
-      { title: "Full-span via insulated from inner4", ...insulated },
-      { title: "Existing via contacts both GND planes", ...valid },
+      { title: "Before: no ground bridge", ...missing },
+      { title: "GND via stops at inner1", ...wrongSpan },
+      { title: "Hole insulates the GND via", ...insulated },
+      { title: "After: existing GND bridge", ...valid },
     ]),
   ).toMatchSvgSnapshot(import.meta.path)
 })
