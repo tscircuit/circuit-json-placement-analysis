@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="772" font-family="Arial, sans-serif"><rect width="1140" height="772" fill="#fff"/><text x="24" y="27" font-size="17" fill="#172639">DDR reference geometry + actual analyzer findings</text><text x="24" y="50" font-size="13" fill="#5d6d7d">Isometric geometry illustration; exploded layers. Return reference is broad plane copper, not a second etched trace.</text><text x="24" y="72" font-size="12" fill="#5d6d7d">Green = analyzer info · red = error/policy · amber = unknown. No current-density or electromagnetic simulation.</text><g transform="translate(0,92)"><desc># Layer count alone: reference UNKNOWN
+Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 1 unknown, 0 info).
+Stackup: **UNKNOWN**; electrical references are NOT EVALUATED.
+Evaluated: 0 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
+DDR group: DQ (Original generic DQ0 fixture)
+Final fill: DECLARED — Final generic fill with explicit voids
+- UNKNOWN stackup_unknown
+  stackup_unknown_08f44b07b5901a25
+  Electrical stackup and reference assignments are unknown; physical reference checks are NOT EVALUATED.
+  Evidence: pcb_board num_layers/thickness/material do not define electrical reference roles or dielectric spacing.
+  Repair: Supply the declared design stackup or explicitly select an ASSUMED expected stackup.</desc><text x="24" y="30" fill="#172639" font-size="18">Layer count alone: reference UNKNOWN</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<path d="M127,253 L451,205 L373,151 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
+<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
+<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
+<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
+<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
+<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
+<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
+<path d="M115,170 L385,130" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<path d="M372,121 L372,173" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 372 121)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 372 173)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g><text x="24" y="290" fill="#293645" font-size="12"># Layer count alone: reference UNKNOWN</text>
+<text x="24" y="308" fill="#293645" font-size="12">Status: **INCOMPLETE** (0 error, 0 policy_violation, 0 warning, 1 </text>
+<text x="24" y="326" fill="#293645" font-size="12">unknown, 0 info).</text>
+<text x="24" y="344" fill="#293645" font-size="12">Stackup: **UNKNOWN**; electrical references are NOT EVALUATED.</text>
+<text x="24" y="362" fill="#293645" font-size="12">Evaluated: 0 reference segments, 0 transition pairs. Coordinates: </text>
+<text x="24" y="380" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
+<text x="24" y="398" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
+<text x="24" y="416" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
+<text x="24" y="434" fill="#293645" font-size="12">- UNKNOWN stackup_unknown</text>
+<text x="24" y="452" fill="#293645" font-size="12">  stackup_unknown_08f44b07b5901a25</text>
+<text x="24" y="470" fill="#293645" font-size="12">  Electrical stackup and reference assignments are unknown; physical </text>
+<text x="24" y="488" fill="#293645" font-size="12">reference checks are NOT EVALUATED.</text>
+<text x="24" y="506" fill="#293645" font-size="12">  Evidence: pcb_board num_layers/thickness/material do not define </text>
+<text x="24" y="524" fill="#293645" font-size="12">electrical reference roles or dielectric spacing.</text>
+<text x="24" y="542" fill="#293645" font-size="12">  Repair: Supply the declared design stackup or explicitly select an </text>
+<text x="24" y="560" fill="#293645" font-size="12">ASSUMED expected stackup.</text></g>
+<g transform="translate(570,92)"><desc># Conditional checks: ASSUMED references
+Status: **NO_ISSUES_IN_EVALUATED_CHECKS** (0 error, 0 policy_violation, 0 warning, 0 unknown, 1 info).
+Stackup: **ASSUMED** — Caller-selected generic expected stack; top → inner1 → inner2 → inner3 → inner4 → bottom.
+Evaluated: 1 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
+DDR group: DQ (Original generic DQ0 fixture)
+Final fill: DECLARED — Final generic fill with explicit voids
+- INFO reference_centerline_covered
+  reference_centerline_covered_0b1a7039a3b8e76c
+  Continuous centerline coverage is established for this assigned reference.</desc><text x="24" y="30" fill="#172639" font-size="18">Conditional checks: ASSUMED references</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<path d="M127,253 L451,205 L373,151 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
+<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
+<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
+<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
+<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
+<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
+<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
+<path d="M115,170 L385,130" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<path d="M372,121 L372,173" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 372 121)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 372 173)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<path d="M115,170 L385,130" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="115" cy="170" r="6" stroke="#16715c" stroke-width="2" fill="white"/><text x="24" y="290" fill="#293645" font-size="12"># Conditional checks: ASSUMED references</text>
+<text x="24" y="308" fill="#293645" font-size="12">Status: **NO_ISSUES_IN_EVALUATED_CHECKS** (0 error, 0 </text>
+<text x="24" y="326" fill="#293645" font-size="12">policy_violation, 0 warning, 0 unknown, 1 info).</text>
+<text x="24" y="344" fill="#293645" font-size="12">Stackup: **ASSUMED** — Caller-selected generic expected stack; top → </text>
+<text x="24" y="362" fill="#293645" font-size="12">inner1 → inner2 → inner3 → inner4 → bottom.</text>
+<text x="24" y="380" fill="#293645" font-size="12">Evaluated: 1 reference segments, 0 transition pairs. Coordinates: </text>
+<text x="24" y="398" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
+<text x="24" y="416" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
+<text x="24" y="434" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
+<text x="24" y="452" fill="#293645" font-size="12">- INFO reference_centerline_covered</text>
+<text x="24" y="470" fill="#293645" font-size="12">  reference_centerline_covered_0b1a7039a3b8e76c</text>
+<text x="24" y="488" fill="#293645" font-size="12">  Continuous centerline coverage is established for this assigned </text>
+<text x="24" y="506" fill="#293645" font-size="12">reference.</text></g>
+<text x="24" y="718" font-size="12" fill="#5d6d7d">NOT EVALUATED: endpoint component anchoring, capacitive return, dielectric/height margins, narrow necks/detours, package returns, manufacturer </text>
+<text x="24" y="736" font-size="12" fill="#5d6d7d">keepout/shielding, impedance, crosstalk, timing, EMI or boot qualification.</text></svg>

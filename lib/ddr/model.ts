@@ -14,11 +14,20 @@ import {
   distance,
   hasContact,
   padGeometry,
+  pointInCopper,
   pourGeometry,
   traceStrip,
   union,
 } from "./geometry"
 import type { DdrPoint, DdrStackup, SourceNetId } from "./types"
+
+export const elementsOfType = <T extends AnyCircuitElement["type"]>(
+  circuit: readonly AnyCircuitElement[],
+  type: T,
+) =>
+  circuit.filter(
+    (e): e is Extract<AnyCircuitElement, { type: T }> => e.type === type,
+  )
 
 export interface DdrSegment {
   start: DdrPoint
@@ -84,10 +93,7 @@ export const routeGeometry = (trace: PcbTrace) => {
       start: { x: p.x, y: p.y },
       end: { x: q.x, y: q.y },
       layer: startLayer,
-      width: Math.max(
-        p.route_type === "wire" ? p.width : 0,
-        q.route_type === "wire" ? q.width : 0,
-      ),
+      width,
       index: i,
     })
   }
@@ -116,14 +122,8 @@ export class SourceConnectivity {
   private connectivity = new Connectivity()
   private sourceNets: { source_net_id: string }[]
   constructor(circuitJson: readonly AnyCircuitElement[]) {
-    this.sourceNets = circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "source_net" }> =>
-        e.type === "source_net",
-    )
-    for (const trace of circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "source_trace" }> =>
-        e.type === "source_trace",
-    )) {
+    this.sourceNets = elementsOfType(circuitJson, "source_net")
+    for (const trace of elementsOfType(circuitJson, "source_trace")) {
       const ids = [
         `trace:${trace.source_trace_id}`,
         ...trace.connected_source_port_ids.map((id) => `port:${id}`),
@@ -139,8 +139,10 @@ export class SourceConnectivity {
     )
     return nets.length === 1 ? nets[0]!.source_net_id : undefined
   }
-  traceNet(trace: SourceTrace) {
-    return this.netFor(`trace:${trace.source_trace_id}`)
+  traceNet(trace: SourceTrace | string) {
+    return this.netFor(
+      `trace:${typeof trace === "string" ? trace : trace.source_trace_id}`,
+    )
   }
   portNet(port: SourcePort) {
     return this.netFor(`port:${port.source_port_id}`)
@@ -221,10 +223,8 @@ export class ReferenceCopperModel {
     stackup: DdrStackup,
     sourceConnectivity: SourceConnectivity,
   ) {
-    const pours = circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "pcb_copper_pour" }> =>
-        e.type === "pcb_copper_pour" &&
-        filledPourIds.includes(e.pcb_copper_pour_id),
+    const pours = elementsOfType(circuitJson, "pcb_copper_pour").filter((e) =>
+      filledPourIds.includes(e.pcb_copper_pour_id),
     )
     for (const pourId of filledPourIds)
       if (!pours.some((p) => p.pcb_copper_pour_id === pourId))
@@ -285,19 +285,10 @@ export class ReferenceCopperModel {
         )
           this.shorts.push({ a, b })
       }
-    const sourcePorts = circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "source_port" }> =>
-        e.type === "source_port",
-    )
-    const pcbPorts = circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "pcb_port" }> =>
-        e.type === "pcb_port",
-    )
+    const sourcePorts = elementsOfType(circuitJson, "source_port")
+    const pcbPorts = elementsOfType(circuitJson, "pcb_port")
     const nets = new Set(this.planes.map((p) => p.net))
-    for (const pad of circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "pcb_smtpad" }> =>
-        e.type === "pcb_smtpad",
-    )) {
+    for (const pad of elementsOfType(circuitJson, "pcb_smtpad")) {
       const pcbPort = pcbPorts.find((p) => p.pcb_port_id === pad.pcb_port_id)
       const sourcePort = sourcePorts.find(
         (p) => p.source_port_id === pcbPort?.source_port_id,
@@ -320,17 +311,8 @@ export class ReferenceCopperModel {
         terminal: { pcbPort, sourcePort },
       })
     }
-    for (const trace of circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "pcb_trace" }> =>
-        e.type === "pcb_trace",
-    )) {
-      const sourceTrace = circuitJson.find(
-        (e) =>
-          e.type === "source_trace" &&
-          e.source_trace_id === trace.source_trace_id,
-      )
-      if (!sourceTrace || sourceTrace.type !== "source_trace") continue
-      const net = sourceConnectivity.traceNet(sourceTrace)
+    for (const trace of elementsOfType(circuitJson, "pcb_trace")) {
+      const net = sourceConnectivity.traceNet(trace.source_trace_id ?? "")
       if (!net || !nets.has(net)) continue
       const routes = routeGeometry(trace)
       this.unsupported.push(
@@ -372,39 +354,20 @@ export class ReferenceCopperModel {
         )
           this.connectivity.join(a.id, b.id)
       }
-    for (const via of circuitJson.filter(
-      (e): e is Extract<AnyCircuitElement, { type: "pcb_via" }> =>
-        e.type === "pcb_via",
-    )) {
+    for (const via of elementsOfType(circuitJson, "pcb_via")) {
       const ownershipNets: (SourceNetId | undefined)[] = []
       const directNet = (via as PcbVia & { source_net_id?: string })
         .source_net_id
       if (directNet !== undefined) ownershipNets.push(directNet)
-      if (via.source_trace_id) {
-        const trace = circuitJson.find(
-          (e) =>
-            e.type === "source_trace" &&
-            e.source_trace_id === via.source_trace_id,
+      if (via.source_trace_id)
+        ownershipNets.push(sourceConnectivity.traceNet(via.source_trace_id))
+      if (via.pcb_trace_id) {
+        const trace = elementsOfType(circuitJson, "pcb_trace").find(
+          (t) => t.pcb_trace_id === via.pcb_trace_id,
         )
         ownershipNets.push(
-          trace?.type === "source_trace"
-            ? sourceConnectivity.traceNet(trace)
-            : undefined,
+          sourceConnectivity.traceNet(trace?.source_trace_id ?? ""),
         )
-      }
-      if (via.pcb_trace_id) {
-        const pcbTrace = circuitJson.find(
-          (e) => e.type === "pcb_trace" && e.pcb_trace_id === via.pcb_trace_id,
-        )
-        if (pcbTrace?.type === "pcb_trace" && pcbTrace.source_trace_id) {
-          const sourceTrace = circuitJson.find(
-            (e) =>
-              e.type === "source_trace" &&
-              e.source_trace_id === pcbTrace.source_trace_id,
-          )
-          if (sourceTrace?.type === "source_trace")
-            ownershipNets.push(sourceConnectivity.traceNet(sourceTrace))
-        }
       }
       const knownNets = [
         ...new Set(ownershipNets.filter((net) => net !== undefined)),
@@ -499,40 +462,27 @@ export class ReferenceCopperModel {
   }
   planeConductors(plane: Plane, point?: DdrPoint) {
     return this.conductors.filter(
-      (c) =>
-        c.plane === plane &&
-        (!point || hasContact(c.geometry, disk(point, 1e-6))),
+      (c) => c.plane === plane && (!point || pointInCopper(point, c.geometry)),
     )
   }
   connected(a: Conductor, b: Conductor) {
     return this.connectivity.find(a.id) === this.connectivity.find(b.id)
   }
-  anchors(plane: Plane, point: DdrPoint, sourceComponentId?: string) {
+  anchors(plane: Plane, point: DdrPoint) {
     const conductors = this.planeConductors(plane, point)
     return this.conductors
       .filter(
         (c) =>
           c.terminal &&
-          (!sourceComponentId ||
-            c.terminal.sourcePort.source_component_id === sourceComponentId) &&
           conductors.some((planeConductor) =>
             this.connected(c, planeConductor),
           ),
       )
       .map((c) => c.terminal!)
   }
-  terminals(net: SourceNetId, sourceComponentId?: string) {
+  terminals(net: SourceNetId) {
     return this.conductors
-      .filter(
-        (c) =>
-          c.net === net &&
-          c.terminal &&
-          (!sourceComponentId ||
-            c.terminal.sourcePort.source_component_id === sourceComponentId),
-      )
+      .filter((c) => c.net === net && c.terminal)
       .map((c) => c.terminal!)
-  }
-  capacitorContacts(sourceComponentId: string, plane: Plane, point: DdrPoint) {
-    return this.anchors(plane, point, sourceComponentId)
   }
 }

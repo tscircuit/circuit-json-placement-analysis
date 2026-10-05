@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="862" font-family="Arial, sans-serif"><rect width="1140" height="862" fill="#fff"/><text x="24" y="27" font-size="17" fill="#172639">DDR reference geometry + actual analyzer findings</text><text x="24" y="50" font-size="13" fill="#5d6d7d">Isometric geometry illustration; exploded layers. Return reference is broad plane copper, not a second etched trace.</text><text x="24" y="72" font-size="12" fill="#5d6d7d">Green = analyzer info · red = error/policy · amber = unknown. No current-density or electromagnetic simulation.</text><g transform="translate(0,92)"><desc># Continuous copper reaches GND terminals
+Status: **NO_ISSUES_IN_EVALUATED_CHECKS** (0 error, 0 policy_violation, 0 warning, 0 unknown, 1 info).
+Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
+Evaluated: 1 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
+DDR group: DQ (Original generic DQ0 fixture)
+Final fill: DECLARED — Final generic fill with explicit voids
+- INFO reference_centerline_covered
+  reference_centerline_covered_0b1a7039a3b8e76c
+  Continuous centerline coverage is established for this assigned reference.</desc><text x="24" y="30" fill="#172639" font-size="18">Continuous copper reaches GND terminals</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<path d="M127,253 L451,205 L373,151 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
+<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
+<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
+<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
+<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
+<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
+<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
+<path d="M115,170 L385,130" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<path d="M372,121 L372,173" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 372 121)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 372 173)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<path d="M115,170 L385,130" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="115" cy="170" r="6" stroke="#16715c" stroke-width="2" fill="white"/><text x="24" y="290" fill="#293645" font-size="12"># Continuous copper reaches GND terminals</text>
+<text x="24" y="308" fill="#293645" font-size="12">Status: **NO_ISSUES_IN_EVALUATED_CHECKS** (0 error, 0 </text>
+<text x="24" y="326" fill="#293645" font-size="12">policy_violation, 0 warning, 0 unknown, 1 info).</text>
+<text x="24" y="344" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
+<text x="24" y="362" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
+<text x="24" y="380" fill="#293645" font-size="12">Evaluated: 1 reference segments, 0 transition pairs. Coordinates: </text>
+<text x="24" y="398" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
+<text x="24" y="416" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
+<text x="24" y="434" fill="#293645" font-size="12">Final fill: DECLARED — Final generic fill with explicit voids</text>
+<text x="24" y="452" fill="#293645" font-size="12">- INFO reference_centerline_covered</text>
+<text x="24" y="470" fill="#293645" font-size="12">  reference_centerline_covered_0b1a7039a3b8e76c</text>
+<text x="24" y="488" fill="#293645" font-size="12">  Continuous centerline coverage is established for this assigned </text>
+<text x="24" y="506" fill="#293645" font-size="12">reference.</text></g>
+<g transform="translate(570,92)"><desc># Covered route on a floating GND island
+Status: **ISSUES_FOUND** (1 error, 0 policy_violation, 0 warning, 0 unknown, 1 info).
+Stackup: **DECLARED** — Generic six-layer design; top → inner1 → inner2 → inner3 → inner4 → bottom.
+Evaluated: 1 reference segments, 0 transition pairs. Coordinates: board-world mm (+X right, +Y up).
+DDR group: DQ (Original generic DQ0 fixture)
+Final fill: DECLARED — Two separated final-fill regions labelled GND
+- ERROR reference_island_unanchored
+  reference_island_unanchored_9f0389dbb3585da6
+  Reference island has no modeled physical copper path to a declared reference terminal.
+  Evidence: Actual reference pads, traces and contacting via spans were traversed; equal net labels do not connect islands.
+  Repair: Connect the island to actual same-net reference terminals; include missing contact geometry before drawing hardware conclusions.
+- INFO reference_centerline_covered
+  reference_centerline_covered_9f0389dbb3585da6
+  Continuous centerline coverage is established for this assigned reference.</desc><text x="24" y="30" fill="#172639" font-size="18">Covered route on a floating GND island</text><text x="24" y="54" fill="#5d6d7d" font-size="12">DQ0 signal · GND filled copper · plated vias</text><path d="M49,199 L373,151 L451,205 L127,253 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<path d="M127,253 L289,229 L211,175 L49,199 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
+<path d="M302.5,227 L451,205 L373,151 L224.5,173 Z" fill="#9bd5c5" fill-opacity=".8" fill-rule="evenodd" stroke="#488b79"/>
+<text x="460" y="210" fill="#5d6d7d" font-size="12">inner1</text>
+<path d="M49,147 L373,99 L451,153 L127,201 Z" fill="#e9eef4" fill-opacity=".35" stroke="#b9c5d2" stroke-dasharray="4 4"/>
+<text x="460" y="158" fill="#5d6d7d" font-size="12">top</text>
+<circle transform="matrix(27 -4 13 9 115 170)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 385 130)" r="0.35" fill="#d6cbec"/>
+<circle transform="matrix(27 -4 13 9 102 161)" r="0.35" fill="#edca8d"/>
+<text x="82" y="146" fill="#966020" font-size="10">GND pad</text>
+<circle transform="matrix(27 -4 13 9 372 121)" r="0.35" fill="#edca8d"/>
+<text x="352" y="106" fill="#966020" font-size="10">GND pad</text>
+<path d="M277,146 L385,130" stroke="#6549bb" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M102,161 L102,213" stroke="#bd7b2e" stroke-width="5"/>
+<g transform="matrix(27 -4 13 9 102 161)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<g transform="matrix(27 -4 13 9 102 213)"><circle r="0.3" fill="#bd7b2e"/><circle r="0.125" fill="white"/></g>
+<path d="M277,146 L385,130" stroke="#16715c" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="277" cy="146" r="6" stroke="#16715c" stroke-width="2" fill="white"/>
+<path d="M277,198 L385,182" stroke="#c92f45" stroke-width="7" fill="none" stroke-linecap="round"/>
+<circle cx="277" cy="198" r="6" stroke="#c92f45" stroke-width="2" fill="white"/>
+<path d="M277,146 L385,130" stroke="#c92f45" stroke-width="7" fill="none" stroke-linecap="round"/>
+<circle cx="277" cy="146" r="6" stroke="#c92f45" stroke-width="2" fill="white"/><text x="24" y="290" fill="#293645" font-size="12"># Covered route on a floating GND island</text>
+<text x="24" y="308" fill="#293645" font-size="12">Status: **ISSUES_FOUND** (1 error, 0 policy_violation, 0 warning, 0 </text>
+<text x="24" y="326" fill="#293645" font-size="12">unknown, 1 info).</text>
+<text x="24" y="344" fill="#293645" font-size="12">Stackup: **DECLARED** — Generic six-layer design; top → inner1 → </text>
+<text x="24" y="362" fill="#293645" font-size="12">inner2 → inner3 → inner4 → bottom.</text>
+<text x="24" y="380" fill="#293645" font-size="12">Evaluated: 1 reference segments, 0 transition pairs. Coordinates: </text>
+<text x="24" y="398" fill="#293645" font-size="12">board-world mm (+X right, +Y up).</text>
+<text x="24" y="416" fill="#293645" font-size="12">DDR group: DQ (Original generic DQ0 fixture)</text>
+<text x="24" y="434" fill="#293645" font-size="12">Final fill: DECLARED — Two separated final-fill regions labelled GND</text>
+<text x="24" y="452" fill="#293645" font-size="12">- ERROR reference_island_unanchored</text>
+<text x="24" y="470" fill="#293645" font-size="12">  reference_island_unanchored_9f0389dbb3585da6</text>
+<text x="24" y="488" fill="#293645" font-size="12">  Reference island has no modeled physical copper path to a declared </text>
+<text x="24" y="506" fill="#293645" font-size="12">reference terminal.</text>
+<text x="24" y="524" fill="#293645" font-size="12">  Evidence: Actual reference pads, traces and contacting via spans </text>
+<text x="24" y="542" fill="#293645" font-size="12">were traversed; equal net labels do not connect islands.</text>
+<text x="24" y="560" fill="#293645" font-size="12">  Repair: Connect the island to actual same-net reference terminals; </text>
+<text x="24" y="578" fill="#293645" font-size="12">include missing contact geometry before drawing hardware conclusions.</text>
+<text x="24" y="596" fill="#293645" font-size="12">- INFO reference_centerline_covered</text>
+<text x="24" y="614" fill="#293645" font-size="12">  reference_centerline_covered_9f0389dbb3585da6</text>
+<text x="24" y="632" fill="#293645" font-size="12">  Continuous centerline coverage is established for this assigned </text>
+<text x="24" y="650" fill="#293645" font-size="12">reference.</text></g>
+<text x="24" y="808" font-size="12" fill="#5d6d7d">NOT EVALUATED: endpoint component anchoring, capacitive return, dielectric/height margins, narrow necks/detours, package returns, manufacturer </text>
+<text x="24" y="826" font-size="12" fill="#5d6d7d">keepout/shielding, impedance, crosstalk, timing, EMI or boot qualification.</text></svg>

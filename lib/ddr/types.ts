@@ -22,7 +22,6 @@ export interface DdrReference {
   signalLayer: string
   referenceLayer: string
   sourceNetId: SourceNetId
-  dielectricHeightMm?: number
 }
 export interface DdrStackup {
   /** Declared means supplied design metadata, never a measurement of fabricated hardware. */
@@ -45,10 +44,6 @@ export interface DdrPolicy {
   requireAdjacentReference?: boolean
   /** Caller policy, never a universal DDR distance; omitted proximity is UNKNOWN. */
   maxReturnViaDistanceMm?: number
-  /** Corridor half-margin = trace half-width + this factor * dielectric height. */
-  coverageMarginHeightFactor?: number
-  /** Cross-route copper clearance on either side; geometric warning, not inductance. */
-  minCopperClearanceMm?: number
 }
 export interface DdrAntipad {
   pcbViaId: PcbViaId
@@ -58,14 +53,6 @@ export interface DdrAntipad {
   maxRadiusMm: number
   provenance: string
 }
-export interface DdrCapacitiveReturn {
-  sourceComponentId: string
-  fromReference: { layer: string; sourceNetId: SourceNetId }
-  toReference: { layer: string; sourceNetId: SourceNetId }
-  maxDistanceMm: number
-  /** A human review of the return component's value, mounting and intended frequency range. */
-  review: string
-}
 export interface DdrPlacementOptions {
   groups?: DdrGroup[]
   stackup?: DdrStackup
@@ -73,7 +60,6 @@ export interface DdrPlacementOptions {
   filledCopper?: { pcbCopperPourIds: PcbCopperPourId[]; provenance: string }
   policy?: DdrPolicy
   signalViaAntipads?: DdrAntipad[]
-  capacitiveReturns?: DdrCapacitiveReturn[]
 }
 export type DdrSeverity =
   | "error"
@@ -112,7 +98,6 @@ export interface DdrPlacementReport {
   checks: {
     referenceSegments: number
     referenceTransitions: number
-    endpoints: number
   }
   findings: DdrFinding[]
   limits: string[]

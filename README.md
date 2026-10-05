@@ -85,6 +85,5 @@ DDR placement/reference-path analysis is available through
 `getReport()` and `getIssues()` result style. It produces Markdown with stable
 localized findings, explicit DECLARED/ASSUMED stackup provenance, and UNKNOWN
 results for unsupported or missing evidence. See the
-[API, geometric checks and limits](docs/ddr-placement-analyzer.md), including
-[generic before](tests/__snapshots__/ddr-before.md) and
-[after](tests/__snapshots__/ddr-after.md) reports. This is not SI/hardware signoff.
+[API, geometric checks and limits](docs/ddr-placement-analyzer.md) and
+[visual fixtures](tests/fixtures/ddr-visual.ts). This is not SI/hardware signoff.

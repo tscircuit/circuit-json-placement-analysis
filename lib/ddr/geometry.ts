@@ -47,17 +47,6 @@ export const disk = (center: DdrPoint, radius: number): CopperGeometry =>
       y: center.y + radius * Math.sin((i * Math.PI) / 64),
     })),
   )
-export const annulus = (
-  center: DdrPoint,
-  outerRadius: number,
-  holeRadius: number,
-): CopperGeometry => {
-  // Circumscribed hole avoids inventing copper at the drilled edge.
-  return clipping.difference(
-    disk(center, outerRadius),
-    disk(center, holeRadius / Math.cos(Math.PI / 128)),
-  )
-}
 export const union = (geometries: CopperGeometry[]): CopperGeometry =>
   geometries.length
     ? clipping.union(geometries[0]!, ...geometries.slice(1))
@@ -78,7 +67,6 @@ export const area = (geometry: CopperGeometry) =>
 export const hasContact = (a: CopperGeometry, b: CopperGeometry) =>
   area(clipping.intersection(a, b)) > AREA_EPSILON_MM2
 export const difference = clipping.difference
-export const intersection = clipping.intersection
 export const traceStrip = (
   a: DdrPoint,
   b: DdrPoint,
@@ -233,26 +221,27 @@ export const uncoveredIntervals = (
   }
   return gaps
 }
+const pointSegmentDistance = (p: DdrPoint, c: DdrPoint, d: DdrPoint) => {
+  const length2 = distance(c, d) ** 2
+  const t =
+    length2 === 0
+      ? 0
+      : Math.max(
+          0,
+          Math.min(
+            1,
+            ((p.x - c.x) * (d.x - c.x) + (p.y - c.y) * (d.y - c.y)) / length2,
+          ),
+        )
+  return distance(p, pointAt(c, d, t))
+}
+
 /** Distance to all actual fill boundaries, including holes. This is a local clearance metric, not a neck/inductance solver. */
 export const segmentCopperClearance = (
   a: DdrPoint,
   b: DdrPoint,
   geometry: CopperGeometry,
 ): number => {
-  const pointSegmentDistance = (p: DdrPoint, c: DdrPoint, d: DdrPoint) => {
-    const length2 = distance(c, d) ** 2
-    const t =
-      length2 === 0
-        ? 0
-        : Math.max(
-            0,
-            Math.min(
-              1,
-              ((p.x - c.x) * (d.x - c.x) + (p.y - c.y) * (d.y - c.y)) / length2,
-            ),
-          )
-    return distance(p, pointAt(c, d, t))
-  }
   let minimum = Infinity
   for (const poly of geometry)
     for (const ring of poly)
@@ -290,20 +279,7 @@ export const annulusContact = (
           x: ring[(i + 1) % ring.length]![0],
           y: ring[(i + 1) % ring.length]![1],
         }
-        const length2 = distance(a, b) ** 2
-        const t =
-          length2 === 0
-            ? 0
-            : Math.max(
-                0,
-                Math.min(
-                  1,
-                  ((center.x - a.x) * (b.x - a.x) +
-                    (center.y - a.y) * (b.y - a.y)) /
-                    length2,
-                ),
-              )
-        minimum = Math.min(minimum, distance(center, pointAt(a, b, t)))
+        minimum = Math.min(minimum, pointSegmentDistance(center, a, b))
         maximum = Math.max(maximum, distance(center, a))
       }
     if (
@@ -318,4 +294,20 @@ export const annulusContact = (
       marginal = true
   }
   return marginal ? "marginal" : false
+}
+
+/** Complement intervals, retaining every covered island rather than one midpoint for the route. */
+export const coveredIntervals = (
+  a: DdrPoint,
+  b: DdrPoint,
+  geometry: CopperGeometry,
+): [number, number][] => {
+  const ranges: [number, number][] = []
+  let cursor = 0
+  for (const [start, end] of [...uncoveredIntervals(a, b, geometry), [1, 1]]) {
+    if ((start! - cursor) * distance(a, b) > GEOMETRY_EPSILON_MM)
+      ranges.push([cursor, start!])
+    cursor = end!
+  }
+  return ranges
 }
