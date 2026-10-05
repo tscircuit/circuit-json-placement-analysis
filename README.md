@@ -79,3 +79,12 @@ The summary string returned by `getString()` now starts with:
 - Likely bad cluster groupings
 - Per-part board-edge status using rendered bounds
 - Focused details for flagged components
+
+DDR placement/reference-path analysis is available through
+`analyzeDdrPlacement(circuitJson, options)`, with the same `getString()`,
+`getReport()` and `getIssues()` result style. It produces Markdown with stable
+localized findings, explicit DECLARED/ASSUMED stackup provenance, and UNKNOWN
+results for unsupported or missing evidence. See the
+[API, geometric checks and limits](docs/ddr-placement-analyzer.md), including
+[generic before](tests/__snapshots__/ddr-before.md) and
+[after](tests/__snapshots__/ddr-after.md) reports. This is not SI/hardware signoff.
