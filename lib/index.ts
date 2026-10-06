@@ -1,5 +1,9 @@
 export { analyzeAllPlacements } from "./analyzeAllPlacements"
 export { analyzeComponentPlacement } from "./analyzeComponentPlacement"
+export { analyzeDdrPlacement } from "./ddr/analyze-ddr-placement"
+export { DdrPlacementSolver } from "./ddr/DdrPlacementSolver"
+export { formatDdrPlacementReport } from "./ddr/format-ddr-report"
+export type * from "./ddr/types"
 export type {
   ComponentBoardEdgeStatus,
   PlacementAnalysisReport,
