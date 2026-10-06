@@ -96,3 +96,35 @@ export interface AnalyzeDdrPlacementResult {
   getIssues: () => DdrFinding[]
   getReport: () => DdrPlacementReport
 }
+
+export type DdrSolverStage =
+  | "input"
+  | "references"
+  | "copper"
+  | "coverage"
+  | "transitions"
+  | "report"
+
+/** Completed work only; no future findings are exposed while stepping. */
+export interface DdrSolverState {
+  stage: DdrSolverStage
+  completedStages: DdrSolverStage[]
+  status: "running" | "complete" | "blocked"
+  findings: DdrFinding[]
+  newFindingIds: string[]
+  location?: DdrLocation
+  reason?: string
+  copper: {
+    layer: string
+    sourceNetId: SourceNetId
+    /** Clipped polygons, each containing its outer ring followed by holes. */
+    polygons: DdrPoint[][][]
+  }[]
+  viaContacts: {
+    pcbViaId: PcbViaId
+    sourceNetId?: SourceNetId
+    span: string[]
+    /** Positive-area same-net reference contacts; not a cross-net short test. */
+    contactLayers: string[]
+  }[]
+}
