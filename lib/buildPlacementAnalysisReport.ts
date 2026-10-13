@@ -296,9 +296,9 @@ const getBoardEdgeStatus = (
   const clearances = [
     { edge: "left" as const, clearance: bounds.min_x - boardBounds.min_x },
     { edge: "right" as const, clearance: boardBounds.max_x - bounds.max_x },
-    { edge: "top" as const, clearance: bounds.min_y - boardBounds.min_y },
+    { edge: "bottom" as const, clearance: bounds.min_y - boardBounds.min_y },
     {
-      edge: "bottom" as const,
+      edge: "top" as const,
       clearance: boardBounds.max_y - bounds.max_y,
     },
   ]
@@ -355,8 +355,9 @@ const getMoveDirectionBetweenComponents = (
     return "left"
   }
 
-  if ((mover.centerY ?? 0) >= (anchor.centerY ?? 0)) return "down"
-  return "up"
+  // PCB coordinates increase upward.
+  if ((mover.centerY ?? 0) >= (anchor.centerY ?? 0)) return "up"
+  return "down"
 }
 
 const getSeparationSuggestion = (
@@ -961,7 +962,7 @@ const getExpansionDelta = (
               bounds.max_y,
             )
           : occupiedBounds.map((_, index) => index)
-      case "up":
+      case "down":
         return occupiedIndex
           ? occupiedIndex.search(
               bounds.min_x,
@@ -970,7 +971,7 @@ const getExpansionDelta = (
               bounds.min_y,
             )
           : occupiedBounds.map((_, index) => index)
-      case "down":
+      case "up":
         return occupiedIndex
           ? occupiedIndex.search(
               bounds.min_x,
@@ -1025,7 +1026,7 @@ const getExpansionDelta = (
             .map((candidate) => candidate.min_x - bounds.max_x),
         ),
       )
-    case "up":
+    case "down":
       return Math.max(
         0,
         Math.min(
@@ -1037,7 +1038,7 @@ const getExpansionDelta = (
             .map((candidate) => bounds.min_y - candidate.max_y),
         ),
       )
-    case "down":
+    case "up":
       return Math.max(
         0,
         Math.min(
@@ -1072,14 +1073,14 @@ const expandBounds = (
         bounds.min_y,
         bounds.max_y,
       )
-    case "up":
+    case "down":
       return createBounds(
         bounds.min_x,
         bounds.max_x,
         bounds.min_y - delta,
         bounds.max_y,
       )
-    case "down":
+    case "up":
       return createBounds(
         bounds.min_x,
         bounds.max_x,
