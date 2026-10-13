@@ -43,20 +43,20 @@ test("repro: full C1526234 circuit JSON produces a false 0.64mm footprint intrus
         - 70.594% (2541.397mm^2); bounds=(minX=-30mm, maxX=30mm, minY=-12.357mm, maxY=30mm)
 
       board-edge status:
-      - U1: 5.285mm inside top edge
-      - C2: 8.48mm inside top edge
+      - U1: 5.285mm inside bottom edge
+      - C2: 8.48mm inside bottom edge
 
       flagged components:
       - U1
         source placement: placement_mode=none
         resolved placement: center=(7.3mm, -18.995mm) on top; bounds=(minX=1.74mm, maxX=12.86mm, minY=-24.715mm, maxY=-13.275mm); size=(width=11.12mm, height=11.44mm); anchor_alignment="center"
-        board edge status: 5.285mm inside top edge
+        board edge status: 5.285mm inside bottom edge
         issues:
         - U1 and C2 footprint intrusion by 0.64mm. Suggested move: move C2 0.64mm right.
       - C2
         source placement: placement_mode=none
         resolved placement: center=(13mm, -21.2mm) on top; bounds=(minX=12.22mm, maxX=13.78mm, minY=-21.52mm, maxY=-20.88mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
-        board edge status: 8.48mm inside top edge
+        board edge status: 8.48mm inside bottom edge
         issues:
         - U1 and C2 footprint intrusion by 0.64mm. Suggested move: move C2 0.64mm right."
     `)

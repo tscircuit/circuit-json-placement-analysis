@@ -132,14 +132,14 @@ test("warns that biscuit-board R_BTN2 should rotate 180 degrees", async () => {
 
     board-edge status:
     - SW_BTN2: 1.7mm inside left edge
-    - R_BTN2: 6.525mm inside top edge
+    - R_BTN2: 6.525mm inside bottom edge
     - J_V3V3: 2.25mm inside right edge
 
     flagged components:
     - R_BTN2
       source placement: placement_mode=none
       resolved placement: center=(0mm, 0mm) on top; bounds=(minX=-1.225mm, maxX=1.225mm, minY=-0.475mm, maxY=0.475mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
-      board edge status: 6.525mm inside top edge
+      board edge status: 6.525mm inside bottom edge
       issues:
       - R_BTN2 connections cross the routing path between its pads. Suggested move: rotate R_BTN2 180 degrees."
   `)

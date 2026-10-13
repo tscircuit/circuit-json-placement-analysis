@@ -67,9 +67,9 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
     worst issues:
     1. R1 and R2 pad overlap by 0.8mm. Suggested move: move R2 0.8mm right.
     2. J1 is 1.72mm outside right edge. Suggested move: move J1 1.72mm left to clear right edge.
-    3. C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm down.
-    4. R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm down.
-    5. R2 intrudes 0.95mm into USB1 connector body. Suggested move: move R2 0.95mm down.
+    3. C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm up.
+    4. R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm up.
+    5. R2 intrudes 0.95mm into USB1 connector body. Suggested move: move R2 0.95mm up.
 
     likely bad clusters:
     - USB cluster: USB1, R1, R2, C1
@@ -93,39 +93,39 @@ test("placement analysis summarizes overlaps, connector intrusions, clusters, an
       resolved placement: center=(-7mm, 0mm) on top; bounds=(minX=-7.85mm, maxX=-6.15mm, minY=-2.07mm, maxY=2.07mm); size=(width=1.7mm, height=4.14mm); anchor_alignment="center"
       board edge status: 2.15mm inside left edge
       issues:
-      - C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm down.
-      - R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm down.
-      - R2 intrudes 0.95mm into USB1 connector body. Suggested move: move R2 0.95mm down.
-      - USB1 and R1 pad overlap by 0.405mm. Suggested move: move R1 0.405mm down.
-      - USB1 and R2 pad overlap by 0.405mm. Suggested move: move R2 0.405mm down.
-      - USB1 and C1 pad overlap by 0.005mm. Suggested move: move C1 0.005mm down.
+      - C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm up.
+      - R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm up.
+      - R2 intrudes 0.95mm into USB1 connector body. Suggested move: move R2 0.95mm up.
+      - USB1 and R1 pad overlap by 0.405mm. Suggested move: move R1 0.405mm up.
+      - USB1 and R2 pad overlap by 0.405mm. Suggested move: move R2 0.405mm up.
+      - USB1 and C1 pad overlap by 0.005mm. Suggested move: move C1 0.005mm up.
     - C1
       source placement: placement_mode=none
       resolved placement: center=(-6.7mm, 0mm) on top; bounds=(minX=-7.925mm, maxX=-5.475mm, minY=-0.475mm, maxY=0.475mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 2.075mm inside left edge
       issues:
-      - C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm down.
-      - C1 and R1 pad overlap by 0.55mm. Suggested move: move R1 0.55mm down.
-      - C1 and R2 pad overlap by 0.55mm. Suggested move: move R2 0.55mm down.
-      - USB1 and C1 pad overlap by 0.005mm. Suggested move: move C1 0.005mm down.
+      - C1 intrudes 0.95mm into USB1 connector body. Suggested move: move C1 0.95mm up.
+      - C1 and R1 pad overlap by 0.55mm. Suggested move: move R1 0.55mm up.
+      - C1 and R2 pad overlap by 0.55mm. Suggested move: move R2 0.55mm up.
+      - USB1 and C1 pad overlap by 0.005mm. Suggested move: move C1 0.005mm up.
     - R1
       source placement: placement_mode=none
       resolved placement: center=(-6.6mm, 0.4mm) on top; bounds=(minX=-7.825mm, maxX=-5.375mm, minY=-0.075mm, maxY=0.875mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 2.175mm inside left edge
       issues:
       - R1 and R2 pad overlap by 0.8mm. Suggested move: move R2 0.8mm right.
-      - R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm down.
-      - C1 and R1 pad overlap by 0.55mm. Suggested move: move R1 0.55mm down.
-      - USB1 and R1 pad overlap by 0.405mm. Suggested move: move R1 0.405mm down.
+      - R1 intrudes 0.95mm into USB1 connector body. Suggested move: move R1 0.95mm up.
+      - C1 and R1 pad overlap by 0.55mm. Suggested move: move R1 0.55mm up.
+      - USB1 and R1 pad overlap by 0.405mm. Suggested move: move R1 0.405mm up.
     - R2
       source placement: placement_mode=none
       resolved placement: center=(-6.6mm, 0.4mm) on top; bounds=(minX=-7.825mm, maxX=-5.375mm, minY=-0.075mm, maxY=0.875mm); size=(width=2.45mm, height=0.95mm); anchor_alignment="center"
       board edge status: 2.175mm inside left edge
       issues:
       - R1 and R2 pad overlap by 0.8mm. Suggested move: move R2 0.8mm right.
-      - R2 intrudes 0.95mm into USB1 connector body. Suggested move: move R2 0.95mm down.
-      - C1 and R2 pad overlap by 0.55mm. Suggested move: move R2 0.55mm down.
-      - USB1 and R2 pad overlap by 0.405mm. Suggested move: move R2 0.405mm down.
+      - R2 intrudes 0.95mm into USB1 connector body. Suggested move: move R2 0.95mm up.
+      - C1 and R2 pad overlap by 0.55mm. Suggested move: move R2 0.55mm up.
+      - USB1 and R2 pad overlap by 0.405mm. Suggested move: move R2 0.405mm up.
     - J1
       source placement: placement_mode=none
       resolved placement: center=(9.7mm, 0mm) on top; bounds=(minX=7.68mm, maxX=11.72mm, minY=-0.75mm, maxY=0.75mm); size=(width=4.04mm, height=1.5mm); anchor_alignment="center"; orientation=horizontal

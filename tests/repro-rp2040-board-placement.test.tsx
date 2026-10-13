@@ -169,14 +169,14 @@ test("placement analysis includes position and size for rendered RP2040 board", 
       - 7.05% (118.44mm^2); bounds=(minX=25.77mm, maxX=30mm, minY=-14mm, maxY=14mm)
 
     board-edge status:
-    - U1: 10.5mm inside bottom edge
+    - U1: 10.5mm inside top edge
     - USB1: 5.15mm inside left edge
-    - U2: 4.75mm inside top edge
-    - D1: 5.525mm inside top edge
-    - R1: 5.68mm inside top edge
-    - C1: 3.68mm inside top edge
-    - C2: 3.68mm inside top edge
-    - C3: 5.68mm inside top edge
-    - J1: 1.82mm inside top edge"
+    - U2: 4.75mm inside bottom edge
+    - D1: 5.525mm inside bottom edge
+    - R1: 5.68mm inside bottom edge
+    - C1: 3.68mm inside bottom edge
+    - C2: 3.68mm inside bottom edge
+    - C3: 5.68mm inside bottom edge
+    - J1: 1.82mm inside bottom edge"
   `)
 })
