@@ -8,7 +8,7 @@ import fixture from "./assets/vertical-directions.circuit.json"
 test("repro: vertical separation suggestion and nearest board edge", () => {
   const analysis = analyzeAllPlacements(fixture)
   expect(analysis.getIssues()[0]!.suggested_move).toMatchInlineSnapshot(
-    `"move R2 0.8mm down"`,
+    `"move R2 0.8mm up"`,
   )
   expect(
     analysis.getReport().components[1]!.boardEdgeStatus,
@@ -16,7 +16,7 @@ test("repro: vertical separation suggestion and nearest board edge", () => {
     {
       "component_name": "R2",
       "distance": 2.8,
-      "edge": "bottom",
+      "edge": "top",
       "status": "inside",
     }
   `)
@@ -61,22 +61,22 @@ test("repro: PCB before and after applying the reported vertical move", async ()
     .getIssues()
     .find((issue) => issue.type === "courtyard_collision")!
   expect(issue).toBeDefined()
-  expect(issue.suggested_move).toMatchInlineSnapshot(`"move R2 0.3mm down"`)
+  expect(issue.suggested_move).toMatchInlineSnapshot(`"move R2 0.3mm up"`)
   const match = /^move R2 ([\d.]+)mm (up|down)$/.exec(issue.suggested_move!)
   expect(match).not.toBeNull()
   const distance = Number(match![1])
   const moved = await renderResistors(
     initialY + (match![2] === "up" ? distance : -distance),
   )
-  // Capture the actual result of applying the report, so the fix changes both
-  // the numeric outcome and the rendered PCB snapshot in the stacked PR.
+  expect(analyzeAllPlacements(moved).getIssues()).toEqual([])
+  // Keep the applied-move outcome alongside the rendered PCB regression.
   expect({
     originalOverlap: Number(getCourtyardOverlap(original).toFixed(3)),
     overlapAfterSuggestedMove: Number(getCourtyardOverlap(moved).toFixed(3)),
   }).toMatchInlineSnapshot(`
     {
       "originalOverlap": 0.3,
-      "overlapAfterSuggestedMove": 0.6,
+      "overlapAfterSuggestedMove": 0,
     }
   `)
 

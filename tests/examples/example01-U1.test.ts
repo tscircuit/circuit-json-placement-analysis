@@ -16,9 +16,9 @@ U1.size=(width=8.8mm, height=8.8mm)
 U1.anchor_alignment="center"
 U1 placement definition: placement_mode=none
 U1.pcbLeftEdgeX=calc(board.minX+25.6mm)
-U1.pcbTopEdgeY=calc(board.minY+8.1mm)
+U1.pcbBottomEdgeY=calc(board.minY+8.1mm)
 U1.centerX=calc(board.centerX+0mm)
 U1.padClearance=3.424mm [nearest=C1.pin1]
-U1.pcbBottomEdgeY=calc(C1.maxY+8mm)"
+U1.pcbTopEdgeY=calc(C1.minY-8mm)"
 `)
 })
