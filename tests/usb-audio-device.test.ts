@@ -178,3 +178,63 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
     }),
   ).toMatchSvgSnapshot(import.meta.path, "rotated-courtyard-collisions")
 })
+
+test("USB audio edge labels and body separation suggestions agree with PCB geometry", () => {
+  const circuitJson = JSON.parse(
+    readFileSync(
+      new URL("./assets/usb-audio-device.json", import.meta.url),
+      "utf8",
+    ),
+  )
+  const report = analyzeAllPlacements(circuitJson).getReport()
+  const board = circuitJson.find(
+    (element: { type: string }) => element.type === "pcb_board",
+  )
+
+  for (const component of report.components) {
+    const bounds = component.resolvedPlacement.bounds!
+    const status = component.boardEdgeStatus!
+    const clearances = {
+      left: bounds.min_x - (board.center.x - board.width / 2),
+      right: board.center.x + board.width / 2 - bounds.max_x,
+      bottom: bounds.min_y - (board.center.y - board.height / 2),
+      top: board.center.y + board.height / 2 - bounds.max_y,
+    }
+    const nearest = Math.min(...Object.values(clearances))
+    // Accept either edge when clearances tie, but never a farther edge.
+    expect(clearances[status.edge]).toBeCloseTo(nearest)
+    expect(status.distance).toBeCloseTo(Math.abs(nearest))
+    expect(status.status).toBe(nearest < 0 ? "outside" : "inside")
+  }
+
+  const bodyIssues = report.issues.filter(
+    (issue) => issue.type === "footprint_intrusion",
+  )
+  expect(bodyIssues).toHaveLength(2)
+  for (const issue of bodyIssues) {
+    const match = /^move (\S+) ([\d.]+)mm down$/.exec(issue.suggested_move!)
+    expect(match).not.toBeNull()
+    const moverName = match![1]!
+    const distance = Number(match![2])
+    const anchorName =
+      moverName === issue.componentA ? issue.componentB : issue.componentA
+    const mover = report.components.find(
+      (component) => component.componentName === moverName,
+    )!.resolvedPlacement
+    const anchor = report.components.find(
+      (component) => component.componentName === anchorName,
+    )!.resolvedPlacement
+    expect(mover.center!.y).toBeLessThan(anchor.center!.y)
+    const a = anchor.bounds!
+    const b = mover.bounds!
+    const overlapAt = (deltaY: number) =>
+      Math.max(
+        0,
+        Math.min(a.max_y, b.max_y + deltaY) -
+          Math.max(a.min_y, b.min_y + deltaY),
+      )
+    expect(overlapAt(0)).toBeGreaterThan(0)
+    expect(overlapAt(-distance)).toBeCloseTo(0, 8)
+    expect(overlapAt(distance)).toBeGreaterThan(overlapAt(0))
+  }
+})
