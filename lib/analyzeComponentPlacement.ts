@@ -66,9 +66,9 @@ const getComponentToComponentCalcString = (
     case "left":
       return `${componentName}.pcbRightEdgeX=calc(${otherComponentName}.minX-${d})`
     case "up":
-      return `${componentName}.pcbTopEdgeY=calc(${otherComponentName}.minY-${d})`
-    case "down":
       return `${componentName}.pcbBottomEdgeY=calc(${otherComponentName}.maxY+${d})`
+    case "down":
+      return `${componentName}.pcbTopEdgeY=calc(${otherComponentName}.minY-${d})`
   }
 }
 
@@ -84,9 +84,9 @@ const getComponentToBoardCalcString = (
     case "left":
       return `${componentName}.centerX=calc(board.centerX-${d})`
     case "up":
-      return `${componentName}.centerY=calc(board.centerY-${d})`
-    case "down":
       return `${componentName}.centerY=calc(board.centerY+${d})`
+    case "down":
+      return `${componentName}.centerY=calc(board.centerY-${d})`
   }
 }
 
@@ -417,8 +417,8 @@ export const analyzeComponentPlacement = (
 
     const leftOffsetFromBoardMinX = componentBounds.min_x - boardMinX
     const rightOffsetFromBoardMaxX = componentBounds.max_x - boardMaxX
-    const topOffsetFromBoardMinY = componentBounds.min_y - boardMinY
-    const bottomOffsetFromBoardMaxY = componentBounds.max_y - boardMaxY
+    const bottomOffsetFromBoardMinY = componentBounds.min_y - boardMinY
+    const topOffsetFromBoardMaxY = componentBounds.max_y - boardMaxY
 
     const nearestHorizontal: RelativeComponentEdgeToBoardEdgePosition =
       Math.abs(leftOffsetFromBoardMinX) <= Math.abs(rightOffsetFromBoardMaxX)
@@ -438,20 +438,20 @@ export const analyzeComponentPlacement = (
           }
 
     const nearestVertical: RelativeComponentEdgeToBoardEdgePosition =
-      Math.abs(topOffsetFromBoardMinY) <= Math.abs(bottomOffsetFromBoardMaxY)
+      Math.abs(bottomOffsetFromBoardMinY) <= Math.abs(topOffsetFromBoardMaxY)
         ? {
             line_item_type: "relative_component_edge_to_board_edge_position",
             component_name: componentName,
-            component_edge: "pcbTopEdgeY",
+            component_edge: "pcbBottomEdgeY",
             board_edge: "board.minY",
-            offset: topOffsetFromBoardMinY,
+            offset: bottomOffsetFromBoardMinY,
           }
         : {
             line_item_type: "relative_component_edge_to_board_edge_position",
             component_name: componentName,
-            component_edge: "pcbBottomEdgeY",
+            component_edge: "pcbTopEdgeY",
             board_edge: "board.maxY",
-            offset: bottomOffsetFromBoardMaxY,
+            offset: topOffsetFromBoardMaxY,
           }
 
     lineItems.push(nearestHorizontal)

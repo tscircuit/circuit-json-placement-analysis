@@ -18,11 +18,11 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
     "placement summary: 5 courtyard collisions, 2 footprint intrusions, 2 suboptimal orientations
 
     worst issues:
-    1. Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
-    2. U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
-    3. C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm up.
-    4. U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
-    5. C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm up.
+    1. Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm down.
+    2. U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm down.
+    3. C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm down.
+    4. U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm up.
+    5. C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm down.
 
     likely bad clusters:
     - J2 cluster: U1, J2, C13, U4, C10, C15, C5
@@ -39,103 +39,103 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
     - R1: 6.72mm inside left edge
     - R2: 6.42mm inside left edge
     - C1: 10.475mm inside left edge
-    - U2: 5.75mm inside bottom edge
-    - C2: 3mm inside bottom edge
-    - C3: 3mm inside bottom edge
-    - U3: 5.75mm inside bottom edge
-    - C4: 2.3mm inside bottom edge
-    - C5: 6.7mm inside bottom edge
-    - U1: 8.6mm inside top edge
-    - R3: 1.88mm inside top edge
-    - R4: 5.48mm inside bottom edge
-    - C6: 5.48mm inside bottom edge
-    - R5: 6.88mm inside bottom edge
-    - R6: 6.88mm inside bottom edge
-    - R7: 10.18mm inside bottom edge
-    - Y1: 1.08mm inside top edge
-    - C7: 0.48mm inside top edge
-    - U4: 4.195mm inside top edge
-    - C8: 5.58mm inside top edge
-    - C9: 11.93mm inside bottom edge
-    - C10: 6.32mm inside bottom edge
-    - C11: 13.93mm inside top edge
-    - C12: 6.32mm inside top edge
-    - C13: 6mm inside bottom edge
-    - C14: 5.55mm inside top edge
-    - C15: 6.32mm inside bottom edge
-    - C16: 11.28mm inside top edge
-    - C17: 13.93mm inside bottom edge
-    - J2: 1.25mm inside bottom edge
-    - J3: 1.17mm inside top edge
-    - J4: 1.17mm inside bottom edge
+    - U2: 5.75mm inside top edge
+    - C2: 3mm inside top edge
+    - C3: 3mm inside top edge
+    - U3: 5.75mm inside top edge
+    - C4: 2.3mm inside top edge
+    - C5: 6.7mm inside top edge
+    - U1: 8.6mm inside bottom edge
+    - R3: 1.88mm inside bottom edge
+    - R4: 5.48mm inside top edge
+    - C6: 5.48mm inside top edge
+    - R5: 6.88mm inside top edge
+    - R6: 6.88mm inside top edge
+    - R7: 10.18mm inside top edge
+    - Y1: 1.08mm inside bottom edge
+    - C7: 0.48mm inside bottom edge
+    - U4: 4.195mm inside bottom edge
+    - C8: 5.58mm inside bottom edge
+    - C9: 11.93mm inside top edge
+    - C10: 6.32mm inside top edge
+    - C11: 13.93mm inside bottom edge
+    - C12: 6.32mm inside bottom edge
+    - C13: 6mm inside top edge
+    - C14: 5.55mm inside bottom edge
+    - C15: 6.32mm inside top edge
+    - C16: 11.28mm inside bottom edge
+    - C17: 13.93mm inside top edge
+    - J2: 1.25mm inside top edge
+    - J3: 1.17mm inside bottom edge
+    - J4: 1.17mm inside top edge
 
     flagged components:
     - C5
       source placement: placement_mode=none
       resolved placement: center=(-8.9mm, 7.6mm) on top; bounds=(minX=-10.325mm, maxX=-7.475mm, minY=6.9mm, maxY=8.3mm); size=(width=2.85mm, height=1.4mm); anchor_alignment="center"
-      board edge status: 6.7mm inside bottom edge
+      board edge status: 6.7mm inside top edge
       issues:
-      - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
+      - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm up.
     - U1
       source placement: placement_mode=none
       resolved placement: center=(-1mm, 0mm) on top; bounds=(minX=-7.4mm, maxX=5.4mm, minY=-6.4mm, maxY=6.4mm); size=(width=12.8mm, height=12.8mm); anchor_alignment="center"
-      board edge status: 8.6mm inside top edge
+      board edge status: 8.6mm inside bottom edge
       issues:
-      - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
-      - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
-      - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm down.
+      - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm down.
+      - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm up.
+      - C5 and U1 courtyard collision by 0mm. Suggested move: move C5 0mm up.
     - R6
       source placement: placement_mode=none
       resolved placement: center=(9mm, 7.8mm) on top; bounds=(minX=8.22mm, maxX=9.78mm, minY=7.48mm, maxY=8.12mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
-      board edge status: 6.88mm inside bottom edge
+      board edge status: 6.88mm inside top edge
       issues:
       - R6 connections cross the routing path between its pads. Suggested move: rotate R6 180 degrees.
     - Y1
       source placement: placement_mode=none
       resolved placement: center=(12.61mm, -9.31mm) on top; bounds=(minX=8mm, maxX=17.22mm, minY=-13.92mm, maxY=-4.7mm); size=(width=9.22mm, height=9.22mm); anchor_alignment="center"
-      board edge status: 1.08mm inside top edge
+      board edge status: 1.08mm inside bottom edge
       issues:
-      - Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
+      - Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm down.
     - C7
       source placement: placement_mode=none
       resolved placement: center=(15.8mm, -14.2mm) on top; bounds=(minX=15.02mm, maxX=16.58mm, minY=-14.52mm, maxY=-13.88mm); size=(width=1.56mm, height=0.64mm); anchor_alignment="center"
-      board edge status: 0.48mm inside top edge
+      board edge status: 0.48mm inside bottom edge
       issues:
-      - Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm up.
+      - Y1 and C7 footprint intrusion by 0.04mm. Suggested move: move C7 0.04mm down.
       - C7 connections cross the routing path between its pads. Suggested move: rotate C7 180 degrees.
     - U4
       source placement: placement_mode=none
       resolved placement: center=(-8.9mm, -8.6mm) on top; bounds=(minX=-12.35mm, maxX=-5.45mm, minY=-10.805mm, maxY=-6.395mm); size=(width=6.9mm, height=4.41mm); anchor_alignment="center"
-      board edge status: 4.195mm inside top edge
+      board edge status: 4.195mm inside bottom edge
       issues:
-      - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm up.
+      - U1 and U4 footprint intrusion by 0.005mm. Suggested move: move U4 0.005mm down.
     - C10
       source placement: placement_mode=none
       resolved placement: center=(-1.25mm, 7.85mm) on top; bounds=(minX=-1.52mm, maxX=-0.98mm, minY=7.02mm, maxY=8.68mm); size=(width=0.54mm, height=1.66mm); anchor_alignment="center"
-      board edge status: 6.32mm inside bottom edge
+      board edge status: 6.32mm inside top edge
       issues:
-      - C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm up.
+      - C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm down.
     - C13
       source placement: placement_mode=none
       resolved placement: center=(-4mm, 7.7mm) on top; bounds=(minX=-4.4mm, maxX=-3.6mm, minY=6.4mm, maxY=9mm); size=(width=0.8mm, height=2.6mm); anchor_alignment="center"
-      board edge status: 6mm inside bottom edge
+      board edge status: 6mm inside top edge
       issues:
-      - C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm up.
-      - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm down.
+      - C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm down.
+      - U1 and C13 courtyard collision by 0.43mm. Suggested move: move C13 0.43mm up.
     - C15
       source placement: placement_mode=none
       resolved placement: center=(1.5mm, 7.85mm) on top; bounds=(minX=1.23mm, maxX=1.77mm, minY=7.02mm, maxY=8.68mm); size=(width=0.54mm, height=1.66mm); anchor_alignment="center"
-      board edge status: 6.32mm inside bottom edge
+      board edge status: 6.32mm inside top edge
       issues:
-      - C15 and J2 courtyard collision by 0.09mm. Suggested move: move C15 0.09mm up.
+      - C15 and J2 courtyard collision by 0.09mm. Suggested move: move C15 0.09mm down.
     - J2
       source placement: placement_mode=none
       resolved placement: center=(0mm, 11.73mm) on top; bounds=(minX=-9.64mm, maxX=9.64mm, minY=9.71mm, maxY=13.75mm); size=(width=19.28mm, height=4.04mm); anchor_alignment="center"; orientation=horizontal
-      board edge status: 1.25mm inside bottom edge
+      board edge status: 1.25mm inside top edge
       issues:
-      - C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm up.
-      - C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm up.
-      - C15 and J2 courtyard collision by 0.09mm. Suggested move: move C15 0.09mm up."
+      - C13 and J2 courtyard collision by 0.49mm. Suggested move: move C13 0.49mm down.
+      - C10 and J2 courtyard collision by 0.09mm. Suggested move: move C10 0.09mm down.
+      - C15 and J2 courtyard collision by 0.09mm. Suggested move: move C15 0.09mm down."
   `)
 
   const focusedComponentNames = new Set(["C5", "U1", "C10", "C13", "C15", "J2"])
@@ -177,4 +177,64 @@ test("analysis snapshot for usb-audio-device includes the Y1/C7 placement error"
       shouldDrawErrors: false,
     }),
   ).toMatchSvgSnapshot(import.meta.path, "rotated-courtyard-collisions")
+})
+
+test("USB audio edge labels and body separation suggestions agree with PCB geometry", () => {
+  const circuitJson = JSON.parse(
+    readFileSync(
+      new URL("./assets/usb-audio-device.json", import.meta.url),
+      "utf8",
+    ),
+  )
+  const report = analyzeAllPlacements(circuitJson).getReport()
+  const board = circuitJson.find(
+    (element: { type: string }) => element.type === "pcb_board",
+  )
+
+  for (const component of report.components) {
+    const bounds = component.resolvedPlacement.bounds!
+    const status = component.boardEdgeStatus!
+    const clearances = {
+      left: bounds.min_x - (board.center.x - board.width / 2),
+      right: board.center.x + board.width / 2 - bounds.max_x,
+      bottom: bounds.min_y - (board.center.y - board.height / 2),
+      top: board.center.y + board.height / 2 - bounds.max_y,
+    }
+    const nearest = Math.min(...Object.values(clearances))
+    // Accept either edge when clearances tie, but never a farther edge.
+    expect(clearances[status.edge]).toBeCloseTo(nearest)
+    expect(status.distance).toBeCloseTo(Math.abs(nearest))
+    expect(status.status).toBe(nearest < 0 ? "outside" : "inside")
+  }
+
+  const bodyIssues = report.issues.filter(
+    (issue) => issue.type === "footprint_intrusion",
+  )
+  expect(bodyIssues).toHaveLength(2)
+  for (const issue of bodyIssues) {
+    const match = /^move (\S+) ([\d.]+)mm down$/.exec(issue.suggested_move!)
+    expect(match).not.toBeNull()
+    const moverName = match![1]!
+    const distance = Number(match![2])
+    const anchorName =
+      moverName === issue.componentA ? issue.componentB : issue.componentA
+    const mover = report.components.find(
+      (component) => component.componentName === moverName,
+    )!.resolvedPlacement
+    const anchor = report.components.find(
+      (component) => component.componentName === anchorName,
+    )!.resolvedPlacement
+    expect(mover.center!.y).toBeLessThan(anchor.center!.y)
+    const a = anchor.bounds!
+    const b = mover.bounds!
+    const overlapAt = (deltaY: number) =>
+      Math.max(
+        0,
+        Math.min(a.max_y, b.max_y + deltaY) -
+          Math.max(a.min_y, b.min_y + deltaY),
+      )
+    expect(overlapAt(0)).toBeGreaterThan(0)
+    expect(overlapAt(-distance)).toBeCloseTo(0, 8)
+    expect(overlapAt(distance)).toBeGreaterThan(overlapAt(0))
+  }
 })
