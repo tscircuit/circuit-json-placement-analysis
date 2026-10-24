@@ -1,6 +1,7 @@
 import Flatbush from "flatbush"
 import RBush from "rbush"
 import type { LayerRef, NinePointAnchor, PcbPort } from "circuit-json"
+import { getBoardBounds } from "./getBoardBounds"
 import type {
   PlacementAreaBounds,
   ComponentBoardEdgeStatus,
@@ -771,27 +772,7 @@ const buildComponentContexts = (
   }
 
   const pcbBoard = circuitJson.find((el) => el.type === "pcb_board")
-  const boardCenter =
-    pcbBoard && typeof pcbBoard.center === "object" && pcbBoard.center
-      ? (pcbBoard.center as { x?: unknown; y?: unknown })
-      : null
-  const boardCenterX = boardCenter ? toNumber(boardCenter.x) : null
-  const boardCenterY = boardCenter ? toNumber(boardCenter.y) : null
-  const boardWidth = toNumber(pcbBoard?.width)
-  const boardHeight = toNumber(pcbBoard?.height)
-
-  const boardBounds =
-    boardCenterX !== null &&
-    boardCenterY !== null &&
-    boardWidth !== null &&
-    boardHeight !== null
-      ? getBoundsFromCenterAndSize(
-          boardCenterX,
-          boardCenterY,
-          boardWidth,
-          boardHeight,
-        )
-      : null
+  const boardBounds = getBoardBounds(pcbBoard)
 
   return {
     components,
