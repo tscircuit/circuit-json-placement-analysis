@@ -1,3 +1,4 @@
+import { getBoardBounds } from "./getBoardBounds"
 import type {
   AnalysisLineItem,
   CardinalDirection,
@@ -400,20 +401,13 @@ export const analyzeComponentPlacement = (
       : null
   const boardCenterX = boardCenter ? toNumber(boardCenter.x) : null
   const boardCenterY = boardCenter ? toNumber(boardCenter.y) : null
+  const boardBounds = getBoardBounds(pcbBoard)
 
-  if (
-    componentBounds !== null &&
-    boardCenterX !== null &&
-    boardCenterY !== null &&
-    toNumber(pcbBoard?.width) !== null &&
-    toNumber(pcbBoard?.height) !== null
-  ) {
-    const boardWidth = toNumber(pcbBoard?.width)!
-    const boardHeight = toNumber(pcbBoard?.height)!
-    const boardMinX = boardCenterX - boardWidth / 2
-    const boardMaxX = boardCenterX + boardWidth / 2
-    const boardMinY = boardCenterY - boardHeight / 2
-    const boardMaxY = boardCenterY + boardHeight / 2
+  if (componentBounds !== null && boardBounds !== null) {
+    const boardMinX = boardBounds.min_x
+    const boardMaxX = boardBounds.max_x
+    const boardMinY = boardBounds.min_y
+    const boardMaxY = boardBounds.max_y
 
     const leftOffsetFromBoardMinX = componentBounds.min_x - boardMinX
     const rightOffsetFromBoardMaxX = componentBounds.max_x - boardMaxX
@@ -457,22 +451,24 @@ export const analyzeComponentPlacement = (
     lineItems.push(nearestHorizontal)
     lineItems.push(nearestVertical)
 
-    const boardRelation = getDirectionAndDistance(
-      boardCenterX,
-      boardCenterY,
-      componentBounds.min_x + componentBounds.width / 2,
-      componentBounds.min_y + componentBounds.height / 2,
-    )
-    const boardLineItem: RelativeComponentToBoardPosition = {
-      line_item_type: "relative_component_to_board_position",
-      component_name: componentName,
-      anchor_alignment: CENTER_ANCHOR,
-      board_anchor_alignment: CENTER_ANCHOR,
-      direction: boardRelation.direction,
-      distance: boardRelation.distance,
-      calc_distance: `abs(${componentName}.center.${boardRelation.axis} - board.center.${boardRelation.axis})`,
+    if (boardCenterX !== null && boardCenterY !== null) {
+      const boardRelation = getDirectionAndDistance(
+        boardCenterX,
+        boardCenterY,
+        componentBounds.min_x + componentBounds.width / 2,
+        componentBounds.min_y + componentBounds.height / 2,
+      )
+      const boardLineItem: RelativeComponentToBoardPosition = {
+        line_item_type: "relative_component_to_board_position",
+        component_name: componentName,
+        anchor_alignment: CENTER_ANCHOR,
+        board_anchor_alignment: CENTER_ANCHOR,
+        direction: boardRelation.direction,
+        distance: boardRelation.distance,
+        calc_distance: `abs(${componentName}.center.${boardRelation.axis} - board.center.${boardRelation.axis})`,
+      }
+      lineItems.push(boardLineItem)
     }
-    lineItems.push(boardLineItem)
   }
 
   const sourcePortNameByPcbPortId = new Map<string, string>()

@@ -5,7 +5,7 @@ import { Circuit } from "tscircuit"
 import { analyzeAllPlacements, analyzeComponentPlacement } from "../lib/index"
 import AsymmetricFlexTail from "./fixtures/asymmetric-flex-tail"
 
-test("repro: placement analysis falsely reports a component inside an asymmetric flex tail as off-board", async () => {
+test("a component inside an asymmetric flex tail is not reported off-board", async () => {
   const circuit = new Circuit()
   circuit.add(<AsymmetricFlexTail />)
   await circuit.renderUntilSettled()
@@ -25,26 +25,20 @@ test("repro: placement analysis falsely reports a component inside an asymmetric
     expect(pad.y + pad.height / 2).toBeLessThan(2)
   }
 
-  // Capture the incorrect result before applying the bounds fix.
   expect(
     analysis.getIssues().filter((issue) => issue.type === "off_board"),
-  ).toMatchObject([
-    {
-      componentA: "R_TAIL",
-      summary: "R_TAIL is 10.28mm outside right edge",
-      suggested_move: "move R_TAIL 10.28mm left to clear right edge",
-    },
-  ])
+  ).toEqual([])
   expect(analysis.getReport().components[0]?.boardEdgeStatus).toMatchObject({
     edge: "right",
-    status: "outside",
+    status: "inside",
   })
   expect(
     analysis.getReport().components[0]?.boardEdgeStatus?.distance,
-  ).toBeCloseTo(10.28)
+  ).toBeCloseTo(2.22)
   expect(componentAnalysis.getString()).toContain(
-    "R_TAIL.pcbRightEdgeX=calc(board.maxX+10.28mm) [offboard]",
+    "R_TAIL.pcbRightEdgeX=calc(board.maxX-2.22mm)",
   )
+  expect(componentAnalysis.getString()).not.toContain("[offboard]")
   await expect(convertCircuitJsonToPcbSvg(circuitJson)).toMatchSvgSnapshot(
     import.meta.path,
   )
