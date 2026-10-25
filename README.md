@@ -79,3 +79,19 @@ The summary string returned by `getString()` now starts with:
 - Likely bad cluster groupings
 - Per-part board-edge status using rendered bounds
 - Focused details for flagged components
+
+DDR placement/reference-path analysis is available through
+`analyzeDdrPlacement(circuitJson)`, with the same `getString()`,
+`getReport()` and `getIssues()` result style. Its short Markdown tells you what
+needs attention, where it is, and what to do next. Healthy, unknown and assumed
+results remain distinct; `getReport()` retains stable IDs, geometry and evidence.
+This one-input screen selects routed signal candidates from actual connectivity;
+DDR identity stays unknown, and inferred layer/reference choices stay ASSUMED.
+`DdrPlacementSolver` uses the existing BaseSolver `step()`/`solve()` convention.
+`getState()` exposes completed-stage findings and physical contacts;
+`visualize()` returns a GraphicsObject for the current stage. Both APIs run the
+same checks. Unsupported inputs stop with one UNKNOWN reason while retaining
+findings from completed work.
+See the
+[API, geometric checks and limits](docs/ddr-placement-analyzer.md) and
+[visual fixtures](tests/fixtures/ddr-stages.ts). This is not SI/hardware signoff.
