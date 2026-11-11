@@ -63,13 +63,13 @@ const getComponentToComponentCalcString = (
   const d = fmtMm(distance)
   switch (direction) {
     case "right":
-      return `${componentName}.pcbLeftEdgeX=calc(${otherComponentName}.maxX+${d})`
+      return `${componentName}.pcbX=calc(${otherComponentName}.x+${d})`
     case "left":
-      return `${componentName}.pcbRightEdgeX=calc(${otherComponentName}.minX-${d})`
+      return `${componentName}.pcbX=calc(${otherComponentName}.x-${d})`
     case "up":
-      return `${componentName}.pcbBottomEdgeY=calc(${otherComponentName}.maxY+${d})`
+      return `${componentName}.pcbY=calc(${otherComponentName}.y+${d})`
     case "down":
-      return `${componentName}.pcbTopEdgeY=calc(${otherComponentName}.minY-${d})`
+      return `${componentName}.pcbY=calc(${otherComponentName}.y-${d})`
   }
 }
 

@@ -19,6 +19,6 @@ U1.pcbLeftEdgeX=calc(board.minX+25.6mm)
 U1.pcbBottomEdgeY=calc(board.minY+8.1mm)
 U1.centerX=calc(board.centerX+0mm)
 U1.padClearance=3.424mm [nearest=C1.pin1]
-U1.pcbTopEdgeY=calc(C1.minY-8mm)"
+U1.pcbY=calc(C1.y-8mm)"
 `)
 })

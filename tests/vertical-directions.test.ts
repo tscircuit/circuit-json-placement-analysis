@@ -183,14 +183,13 @@ for (const center of [
   }
 }
 
-for (const { y, direction, edge, boardEdge, sign, otherEdge } of [
+for (const { y, direction, edge, boardEdge, sign } of [
   {
     y: 3,
     direction: "up",
     edge: "pcbTopEdgeY",
     boardEdge: "board.maxY",
     sign: "+",
-    otherEdge: "pcbBottomEdgeY",
   },
   {
     y: -3,
@@ -198,7 +197,6 @@ for (const { y, direction, edge, boardEdge, sign, otherEdge } of [
     edge: "pcbBottomEdgeY",
     boardEdge: "board.minY",
     sign: "-",
-    otherEdge: "pcbTopEdgeY",
   },
 ]) {
   test(`${direction} component calculation strings agree with structured directions`, () => {
@@ -222,7 +220,7 @@ for (const { y, direction, edge, boardEdge, sign, otherEdge } of [
       `R2.${edge}=calc(${boardEdge}${sign === "+" ? "-" : "+"}1mm)`,
     )
     expect(analysis.getString()).toContain(
-      `R2.${otherEdge}=calc(R1.${direction === "up" ? "maxY" : "minY"}${sign}3mm)`,
+      `R2.pcbY=calc(R1.y${sign}3mm)`,
     )
   })
 }
