@@ -1690,6 +1690,8 @@ const buildIssues = ({
       const b = components[j]
       if (!b) continue
 
+      if (a.pcbComponent?.do_not_place || b.pcbComponent?.do_not_place) continue
+
       if (!a.bounds || !b.bounds) continue
 
       const sideA = getComponentSide(a)
