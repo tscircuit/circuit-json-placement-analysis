@@ -590,6 +590,21 @@ const buildComponentContexts = (
       )
       if (!context) continue
 
+      if (el.shape === "polygon") {
+        const points = Array.isArray(el.points)
+          ? (el.points as Array<{ x?: unknown; y?: unknown }>)
+          : []
+        const bounds = getBoundsFromPoints(points)
+        const layer = getLayer(el.layer)
+        if (bounds && layer) {
+          context.pads.push({
+            bounds,
+            layers: [layer],
+          })
+        }
+        continue
+      }
+
       const x = toNumber(el.x)
       const y = toNumber(el.y)
       const width = toNumber(el.width)
